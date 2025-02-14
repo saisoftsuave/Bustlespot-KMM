@@ -1,6 +1,7 @@
 package org.softsuave.bustlespot.tracker.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -86,6 +88,8 @@ fun TrackerScreen(
     val projectDropDownState by homeViewModel.projectDropDownState.collectAsState()
     val taskDropDownState by homeViewModel.taskDropDownState.collectAsState()
 
+    val trackerDialogState by homeViewModel.trackerDialogState.collectAsState()
+
     // Still track the selected project and task if needed.
     val selectedProject by homeViewModel.selectedProject.collectAsState()
     val selectedTask by homeViewModel.selectedTask.collectAsState()
@@ -96,15 +100,19 @@ fun TrackerScreen(
     // Local UI states.
     var showIdleDialog by remember { mutableStateOf(false) }
     var isExitClicked by remember { mutableStateOf(false) }
-    var totalIdleTime by remember { mutableStateOf(0) }
+
+
+    val totalIdleTime by homeViewModel.totalIdleTime.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
 
     // Launch idle dialog effect.
     LaunchedEffect(idleTime) {
         if (idleTime > customeTimeForIdleTime && !showIdleDialog) {
             onFocusReceived.invoke()
-            showIdleDialog = true
+            homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.showIdleTimeDialog)
+//            showIdleDialog = true
             homeViewModel.stopTrackerTimer()
             homeViewModel.updateTrackerTimer()
         }
@@ -123,7 +131,10 @@ fun TrackerScreen(
                 title = { Text(text = organisationName) },
                 onNavigationBackClick = {
                     if (isTrackerRunning) {
-                        isExitClicked = true
+//                        isExitClicked = true
+                        homeViewModel.handleTrackerDialogEvents(TrackerDialogEvents.showExitDialog) {
+                            navController.popBackStack()
+                        }
                     } else {
                         navController.popBackStack()
                     }
@@ -169,9 +180,17 @@ fun TrackerScreen(
                         title = "Project",
                         dropDownList = projectDropDownState.dropDownList,
                         onItemClick = { selectedItem ->
-                            homeViewModel.handleDropDownEvents(
-                                DropDownEvents.OnProjectSelection(selectedItem as Project)
-                            )
+                            if (selectedProject != null && isTrackerRunning) {
+                                homeViewModel.handleDropDownEvents(
+                                    DropDownEvents.OnProjectSelection(selectedItem as Project)
+                                )
+                            } else {
+                                homeViewModel.handleTrackerDialogEvents(
+                                    TrackerDialogEvents.showProjectChangeDialog(
+                                        selectedItem as Project
+                                    )
+                                )
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth(0.85f)
@@ -198,9 +217,17 @@ fun TrackerScreen(
                         title = "Task",
                         dropDownList = taskDropDownState.dropDownList,
                         onItemClick = { selectedItem ->
-                            homeViewModel.handleDropDownEvents(
-                                DropDownEvents.OnTaskSelection(selectedItem as TaskData)
-                            )
+                            if (selectedTask != null && isTrackerRunning) {
+                                homeViewModel.handleDropDownEvents(
+                                    DropDownEvents.OnTaskSelection(selectedItem as TaskData)
+                                )
+                            } else {
+                                homeViewModel.handleTrackerDialogEvents(
+                                    TrackerDialogEvents.showTaskChangeDialog(
+                                        selectedItem as TaskData
+                                    )
+                                )
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth(0.85f)
@@ -258,17 +285,14 @@ fun TrackerScreen(
                             }
                         }*/
 
-            if (showIdleDialog) {
+            if (trackerDialogState.isDialogShown) {
                 CustomAlertDialog(
-                    title = "IdleTime",
-                    text = "You are idle for ${secondsToTime(idleTime)}. Do you want to add idle time to the session?",
+                    title = trackerDialogState.title,
+                    text = trackerDialogState.text,
                     confirmButton = {
                         TextButton(
                             onClick = {
-                                showIdleDialog = false
-                                totalIdleTime += idleTime
-                                homeViewModel.resetIdleTimer()
-                                homeViewModel.resumeTrackerTimer()
+                                trackerDialogState.onConfirm()
                             },
                             colors = ButtonColors(
                                 containerColor = Color.Red,
@@ -282,15 +306,13 @@ fun TrackerScreen(
                                 focusedElevation = 7.dp,
                             )
                         ) {
-                            Text("Okay")
+                            Text(trackerDialogState.confirmButtonText)
                         }
                     },
                     dismissButton = {
                         TextButton(
                             onClick = {
-                                showIdleDialog = false
-                                homeViewModel.resetIdleTimer()
-                                homeViewModel.resumeTrackerTimer()
+                                trackerDialogState.onDismiss()
                             },
                             colors = ButtonColors(
                                 containerColor = Color.White,
@@ -304,7 +326,7 @@ fun TrackerScreen(
                                 focusedElevation = 7.dp,
                             )
                         ) {
-                            Text("Cancel")
+                            Text(trackerDialogState.dismissButtonText)
                         }
                     }
                 )
@@ -450,7 +472,7 @@ fun DropDownSelectionList(
                 disabledContainerColor = Color.White,
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Red
+                focusedIndicatorColor = Color.Red,
             ),
             isError = error?.isNotEmpty() ?: false
         )
@@ -462,7 +484,8 @@ fun DropDownSelectionList(
                 println("dismiss called")
             },
             modifier = Modifier.fillMaxWidth(0.85f),
-            properties = PopupProperties(focusable = false)
+            properties = PopupProperties(focusable = false),
+            containerColor = Color.White
         ) {
             if (filteredList.isNotEmpty()) {
                 filteredList.forEach { item ->
@@ -478,7 +501,8 @@ fun DropDownSelectionList(
                                 onClick = {
                                     isMenuExpanded = false
                                     onItemClick(item)
-                                }
+                                },
+                                modifier = Modifier.background(Color.White)
                             )
                         }
 
@@ -490,7 +514,8 @@ fun DropDownSelectionList(
                                 onClick = {
                                     isMenuExpanded = false
                                     onItemClick(item)
-                                }
+                                },
+                                modifier = Modifier.background(Color.White)
                             )
                         }
                     }
@@ -508,6 +533,7 @@ fun DropDownSelectionList(
                         isMenuExpanded = false
                         onNoOptionClick()
                     },
+                    modifier = Modifier.background(Color.White)
                 )
             }
         }

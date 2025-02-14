@@ -210,8 +210,5 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         customeTimeForIdleTime.value = time
     }
 
-//    override fun onCleared() {
-//        super.onCleared()
-//        timer.cancel()
-//    }
+
 }

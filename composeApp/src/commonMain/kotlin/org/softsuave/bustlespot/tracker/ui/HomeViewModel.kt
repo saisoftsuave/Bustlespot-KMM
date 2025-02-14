@@ -1,12 +1,16 @@
 package org.softsuave.bustlespot.tracker.ui
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
+import org.softsuave.bustlespot.auth.utils.secondsToTime
 import org.softsuave.bustlespot.network.models.response.DisplayItem
 import org.softsuave.bustlespot.network.models.response.Project
 import org.softsuave.bustlespot.network.models.response.TaskData
@@ -58,16 +62,23 @@ class HomeViewModel(
     private val trackerScreenData = TrackerScreenData(mutableListOf(), mutableListOf())
 
     private val _selectedProject = kotlinx.coroutines.flow.MutableStateFlow<Project?>(null)
-    val selectedProject: StateFlow<Project?> = _selectedProject
+    val selectedProject: StateFlow<Project?> = _selectedProject.asStateFlow()
 
     private val _selectedTask = kotlinx.coroutines.flow.MutableStateFlow<TaskData?>(null)
-    val selectedTask: StateFlow<TaskData?> = _selectedTask
+    val selectedTask: StateFlow<TaskData?> = _selectedTask.asStateFlow()
 
     private val _projectDropDownState = kotlinx.coroutines.flow.MutableStateFlow(DropDownState())
-    val projectDropDownState: StateFlow<DropDownState> = _projectDropDownState
+    val projectDropDownState: StateFlow<DropDownState> = _projectDropDownState.asStateFlow()
 
     private val _taskDropDownState = kotlinx.coroutines.flow.MutableStateFlow(DropDownState())
-    val taskDropDownState: StateFlow<DropDownState> = _taskDropDownState
+    val taskDropDownState: StateFlow<DropDownState> = _taskDropDownState.asStateFlow()
+
+    private val _trackerDialogState: MutableStateFlow<TrackerDialogState> =
+        MutableStateFlow(TrackerDialogState())
+    val trackerDialogState: StateFlow<TrackerDialogState> = _trackerDialogState.asStateFlow()
+
+    private val _totalIdleTime: MutableStateFlow<Int> = MutableStateFlow(0)
+    val totalIdleTime: StateFlow<Int> = _totalIdleTime.asStateFlow()
 
     fun getAllProjects() {
         viewModelScope.launch {
@@ -154,9 +165,7 @@ class HomeViewModel(
                     errorMessage = if (filteredTasks.isEmpty()) "No task available to select" else "",
                     inputText = ""
                 )
-                if (filteredTasks.isEmpty()) {
-                    _selectedTask.value = null
-                }
+                _selectedTask.value = null
             }
 
             is DropDownEvents.OnTaskSearch -> {
@@ -195,6 +204,121 @@ class HomeViewModel(
                         _projectDropDownState.value.copy(errorMessage = "")
                 }
             }
+
+
+        }
+    }
+
+
+    fun handleTrackerDialogEvents(
+        trackerDialogEvents: TrackerDialogEvents,
+        handleNavAction: () -> Unit = {}
+    ) {
+        when (trackerDialogEvents) {
+            TrackerDialogEvents.showExitDialog -> {
+                _trackerDialogState.value = _trackerDialogState.value.copy(
+                    isDialogShown = true,
+                    title = "Exit",
+                    text = "Are you sure you want to exit?",
+                    confirmButtonText = "Yes",
+                    dismissButtonText = "No",
+                    onConfirm = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                        stopTrackerTimer()
+                        handleNavAction()
+                    },
+                    onDismiss = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                    }
+                )
+            }
+
+            is TrackerDialogEvents.showIdleTimeDialog -> {
+                _trackerDialogState.value = _trackerDialogState.value.copy(
+                    isDialogShown = true,
+                    title = "IdleTime",
+                    text = "You are idle for ${secondsToTime(this.idealTime.value)}. Do you want to add idle time to the session?",
+                    confirmButtonText = "Okay",
+                    dismissButtonText = "Cancel",
+                    onConfirm = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                        _totalIdleTime.value += idealTime.value
+                        resetIdleTimer()
+                        resumeTrackerTimer()
+                    },
+                    onDismiss = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                        resetIdleTimer()
+                        resumeTrackerTimer()
+                    }
+                )
+
+
+            }
+
+            is TrackerDialogEvents.showProjectChangeDialog -> {
+                _trackerDialogState.value = _trackerDialogState.value.copy(
+                    isDialogShown = true,
+                    title = "Alert",
+                    text = "Are you sure you want to stop tracker and change project?",
+                    confirmButtonText = "Yes",
+                    dismissButtonText = "No",
+                    onConfirm = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                        stopTrackerTimer()
+                        handleDropDownEvents(DropDownEvents.OnProjectSelection(trackerDialogEvents.selectedProject))
+                    },
+                    onDismiss = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                    }
+                )
+            }
+
+            is TrackerDialogEvents.showTaskChangeDialog -> {
+                _trackerDialogState.value = _trackerDialogState.value.copy(
+                    isDialogShown = true,
+                    title = "Alert",
+                    text = "Are you sure you want to stop tracker and change Task?",
+                    confirmButtonText = "Yes",
+                    dismissButtonText = "No",
+                    onConfirm = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                        stopTrackerTimer()
+                        handleDropDownEvents(DropDownEvents.OnTaskSelection(trackerDialogEvents.selectedTask))
+                    },
+                    onDismiss = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                    }
+                )
+            }
+
+            TrackerDialogEvents.showTrackerAlertDialog -> {
+                TODO()
+            }
+        }
+    }
+
+    fun handleTrackerScreenEvents(trackerScreenEvents: TrackerScreenEvents) {
+        when (trackerScreenEvents) {
+            TrackerScreenEvents.OnExitClick -> {
+                TODO()
+            }
         }
     }
 }
@@ -210,8 +334,8 @@ sealed class DropDownEvents {
     data class OnTaskSearch(val inputText: String) : DropDownEvents()
     data class OnProjectSelection(val selectedProject: Project) : DropDownEvents()
     data class OnTaskSelection(val selectedTask: TaskData) : DropDownEvents()
-    object OnProjectDropDownClick : DropDownEvents()
-    object OnTaskDropDownClick : DropDownEvents()
+    data object OnProjectDropDownClick : DropDownEvents()
+    data object OnTaskDropDownClick : DropDownEvents()
 }
 
 data class DropDownState(
@@ -219,3 +343,31 @@ data class DropDownState(
     val inputText: String = "",
     val dropDownList: List<DisplayItem> = emptyList()
 )
+
+
+data class TrackerDialogState(
+    val isDialogShown: Boolean = false,
+    val title: String = "",
+    val text: String = "",
+    val confirmButtonText: String = "",
+    val dismissButtonText: String = "",
+    val onConfirm: () -> Unit = {},
+    val onDismiss: () -> Unit = {}
+)
+
+sealed class TrackerDialogEvents {
+    data object showExitDialog : TrackerDialogEvents()
+    data object showIdleTimeDialog : TrackerDialogEvents()
+    data class showProjectChangeDialog(val selectedProject: Project) : TrackerDialogEvents()
+    data class showTaskChangeDialog(val selectedTask: TaskData) : TrackerDialogEvents()
+
+    //    data object showExitDialog : TrackerDialogEvents()
+//    data object showProjectChangeDialog : TrackerDialogEvents()
+//    data object showTaskChangeDialog : TrackerDialogEvents()
+    // no confirmed design
+    data object showTrackerAlertDialog : TrackerDialogEvents()
+}
+
+sealed class TrackerScreenEvents {
+    data object OnExitClick : TrackerScreenEvents()
+}
