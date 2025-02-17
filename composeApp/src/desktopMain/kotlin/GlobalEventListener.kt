@@ -61,19 +61,19 @@ class GlobalEventListener : NativeKeyListener, NativeMouseListener, NativeMouseM
     override fun nativeKeyPressed(e: NativeKeyEvent) {
         keyCount++
         fKeyCount.value = keyCount
-        println("Key pressed: ${NativeKeyEvent.getKeyText(e.keyCode)} | Total: $keyCount")
+        //println("Key pressed: ${NativeKeyEvent.getKeyText(e.keyCode)} | Total: $keyCount")
     }
 
     override fun nativeMouseClicked(e: NativeMouseEvent) {
         mouseCount++
         fMouseCount.value = mouseCount
-        println("Mouse clicked at (${e.x}, ${e.y}) | Total: ${fMouseCount.value}")
+       // println("Mouse clicked at (${e.x}, ${e.y}) | Total: ${fMouseCount.value}")
     }
 
     override fun nativeMouseMoved(e: NativeMouseEvent) {
         mouseMotionCount++
         fMouseMotionCount.value = mouseMotionCount
-        println("Mouse moved to (${e.x}, ${e.y}) | Total: ${fMouseMotionCount.value}")
+       // println("Mouse moved to (${e.x}, ${e.y}) | Total: ${fMouseMotionCount.value}")
         // Optional: Handle mouse movement if needed
     }
 

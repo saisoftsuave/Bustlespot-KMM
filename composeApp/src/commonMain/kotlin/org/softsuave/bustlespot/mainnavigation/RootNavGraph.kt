@@ -1,24 +1,25 @@
 package org.softsuave.bustlespot.mainnavigation
 
-import org.softsuave.bustlespot.SessionManager
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import org.koin.compose.koinInject
+import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.navigation.authNavGraph
 import org.softsuave.bustlespot.auth.navigation.homeNavGraph
-import org.koin.compose.koinInject
 
 
 @Composable
-fun RootNavigationGraph(navController: NavHostController,onFocusReceived: () -> Unit = {}) {
+fun RootNavigationGraph(navController: NavHostController, onFocusReceived: () -> Unit = {}) {
     val sessionManager: SessionManager = koinInject()
-    // Observe the mutable state directly
-    val isLoggedIn = sessionManager.isLoggedIn
+    val isLoggedIn by sessionManager.isLoggedIn.collectAsState()
 
 
-    LaunchedEffect(sessionManager.isLoggedIn){
-        if (!sessionManager.isLoggedIn){
+    LaunchedEffect(sessionManager.isLoggedIn) {
+        if (!isLoggedIn) {
             navController.navigate(
                 route = Graph.AUTHENTICATION
             )
@@ -31,10 +32,9 @@ fun RootNavigationGraph(navController: NavHostController,onFocusReceived: () -> 
         startDestination = if (isLoggedIn) Graph.HOME else Graph.AUTHENTICATION
     ) {
         authNavGraph(navController)
-        homeNavGraph(navController,onFocusReceived)
+        homeNavGraph(navController, onFocusReceived)
     }
 }
-
 
 
 object Graph {

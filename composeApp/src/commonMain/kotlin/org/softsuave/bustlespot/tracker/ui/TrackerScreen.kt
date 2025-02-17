@@ -63,6 +63,7 @@ import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.softsuave.bustlespot.notifications.sendLocalNotification
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
@@ -586,6 +587,7 @@ fun TimerSessionSection(
                 IconButton(
                     modifier = Modifier,
                     onClick = {
+                        sendLocalNotification()
                         isPlaying = !isPlaying
                         if (isPlaying) {
                             if (isTrackerRunning || homeViewModel.trackerTime.value != 0) {

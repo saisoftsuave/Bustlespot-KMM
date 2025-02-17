@@ -1,18 +1,15 @@
 package org.softsuave.bustlespot
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import com.russhwolf.settings.ObservableSettings
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.runBlocking
 
 
 class SessionManager(private val settings: ObservableSettings) {
-    var isLoggedIn by mutableStateOf(settings.getString("access_token", "").isNotEmpty())
+    var isLoggedIn = MutableStateFlow(false)
+        private set
 
     val flowAccessToken: Flow<String> = callbackFlow {
         val listener = settings.addStringListener(
@@ -33,16 +30,20 @@ class SessionManager(private val settings: ObservableSettings) {
         accessToken = token
     }
 
-    fun updateAccessToken(token: String) : Boolean {
-        isLoggedIn = true
+    fun updateAccessToken(token: String): Boolean {
+        isLoggedIn.value = true
         settings.putString("access_token", token)
         println("Updated access token. isLoggedIn = $isLoggedIn")
         return true
     }
 
     fun clearSession() {
-        isLoggedIn = false
+        isLoggedIn.value = false
         settings.remove("access_token")
         println("Session cleared. isLoggedIn = $isLoggedIn")
+    }
+
+    init {
+        isLoggedIn = MutableStateFlow(settings.getString("access_token", "").isNotEmpty())
     }
 }

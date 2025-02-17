@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.buildConfig)
+    id("com.google.gms.google-services") version "4.4.0" apply false
 }
 
 kotlin {
@@ -19,18 +20,19 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
+            export("io.github.mirzemehdi:kmpnotifier:1.4.0")
             baseName = "ComposeApp"
             isStatic = true
         }
     }
-    
+
     jvm("desktop")
 
     sourceSets {
@@ -63,6 +65,7 @@ kotlin {
             implementation(libs.bundles.ktor)
 
             implementation(libs.lifecycle.viewmodel.compose)
+            api("io.github.mirzemehdi:kmpnotifier:1.4.0")
 
         }
 
@@ -124,6 +127,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.startup.runtime)
     debugImplementation(compose.uiTooling)
 }
 
@@ -135,6 +139,18 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.softsuave.bustlespot"
             packageVersion = "1.0.0"
+            windows {
+                iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_windows.ico"))
+            }
+            // macOS configuration
+            macOS {
+                bundleID = "org.softsuave.bustlespot.app"
+                iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_macos.icns"))
+            }
+            // Linux configuration
+            linux {
+                iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_linux.png"))
+            }
         }
     }
 }

@@ -23,7 +23,6 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
-
     private var timer = Timer()
     private var isTaskScheduled = AtomicBoolean(false)
     private var isIdleTaskScheduled = AtomicBoolean(false)
@@ -33,15 +32,15 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private val randomTime: MutableStateFlow<List<Int>> = MutableStateFlow(emptyList())
     private var screenshotRepeatingTask: TimerTask? = null
     private var screenshotOneShotTask: TimerTask? = null
-
     @Volatile
     private var isPaused = false
-
     private var trackerTimerTask: TimerTask? = null
     private var idleTimerTask: TimerTask? = null
     private var trackerIndex = 0
     private val screenShotFrequency = 1
     private val screenshotLimit = 1
+    private var startTimeNanos: Long = 0L
+    private var idleStartTimeNanos: Long = 0L
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -59,12 +58,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         globalEventListener.registerListeners()
     }
 
-    private fun setRandomTimes(
-        randomTimes: MutableStateFlow<List<Int>>,
-        overallStart: Int,
-        overallEnd: Int,
-        numberOfIntervals: Int = 10
-    ) {
+    private fun setRandomTimes(randomTimes: MutableStateFlow<List<Int>>, overallStart: Int, overallEnd: Int, numberOfIntervals: Int = 10) {
         val totalDuration = overallEnd - overallStart
         if (totalDuration % numberOfIntervals != 0) {
             throw IllegalArgumentException("Interval length ($totalDuration) must be evenly divisible by $numberOfIntervals.")
@@ -80,12 +74,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun startTimer() {
         isTrackerRunning.value = true
         globalEventListener.registerListeners()
-        setRandomTimes(
-            randomTime,
-            overallStart = 0,
-            overallEnd = screenshotLimit * 60,
-            numberOfIntervals = screenShotFrequency
-        )
+        setRandomTimes(randomTime, 0, screenshotLimit * 60, screenShotFrequency)
         trackerIndex = 0
         viewModelScope.launch {
             globalEventListener.fKeyCount.collectLatest { count ->
@@ -106,36 +95,33 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             }
         }
         if (!isIdleTaskScheduled.getAndSet(true)) {
+            idleStartTimeNanos = System.nanoTime()
             idleTimerTask = object : TimerTask() {
                 override fun run() {
-                    idealTime.value += 1
+                    idealTime.value = (((System.nanoTime() - idleStartTimeNanos) / 1_000_000_000).toInt())
                 }
             }
             timer.scheduleAtFixedRate(idleTimerTask, 1000, 1000)
         }
+        startTimeNanos = System.nanoTime()
         if (!isTaskScheduled.getAndSet(true)) {
             trackerTimerTask = object : TimerTask() {
                 override fun run() {
                     if (isTrackerRunning.value) {
-                        trackerTime.value++
-                        if (trackerTime.value % 60 == 0) {
+                        val elapsedSeconds = ((System.nanoTime() - startTimeNanos) / 1_000_000_000).toInt()
+                        trackerTime.value = elapsedSeconds
+                        if (elapsedSeconds % 60 == 0) {
                             screenShotTakenTime.value++
                         }
-                        println("Current minute: ${(trackerTime.value % 3600) / 60}")
-                        println("Random times: ${randomTime.value}")
-                        if (trackerIndex < randomTime.value.size && trackerTime.value > randomTime.value[trackerIndex]) {
+                        println("Elapsed seconds: $elapsedSeconds")
+                        if (trackerIndex < randomTime.value.size && elapsedSeconds > randomTime.value[trackerIndex]) {
                             takeScreenShot()
                             trackerIndex++
                             if (trackerIndex == randomTime.value.size) {
-                                val overallStart = trackerTime.value
+                                val overallStart = elapsedSeconds
                                 val overallEnd = overallStart + (screenshotLimit * 60)
                                 trackerIndex = 0
-                                setRandomTimes(
-                                    randomTime,
-                                    overallStart,
-                                    overallEnd,
-                                    screenShotFrequency
-                                )
+                                setRandomTimes(randomTime, overallStart, overallEnd, screenShotFrequency)
                             }
                         }
                     }
@@ -148,6 +134,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun resetIdleTimer() {
         isIdealTimerRunning.value = false
         idealTime.value = 0
+        idleStartTimeNanos = System.nanoTime()
     }
 
     actual fun stopIdleTimer() {
@@ -155,6 +142,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual fun startIdleTimerClock() {
+        idleStartTimeNanos = System.nanoTime()
         isIdealTimerRunning.value = true
     }
 
