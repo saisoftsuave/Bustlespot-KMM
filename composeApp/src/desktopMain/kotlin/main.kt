@@ -7,7 +7,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import org.softsuave.bustlespot.App
+import com.mmk.kmpnotifier.notification.NotifierManager
+import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.softsuave.bustlespot.di.initKoin
 import java.awt.Dimension
 
@@ -15,6 +16,12 @@ fun main() = application {
     Runtime.getRuntime().addShutdownHook(Thread {
         // clean up logic
     })
+
+    NotifierManager.initialize(
+        NotificationPlatformConfiguration.Desktop(
+            showPushNotification = true
+        )
+    )
     initKoin()
     Window(
         title = "Bustlespot",

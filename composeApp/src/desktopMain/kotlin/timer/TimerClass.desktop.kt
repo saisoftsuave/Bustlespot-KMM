@@ -2,14 +2,19 @@ package org.softsuave.bustlespot.timer
 
 import GlobalEventListener
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.toAwtImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.softsuave.bustlespot.notifications.sendLocalNotification
+import java.awt.image.BufferedImage
+import java.io.File
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.imageio.ImageIO
 import kotlin.random.Random
 
 actual class TrackerModule actual constructor(private val viewModelScope: CoroutineScope) {
@@ -118,9 +123,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                 override fun run() {
                     if (isTrackerRunning.value) {
                         trackerTime.value++
-                        if (trackerTime.value % 60 == 0) {
-                            screenShotTakenTime.value++
-                        }
+                        // need to add initial ideal time
+                        screenShotTakenTime.value++
                         println("Current minute: ${(trackerTime.value % 3600) / 60}")
                         println("Random times: ${randomTime.value}")
                         if (trackerIndex < randomTime.value.size && trackerTime.value > randomTime.value[trackerIndex]) {
@@ -160,6 +164,13 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     fun takeScreenShot() {
         screenShot.value = org.softsuave.bustlespot.screenshot.takeScreenShot()
+        val bufferedImage: BufferedImage? = screenShot.value?.toAwtImage()
+        val file = File(System.getProperty("java.io.tmpdir"), "sampleFile")
+        ImageIO.write(bufferedImage, "png", file)
+        sendLocalNotification(
+            "Bustle-spot Remainder",
+            "Captured screen-shot", file.absolutePath
+        )
         screenShotTakenTime.value = 0
     }
 
