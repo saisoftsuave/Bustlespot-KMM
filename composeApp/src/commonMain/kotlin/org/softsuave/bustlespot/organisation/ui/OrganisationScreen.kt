@@ -157,17 +157,6 @@ fun OrganisationScreen(
             UiEvent.Loading -> {
                 LoadingScreen()
             }
-
-            null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "No data to display", color = Color.Gray)
-                }
-            }
         }
         when (logOutEvent) {
             is UiEvent.Failure -> {
