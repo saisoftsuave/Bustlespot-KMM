@@ -17,7 +17,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -99,7 +98,6 @@ fun TrackerScreen(
 
     // Local UI states.
     var showIdleDialog by remember { mutableStateOf(false) }
-    var isExitClicked by remember { mutableStateOf(false) }
 
 
     val totalIdleTime by homeViewModel.totalIdleTime.collectAsState()
@@ -111,7 +109,7 @@ fun TrackerScreen(
     LaunchedEffect(idleTime) {
         if (idleTime > customeTimeForIdleTime && !showIdleDialog) {
             onFocusReceived.invoke()
-            homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.showIdleTimeDialog)
+            homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.ShowIdleTimeDialog)
 //            showIdleDialog = true
             homeViewModel.stopTrackerTimer()
             homeViewModel.updateTrackerTimer()
@@ -131,10 +129,11 @@ fun TrackerScreen(
                 title = { Text(text = organisationName) },
                 onNavigationBackClick = {
                     if (isTrackerRunning) {
-//                        isExitClicked = true
-                        homeViewModel.handleTrackerDialogEvents(TrackerDialogEvents.showExitDialog) {
-                            navController.popBackStack()
-                        }
+                        homeViewModel.handleTrackerDialogEvents(
+                            TrackerDialogEvents.ShowExitDialog,
+                            handleNavAction = {
+                                navController.popBackStack()
+                            })
                     } else {
                         navController.popBackStack()
                     }
@@ -148,9 +147,7 @@ fun TrackerScreen(
         containerColor = Color.White,
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize().padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -160,8 +157,7 @@ fun TrackerScreen(
                     LaunchedEffect(uiEvent) {
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                (uiEvent as UiEvent.Failure).error,
-                                actionLabel = "Retry"
+                                (uiEvent as UiEvent.Failure).error, actionLabel = "Retry"
                             )
                         }
                     }
@@ -176,25 +172,22 @@ fun TrackerScreen(
                 }
 
                 is UiEvent.Success -> {
-                    DropDownSelectionList(
-                        title = "Project",
+                    DropDownSelectionList(title = "Project",
                         dropDownList = projectDropDownState.dropDownList,
                         onItemClick = { selectedItem ->
-                            if (selectedProject != null && isTrackerRunning) {
+                            if (selectedProject == null && !isTrackerRunning) {
                                 homeViewModel.handleDropDownEvents(
                                     DropDownEvents.OnProjectSelection(selectedItem as Project)
                                 )
                             } else {
                                 homeViewModel.handleTrackerDialogEvents(
-                                    TrackerDialogEvents.showProjectChangeDialog(
+                                    TrackerDialogEvents.ShowProjectChangeDialog(
                                         selectedItem as Project
                                     )
                                 )
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth(0.85f)
-                            .padding(vertical = 8.dp),
+                        modifier = Modifier.fillMaxWidth(0.85f).padding(vertical = 8.dp),
                         error = projectDropDownState.errorMessage,
                         onDropDownClick = {
                             homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectDropDownClick)
@@ -209,29 +202,25 @@ fun TrackerScreen(
                         },
                         onNoOptionClick = {
                             homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectSearch(""))
-                        }
-                    )
+                        })
 
 
-                    DropDownSelectionList(
-                        title = "Task",
+                    DropDownSelectionList(title = "Task",
                         dropDownList = taskDropDownState.dropDownList,
                         onItemClick = { selectedItem ->
-                            if (selectedTask != null && isTrackerRunning) {
+                            if (selectedTask == null && !isTrackerRunning) {
                                 homeViewModel.handleDropDownEvents(
                                     DropDownEvents.OnTaskSelection(selectedItem as TaskData)
                                 )
                             } else {
                                 homeViewModel.handleTrackerDialogEvents(
-                                    TrackerDialogEvents.showTaskChangeDialog(
+                                    TrackerDialogEvents.ShowTaskChangeDialog(
                                         selectedItem as TaskData
                                     )
                                 )
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth(0.85f)
-                            .padding(vertical = 8.dp),
+                        modifier = Modifier.fillMaxWidth(0.85f).padding(vertical = 8.dp),
                         error = taskDropDownState.errorMessage,
                         isEnabled = taskDropDownState.dropDownList.isNotEmpty(),
                         onDropDownClick = {
@@ -247,8 +236,7 @@ fun TrackerScreen(
                         },
                         onNoOptionClick = {
                             homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskSearch(""))
-                        }
-                    )
+                        })
 
                     TimerSessionSection(
                         trackerTimer = trackerTimer,
@@ -286,8 +274,7 @@ fun TrackerScreen(
                         }*/
 
             if (trackerDialogState.isDialogShown) {
-                CustomAlertDialog(
-                    title = trackerDialogState.title,
+                CustomAlertDialog(title = trackerDialogState.title,
                     text = trackerDialogState.text,
                     confirmButton = {
                         TextButton(
@@ -328,58 +315,8 @@ fun TrackerScreen(
                         ) {
                             Text(trackerDialogState.dismissButtonText)
                         }
-                    }
-                )
+                    })
             }
-        }
-
-        if (isExitClicked) {
-            CustomAlertDialog(
-                title = "Quit",
-                text = "Tracker is going to stop",
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            isExitClicked = false
-                            homeViewModel.stopTrackerTimer()
-                            navController.popBackStack()
-                        },
-                        colors = ButtonColors(
-                            containerColor = Color.Red,
-                            contentColor = Color.White,
-                            disabledContainerColor = Color.Gray,
-                            disabledContentColor = Color.Black
-                        ),
-                        shape = RoundedCornerShape(5.dp),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 5.dp,
-                            focusedElevation = 7.dp,
-                        )
-                    ) {
-                        Text("Okay")
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            isExitClicked = false
-                        },
-                        colors = ButtonColors(
-                            containerColor = Color.White,
-                            contentColor = Color.Red,
-                            disabledContainerColor = Color.Gray,
-                            disabledContentColor = Color.Black
-                        ),
-                        shape = RoundedCornerShape(5.dp),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 5.dp,
-                            focusedElevation = 7.dp,
-                        )
-                    ) {
-                        Text("Cancel")
-                    }
-                }
-            )
         }
     }
 }
@@ -420,61 +357,48 @@ fun DropDownSelectionList(
     }
 
     Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
+        modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TextField(
-            value = inputText,
-            onValueChange = {
-                onSearchText(it)
-                isMenuExpanded = true
-                hasNotifiedOnOpen = true
-            },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                IconButton(onClick = {
-                    onDropDownClick()
-                    if (!isMenuExpanded && isEnabled) {
-                        isMenuExpanded = true
-                        // Only call onDropDownClick if we haven't already for this open cycle.
-                        if (!hasNotifiedOnOpen) {
-                            hasNotifiedOnOpen = true
-                        }
-                    } else {
-                        // Close the dropdown and reset our notification flag.
-                        isMenuExpanded = false
-                        hasNotifiedOnOpen = false
+        TextField(value = inputText, onValueChange = {
+            onSearchText(it)
+            isMenuExpanded = true
+            hasNotifiedOnOpen = true
+        }, singleLine = true, modifier = Modifier.fillMaxWidth(), trailingIcon = {
+            IconButton(onClick = {
+                onDropDownClick()
+                if (!isMenuExpanded && isEnabled) {
+                    isMenuExpanded = true
+                    // Only call onDropDownClick if we haven't already for this open cycle.
+                    if (!hasNotifiedOnOpen) {
+                        hasNotifiedOnOpen = true
                     }
-                    println("icon clicked")
-                }) {
-                    Icon(
-                        painter = painterResource(
-                            if (isMenuExpanded) Res.drawable.ic_drop_up else Res.drawable.ic_drop_down
-                        ),
-                        contentDescription = "Toggle Dropdown"
-                    )
+                } else {
+                    // Close the dropdown and reset our notification flag.
+                    isMenuExpanded = false
+                    hasNotifiedOnOpen = false
                 }
-            },
-            label = {
-                Text(
-                    text = title,
-                    color = Color.Red,
-                    modifier = Modifier.fillMaxWidth()
+                println("icon clicked")
+            }) {
+                Icon(
+                    painter = painterResource(
+                        if (isMenuExpanded) Res.drawable.ic_drop_up else Res.drawable.ic_drop_down
+                    ), contentDescription = "Toggle Dropdown"
                 )
-            },
-            supportingText = {
-                if (error?.isNotEmpty() == true) {
-                    Text(text = error, color = Color.Red)
-                }
-            },
-            colors = TextFieldDefaults.colors(
-                disabledContainerColor = Color.White,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Red,
-            ),
-            isError = error?.isNotEmpty() ?: false
+            }
+        }, label = {
+            Text(
+                text = title, color = Color.Red, modifier = Modifier.fillMaxWidth()
+            )
+        }, supportingText = {
+            if (error?.isNotEmpty() == true) {
+                Text(text = error, color = Color.Red)
+            }
+        }, colors = TextFieldDefaults.colors(
+            disabledContainerColor = Color.White,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
+            focusedIndicatorColor = Color.Red,
+        ), isError = error?.isNotEmpty() ?: false
         )
         DropdownMenu(
             expanded = isMenuExpanded && hasNotifiedOnOpen && isEnabled,
@@ -491,49 +415,39 @@ fun DropDownSelectionList(
                 filteredList.forEach { item ->
                     when (item) {
                         is Project -> {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = item.projectName,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
-                                    onItemClick(item)
-                                },
-                                modifier = Modifier.background(Color.White)
+                            DropdownMenuItem(text = {
+                                Text(
+                                    text = item.projectName, modifier = Modifier.fillMaxWidth()
+                                )
+                            }, onClick = {
+                                isMenuExpanded = false
+                                onItemClick(item)
+                            }, modifier = Modifier.background(Color.White)
                             )
                         }
 
                         is TaskData -> {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(text = item.taskName, modifier = Modifier.fillMaxWidth())
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
-                                    onItemClick(item)
-                                },
-                                modifier = Modifier.background(Color.White)
+                            DropdownMenuItem(text = {
+                                Text(text = item.taskName, modifier = Modifier.fillMaxWidth())
+                            }, onClick = {
+                                isMenuExpanded = false
+                                onItemClick(item)
+                            }, modifier = Modifier.background(Color.White)
                             )
                         }
                     }
                 }
             } else {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = "No Options",
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Color.Gray
-                        )
-                    },
-                    onClick = {
-                        isMenuExpanded = false
-                        onNoOptionClick()
-                    },
-                    modifier = Modifier.background(Color.White)
+                DropdownMenuItem(text = {
+                    Text(
+                        text = "No Options",
+                        modifier = Modifier.fillMaxWidth(),
+                        color = Color.Gray
+                    )
+                }, onClick = {
+                    isMenuExpanded = false
+                    onNoOptionClick()
+                }, modifier = Modifier.background(Color.White)
                 )
             }
         }
@@ -554,12 +468,10 @@ fun TimerSessionSection(
 ) {
     var isPlaying by remember { mutableStateOf(false) }
     Column(
-        modifier = modifier.fillMaxWidth(0.85f),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = modifier.fillMaxWidth(0.85f), verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = "Current Session",
@@ -574,7 +486,7 @@ fun TimerSessionSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (isPlaying) taskName else "",
+                text = if (isTrackerRunning) taskName else "",
                 color = Color.Red,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
@@ -583,30 +495,33 @@ fun TimerSessionSection(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(
-                    modifier = Modifier,
-                    onClick = {
-                        isPlaying = !isPlaying
-                        if (isPlaying) {
-                            if (isTrackerRunning || homeViewModel.trackerTime.value != 0) {
-                                homeViewModel.resumeTrackerTimer()
-                            } else {
-                                homeViewModel.startTrackerTimer()
-                            }
-                        } else {
-                            if (isTrackerRunning) {
-                                homeViewModel.stopTrackerTimer()
-                            } else {
-                                homeViewModel.resetTrackerTimer()
-                            }
-                        }
+                IconButton(modifier = Modifier, onClick = {
+//                    isPlaying = !isPlaying
+//                    if (isTrackerRunning) {
+//                        if (isTrackerRunning || homeViewModel.trackerTime.value != 0) {
+//                            homeViewModel.resumeTrackerTimer()
+//                        } else {
+//                            homeViewModel.startTrackerTimer()
+//                        }
+//                    } else {
+//                        if (isTrackerRunning) {
+//                            homeViewModel.stopTrackerTimer()
+//                        } else {
+//                            homeViewModel.resetTrackerTimer()
+//                        }
+//                    }
+
+                    if(isTrackerRunning){
+                        homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
+                    }else{
+                        homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
                     }
-                ) {
+                }) {
                     Icon(
                         painter = painterResource(
-                            if (isPlaying) Res.drawable.ic_pause_circle else Res.drawable.ic_play_arrow
+                            if (isTrackerRunning) Res.drawable.ic_pause_circle else Res.drawable.ic_play_arrow
                         ),
-                        contentDescription = if (isPlaying) "Pause" else "Play",
+                        contentDescription = if (isTrackerRunning) "Pause" else "Play",
                         modifier = Modifier.size(24.dp),
                     )
                 }
@@ -622,17 +537,13 @@ fun TimerSessionSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "IdleTime",
-                color = Color.Red,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                text = "IdleTime", color = Color.Red, fontSize = 15.sp, fontWeight = FontWeight.Bold
             )
             Text(
                 text = secondsToTimeFormat(idleTime),
                 color = Color.Black,
             )
-        }
-        /*        Row(
+        }/*        Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -676,9 +587,7 @@ fun ScreenShotSection(
     imageBitmap: ImageBitmap? = imageResource(Res.drawable.screen)
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth(0.85f)
-            .padding(top = 16.dp)
+        modifier = modifier.fillMaxWidth(0.85f).padding(top = 16.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),

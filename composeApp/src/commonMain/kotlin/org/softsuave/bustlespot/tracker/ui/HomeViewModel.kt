@@ -1,6 +1,5 @@
 package org.softsuave.bustlespot.tracker.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -169,15 +168,22 @@ class HomeViewModel(
             }
 
             is DropDownEvents.OnTaskSearch -> {
-                _taskDropDownState.value = _taskDropDownState.value.copy(
-                    inputText = dropDownEvents.inputText
-                )
+                if (dropDownEvents.inputText.isNotEmpty()) {
+                    _taskDropDownState.value = _taskDropDownState.value.copy(
+                        inputText = dropDownEvents.inputText
+                    )
+                }
                 if (dropDownEvents.inputText.isEmpty()) {
-                    _selectedTask.value = null
+                    if (!isTrackerRunning.value) {
+                        _selectedTask.value = null
+                        _taskDropDownState.value = _taskDropDownState.value.copy(
+                            inputText = dropDownEvents.inputText
+                        )
+                    }
                 }
                 if (_selectedProject.value == null) {
                     _projectDropDownState.value = _projectDropDownState.value.copy(
-                        errorMessage = "Please select the project first"
+                        errorMessage = "Please select the a project"
                     )
                 }
             }
@@ -197,7 +203,7 @@ class HomeViewModel(
             is DropDownEvents.OnTaskDropDownClick -> {
                 if (_selectedProject.value == null) {
                     _projectDropDownState.value = _projectDropDownState.value.copy(
-                        errorMessage = "Please select the project first"
+                        errorMessage = "Please select the a project"
                     )
                 } else {
                     _projectDropDownState.value =
@@ -215,7 +221,7 @@ class HomeViewModel(
         handleNavAction: () -> Unit = {}
     ) {
         when (trackerDialogEvents) {
-            TrackerDialogEvents.showExitDialog -> {
+            TrackerDialogEvents.ShowExitDialog -> {
                 _trackerDialogState.value = _trackerDialogState.value.copy(
                     isDialogShown = true,
                     title = "Exit",
@@ -237,7 +243,7 @@ class HomeViewModel(
                 )
             }
 
-            is TrackerDialogEvents.showIdleTimeDialog -> {
+            is TrackerDialogEvents.ShowIdleTimeDialog -> {
                 _trackerDialogState.value = _trackerDialogState.value.copy(
                     isDialogShown = true,
                     title = "IdleTime",
@@ -264,7 +270,7 @@ class HomeViewModel(
 
             }
 
-            is TrackerDialogEvents.showProjectChangeDialog -> {
+            is TrackerDialogEvents.ShowProjectChangeDialog -> {
                 _trackerDialogState.value = _trackerDialogState.value.copy(
                     isDialogShown = true,
                     title = "Alert",
@@ -275,7 +281,7 @@ class HomeViewModel(
                         _trackerDialogState.value = _trackerDialogState.value.copy(
                             isDialogShown = false
                         )
-                        stopTrackerTimer()
+                        resetTrackerTimer()
                         handleDropDownEvents(DropDownEvents.OnProjectSelection(trackerDialogEvents.selectedProject))
                     },
                     onDismiss = {
@@ -286,7 +292,7 @@ class HomeViewModel(
                 )
             }
 
-            is TrackerDialogEvents.showTaskChangeDialog -> {
+            is TrackerDialogEvents.ShowTaskChangeDialog -> {
                 _trackerDialogState.value = _trackerDialogState.value.copy(
                     isDialogShown = true,
                     title = "Alert",
@@ -297,7 +303,7 @@ class HomeViewModel(
                         _trackerDialogState.value = _trackerDialogState.value.copy(
                             isDialogShown = false
                         )
-                        stopTrackerTimer()
+                        resetTrackerTimer()
                         handleDropDownEvents(DropDownEvents.OnTaskSelection(trackerDialogEvents.selectedTask))
                     },
                     onDismiss = {
@@ -308,7 +314,7 @@ class HomeViewModel(
                 )
             }
 
-            TrackerDialogEvents.showTrackerAlertDialog -> {
+            TrackerDialogEvents.ShowTrackerAlertDialog -> {
                 TODO()
             }
         }
@@ -320,6 +326,48 @@ class HomeViewModel(
                 TODO()
             }
         }
+    }
+
+    fun handleTrackerTimerEvents(timerEvents: TimerEvents) {
+        when (timerEvents) {
+            TimerEvents.FetchTime -> TODO()
+            TimerEvents.PauseTimer -> TODO()
+            TimerEvents.ResetTimer -> TODO()
+            TimerEvents.StartTimer -> {
+                if (trackerTime.value != 0) {
+                    resumeTrackerTimer()
+                } else {
+
+                    if (checkTaskAndProject()) startTrackerTimer()
+                }
+            }
+
+            TimerEvents.StopTimer -> {
+                stopTrackerTimer()
+            }
+
+            TimerEvents.UpdateTime -> TODO()
+
+            TimerEvents.ResumeTimer -> {
+                resumeTrackerTimer()
+            }
+        }
+    }
+
+    fun checkTaskAndProject(): Boolean {
+        if (_selectedProject.value == null) {
+            _projectDropDownState.value = _projectDropDownState.value.copy(
+                errorMessage = "Please select the a project"
+            )
+        }
+        if (_selectedTask.value == null) {
+            _taskDropDownState.value = _taskDropDownState.value.copy(
+                errorMessage = "Please select the a task"
+            )
+            return false
+        }
+
+        return true
     }
 }
 
@@ -356,18 +404,31 @@ data class TrackerDialogState(
 )
 
 sealed class TrackerDialogEvents {
-    data object showExitDialog : TrackerDialogEvents()
-    data object showIdleTimeDialog : TrackerDialogEvents()
-    data class showProjectChangeDialog(val selectedProject: Project) : TrackerDialogEvents()
-    data class showTaskChangeDialog(val selectedTask: TaskData) : TrackerDialogEvents()
+    data object ShowExitDialog : TrackerDialogEvents()
+    data object ShowIdleTimeDialog : TrackerDialogEvents()
+    data class ShowProjectChangeDialog(val selectedProject: Project) : TrackerDialogEvents()
+    data class ShowTaskChangeDialog(val selectedTask: TaskData) : TrackerDialogEvents()
 
     //    data object showExitDialog : TrackerDialogEvents()
 //    data object showProjectChangeDialog : TrackerDialogEvents()
 //    data object showTaskChangeDialog : TrackerDialogEvents()
     // no confirmed design
-    data object showTrackerAlertDialog : TrackerDialogEvents()
+    data object ShowTrackerAlertDialog : TrackerDialogEvents()
 }
 
 sealed class TrackerScreenEvents {
     data object OnExitClick : TrackerScreenEvents()
+}
+
+
+sealed class TimerEvents {
+    data object StartTimer : TimerEvents()
+    data object StopTimer : TimerEvents()
+    data object ResetTimer : TimerEvents()
+    data object PauseTimer : TimerEvents()
+    data object ResumeTimer : TimerEvents()
+
+    // ambitious
+    data object UpdateTime : TimerEvents()
+    data object FetchTime : TimerEvents()
 }

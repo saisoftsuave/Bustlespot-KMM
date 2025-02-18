@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.notifications.sendLocalNotification
 import java.awt.image.BufferedImage
 import java.io.File
@@ -55,11 +56,13 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual fun stopTimer() {
+        Log.d("stopTimer")
         isTrackerRunning.value = false
         globalEventListener.unregisterListeners()
     }
 
     actual fun resumeTracker() {
+        Log.d("resumeTracker")
         isTrackerRunning.value = true
         globalEventListener.registerListeners()
     }
@@ -83,6 +86,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual fun startTimer() {
+        Log.d("startTimer")
         isTrackerRunning.value = true
         globalEventListener.registerListeners()
         setRandomTimes(
