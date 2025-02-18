@@ -140,9 +140,20 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.softsuave.bustlespot"
             packageVersion = "1.0.0"
+
             windows {
+//                targetFormats(TargetFormat.Exe) Exe if needed
+                menu = true
+                menuGroup = "KMMDev"
+                upgradeUuid = "123e4567-e89b-12d3-a456-426614174010" // Unique ID for the installer
                 iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_windows.ico"))
+                perUserInstall = false
+                shortcut = true
+
             }
+
+
+
             // macOS configuration
             macOS {
                 bundleID = "org.softsuave.bustlespot.app"
