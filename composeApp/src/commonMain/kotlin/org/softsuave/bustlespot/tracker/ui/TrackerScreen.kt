@@ -49,6 +49,10 @@ import bustlespot.composeapp.generated.resources.ic_pause_circle
 import bustlespot.composeapp.generated.resources.ic_play_arrow
 import bustlespot.composeapp.generated.resources.screen
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.imageResource
+import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
@@ -58,10 +62,6 @@ import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.organisation.ui.BustleSpotAppBar
-import org.jetbrains.compose.resources.imageResource
-import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.annotation.KoinExperimentalAPI
 
 @OptIn(KoinExperimentalAPI::class)
 @Composable
@@ -69,6 +69,7 @@ fun TrackerScreen(
     navController: NavHostController,
     modifier: Modifier = Modifier,
     organisationName: String,
+    organisationId: String,
     onFocusReceived: () -> Unit = {}
 ) {
     val homeViewModel = koinViewModel<HomeViewModel>()
@@ -116,10 +117,20 @@ fun TrackerScreen(
         }
     }
 
-    // Launch fetching projects and tasks when the screen starts.
     LaunchedEffect(key1 = Unit) {
-        homeViewModel.getAllProjects()
-        homeViewModel.getAllTasks()
+        homeViewModel.getAllProjects(
+            organisationId = organisationId
+        )
+    }
+    LaunchedEffect(
+        key1 = selectedProject
+    ) {
+        selectedProject?.projectId?.toString()?.let {
+            homeViewModel.getAllTasks(
+                organisationId = organisationId,
+                projectId = it
+            )
+        }
     }
 
     Scaffold(
@@ -245,7 +256,7 @@ fun TrackerScreen(
                         mouseCount = mouseCount,
                         idleTime = totalIdleTime,
                         isTrackerRunning = isTrackerRunning,
-                        taskName = selectedTask?.taskName ?: ""
+                        taskName = selectedTask?.name ?: ""
                     )
 
                     ScreenShotSection(
@@ -348,8 +359,8 @@ fun DropDownSelectionList(
         derivedStateOf {
             dropDownList.filter {
                 when (it) {
-                    is Project -> it.projectName.contains(inputText, ignoreCase = true)
-                    is TaskData -> it.taskName.contains(inputText, ignoreCase = true)
+                    is Project -> it.name.contains(inputText, ignoreCase = true)
+                    is TaskData -> it.name.contains(inputText, ignoreCase = true)
                     else -> true
                 }
             }
@@ -417,7 +428,7 @@ fun DropDownSelectionList(
                         is Project -> {
                             DropdownMenuItem(text = {
                                 Text(
-                                    text = item.projectName, modifier = Modifier.fillMaxWidth()
+                                    text = item.name, modifier = Modifier.fillMaxWidth()
                                 )
                             }, onClick = {
                                 isMenuExpanded = false
@@ -428,7 +439,7 @@ fun DropDownSelectionList(
 
                         is TaskData -> {
                             DropdownMenuItem(text = {
-                                Text(text = item.taskName, modifier = Modifier.fillMaxWidth())
+                                Text(text = item.name, modifier = Modifier.fillMaxWidth())
                             }, onClick = {
                                 isMenuExpanded = false
                                 onItemClick(item)
@@ -511,9 +522,9 @@ fun TimerSessionSection(
 //                        }
 //                    }
 
-                    if(isTrackerRunning){
+                    if (isTrackerRunning) {
                         homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
-                    }else{
+                    } else {
                         homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
                     }
                 }) {

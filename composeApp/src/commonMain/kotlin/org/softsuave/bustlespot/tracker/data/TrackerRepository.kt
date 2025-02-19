@@ -7,11 +7,12 @@ import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.data.network.models.request.ActivityDto
 import org.softsuave.bustlespot.data.network.models.response.ActivityResponseDto
 import org.softsuave.bustlespot.data.network.models.response.GetAllActivities
+import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
 
 interface TrackerRepository {
-    fun getAllProjects() : Flow<Result<GetAllProjects>>
+    fun getAllProjects(organisationId : String) : Flow<Result<GetAllProjects>>
 
-    fun getAllTask() : Flow<Result<GetAllTasks>>
+    fun getAllTask(getTasksRequest: GetTasksRequest) : Flow<Result<GetAllTasks>>
 
     fun postUserActivity(activityDto: ActivityDto): Flow<Result<ActivityResponseDto>>
 

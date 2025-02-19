@@ -73,11 +73,13 @@ class OrganisationViewModel(
         viewModelScope.launch {
             signOutUseCase.invoke().collect { result ->
                 when (result) {
+
                     is Result.Error -> {
+                        _showLogOutDialog.value = false
                         _logOutEvent.value = UiEvent.Failure(result.message ?: "Unknown Error")
                     }
 
-                    Result.Loading -> {
+                   is Result.Loading -> {
                         _logOutEvent.value = UiEvent.Loading
                     }
 

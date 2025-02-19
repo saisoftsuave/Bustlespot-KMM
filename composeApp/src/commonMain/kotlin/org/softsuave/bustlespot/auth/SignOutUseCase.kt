@@ -11,8 +11,10 @@ import org.softsuave.bustlespot.data.network.models.response.SignOutResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.utils.EmptyContent.contentType
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
@@ -26,10 +28,9 @@ class SignOutUseCase(
     private val sessionManager: SessionManager
 ){
     operator fun invoke(): Flow<Result<SignOutResponseDto>> = flow {
-        sessionManager.clearSession()
         try {
             emit(Result.Loading)
-            val response: HttpResponse = httpClient.post("$BASEURL${APIEndpoints.SIGNOUT}") {
+            val response: HttpResponse = httpClient.get("$BASEURL${APIEndpoints.SIGNOUT}") {
                 contentType(ContentType.Application.Json)
                 bearerAuth(sessionManager.accessToken)
             }

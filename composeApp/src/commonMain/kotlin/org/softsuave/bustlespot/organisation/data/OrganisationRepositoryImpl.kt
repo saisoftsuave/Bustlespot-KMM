@@ -4,9 +4,10 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.realm.kotlin.ext.query
 import io.ktor.http.*
 import io.realm.kotlin.Realm
+import io.realm.kotlin.ext.query
+import io.realm.kotlin.ext.toRealmList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.SessionManager
+import org.softsuave.bustlespot.auth.signin.data.BaseResponse
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.data.local.realme.objects.OrganisationObj
 import org.softsuave.bustlespot.data.local.toLocal
@@ -37,7 +39,7 @@ class OrganisationRepositoryImpl(
         val localData = getLocalOrganisations()
         if (localData.isNotEmpty()) {
             Log.d("data from Realm")
-            emit(Result.Success(GetAllOrganisations(listOfOrganisations = localData, message = "")))
+            emit(Result.Success(GetAllOrganisations(listOfOrganisations = localData)))
         }
 
         // 2. Attempt to fetch from the API and update the local database
@@ -48,14 +50,13 @@ class OrganisationRepositoryImpl(
             }
 
             if (response.status == HttpStatusCode.OK) {
-                val result: GetAllOrganisations = response.body()
+                val result: BaseResponse<GetAllOrganisations> = response.body()
                 // Update local database with fresh data
-                saveOrganisationsToLocal(result)
-                emit(Result.Success(result))
+                saveOrganisationsToLocal(result.data ?: GetAllOrganisations(listOf()))
+                emit(Result.Success(result.data ?: GetAllOrganisations(listOf()) ) )
             } else {
-                val res: ErrorResponse = response.body()
-                println(res)
-                emit(Result.Error("Failed to fetch organisations: ${response.status}"))
+                val res: BaseResponse<ErrorResponse> = response.body()
+                emit(Result.Error("${res.message}"))
             }
         } catch (e: Exception) {
             emit(Result.Error(e.message ?: "Unknown error"))
@@ -78,10 +79,14 @@ class OrganisationRepositoryImpl(
                 deleteAll()
                 data.listOfOrganisations.forEach { org ->
                     copyToRealm(OrganisationObj().apply {
+                        name = org.name
                         organisationId = org.organisationId
-                        organisationName = org.organisationName
-                        organisationDescription = org.organisationDescription
-                        isDeleted = org.isDeleted
+                        image = org.image
+                        roleId = org.roleId
+                        enableScreenshot = org.enableScreenshot
+                        description = org.description
+                        role = org.role
+                        otherRoleIds = org.otherRoleIds.toRealmList()
                     })
                 }
                 Log.d("saved orgs to realme")

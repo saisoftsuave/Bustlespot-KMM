@@ -6,8 +6,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GetAllTasks(
-    @SerialName("data")
-    val taskList: List<TaskData>,
-    @SerialName("message")
-    val message: String
+    val taskDetails: List<TaskData>
 )

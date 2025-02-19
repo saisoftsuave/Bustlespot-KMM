@@ -1,8 +1,6 @@
 package org.softsuave.bustlespot.auth.signin.data
 
-import org.softsuave.bustlespot.auth.utils.Result
-import org.softsuave.bustlespot.data.network.APIEndpoints
-import org.softsuave.bustlespot.data.network.BASEURL
+
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -14,6 +12,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.softsuave.bustlespot.auth.utils.Result
+import org.softsuave.bustlespot.data.network.APIEndpoints
+import org.softsuave.bustlespot.data.network.BASEURL
+import org.softsuave.bustlespot.data.network.models.response.ErrorResponse
 
 
 class SignInRepositoryImpl(
@@ -39,7 +41,7 @@ class SignInRepositoryImpl(
         }
     }
 
-    override fun signIn(email: String, password: String): Flow<Result<SignInResponse>> = flow {
+    override fun signIn(email: String, password: String): Flow<Result<User>> = flow {
         try {
             emit(Result.Loading)
             val response: HttpResponse = httpClient.post("$BASEURL${APIEndpoints.SIGNIN}") {
@@ -53,10 +55,11 @@ class SignInRepositoryImpl(
             }
 
             if (response.status == HttpStatusCode.OK) {
-                val result: SignInResponse = response.body() // Deserialize the response body
-                emit(Result.Success(result))
+                val result: BaseResponse<User> = response.body()
+                emit(Result.Success(result.data ?: User()))
             } else {
-                emit(Result.Error("Failed to sign in: ${response.status}"))
+                val errorResponse: BaseResponse<ErrorResponse> = response.body()
+                emit(Result.Error("${errorResponse.message}"))
             }
         } catch (e: Exception) {
             emit(Result.Error(e.message))

@@ -3,8 +3,17 @@ package org.softsuave.bustlespot.organisation.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -12,36 +21,54 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarColors
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavController
 import bustlespot.composeapp.generated.resources.Res
 import bustlespot.composeapp.generated.resources.compose_multiplatform
 import bustlespot.composeapp.generated.resources.ic_logout
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.softsuave.bustlespot.SessionManager
-import org.softsuave.bustlespot.auth.navigation.Home
-import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
-import org.softsuave.bustlespot.auth.utils.LoadingScreen
-import org.softsuave.bustlespot.auth.utils.UiEvent
-import org.softsuave.bustlespot.data.network.models.response.Organisation
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.softsuave.bustlespot.SessionManager
+import org.softsuave.bustlespot.auth.navigation.Home
+import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
+import org.softsuave.bustlespot.auth.utils.LoadingScreen
+import org.softsuave.bustlespot.auth.utils.UiEvent
+import org.softsuave.bustlespot.data.network.models.response.Organisation
 
 
 @Composable
@@ -86,50 +113,50 @@ fun OrganisationScreen(
         containerColor = Color.White,
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { paddingValues ->
-            if (showLogOutDialog) {
-                CustomAlertDialog(
-                    title = "Log Out",
-                    text = "Are you sure you want to log out?",
-                    dismissButton = {
-                        Button(
-                            onClick = {
-                                organisationViewModel.logOutDisMissed()
-                            }, colors = ButtonColors(
-                                containerColor = Color.White,
-                                contentColor = Color.Red,
-                                disabledContainerColor = Color.Gray,
-                                disabledContentColor = Color.Black
-                            ),
-                            shape = RoundedCornerShape(5.dp),
-                            elevation = ButtonDefaults.buttonElevation(
-                                defaultElevation = 5.dp,
-                                focusedElevation = 7.dp,
-                            )
-                        ) {
-                            Text("Cancel")
-                        }
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                organisationViewModel.performLogOut()
-                            }, colors = ButtonColors(
-                                containerColor = Color.Red,
-                                contentColor = Color.White,
-                                disabledContainerColor = Color.Gray,
-                                disabledContentColor = Color.Black
-                            ),
-                            shape = RoundedCornerShape(5.dp),
-                            elevation = ButtonDefaults.buttonElevation(
-                                defaultElevation = 5.dp,
-                                focusedElevation = 7.dp,
-                            )
-                        ) {
-                            Text("Logout")
-                        }
+        if (showLogOutDialog) {
+            CustomAlertDialog(
+                title = "Log Out",
+                text = "Are you sure you want to log out?",
+                dismissButton = {
+                    Button(
+                        onClick = {
+                            organisationViewModel.logOutDisMissed()
+                        }, colors = ButtonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Red,
+                            disabledContainerColor = Color.Gray,
+                            disabledContentColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(5.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 5.dp,
+                            focusedElevation = 7.dp,
+                        )
+                    ) {
+                        Text("Cancel")
                     }
-                )
-            }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            organisationViewModel.performLogOut()
+                        }, colors = ButtonColors(
+                            containerColor = Color.Red,
+                            contentColor = Color.White,
+                            disabledContainerColor = Color.Gray,
+                            disabledContentColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(5.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 5.dp,
+                            focusedElevation = 7.dp,
+                        )
+                    ) {
+                        Text("Logout")
+                    }
+                }
+            )
+        }
         when (uiEvent) {
             is UiEvent.Success -> {
                 Box(
@@ -211,12 +238,15 @@ fun OrganizationList(organizations: List<Organisation>?, navController: NavContr
             items(organizations) { organization ->
                 OrganizationItem(
                     logoResource = Res.drawable.compose_multiplatform,
-                    organizationName = organization.organisationName,
+                    organizationName = organization.name,
                     onClick = {
                         navController.navigate(
-                            route = "${Home.Tracker.route}/{orgId}".replace(
+                            route = "${Home.Tracker.route}/{orgId}/{orgName}".replace(
                                 oldValue = "{orgId}",
-                                newValue = organization.organisationName
+                                newValue = organization.organisationId.toString()
+                            ).replace(
+                                oldValue = "{orgName}",
+                                newValue = organization.name
                             ),
                         )
                     }
@@ -292,7 +322,7 @@ fun OrganisationCardIteam(modifier: Modifier = Modifier, organisationModel: Orga
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
             RoundedImageView(imageUrl = "organisationModel.organisationImageURL")
-            Text(text = organisationModel.organisationName, fontWeight = FontWeight.Bold)
+            Text(text = organisationModel.name, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -338,12 +368,12 @@ fun BustleSpotAppBar(
             }
         },
         actions = {
-            if(isLogOutEnabled){
+            if (isLogOutEnabled) {
                 IconButton(
                     onClick = {
                         onLogOutClick()
                     }
-                ){
+                ) {
                     Icon(
                         modifier = Modifier.weight(.8f),
                         painter = painterResource(Res.drawable.ic_logout),
@@ -357,7 +387,8 @@ fun BustleSpotAppBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     AppBarIcon(
-                        username = iconUserName)
+                        username = iconUserName
+                    )
                 }
             }
         },

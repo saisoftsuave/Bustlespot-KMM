@@ -1,21 +1,20 @@
 package org.softsuave.bustlespot.data.network.models.response
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-
 
 @Serializable
 data class TaskData(
-    @SerialName("is_deleted")
-    val isDeleted: Boolean,
-    @SerialName("project_id")
-    val projectId: String,
-    @SerialName("status")
-    val status: String,
-    @SerialName("task_description")
-    val taskDescription: String?,
-    @SerialName("task_id")
-    val taskId: String,
-    @SerialName("task_name")
-    val taskName: String
-): DisplayItem()
+    val taskId: Int,
+    val name: String,
+    val projectId: Int,
+    val projectName: String,
+    val organisationId: Int,
+    val time: Int? = null,
+    val startTime: String? = null,
+    val endTime: String? = null,
+    val screenshots: String,
+    val notes: String,
+    val unTrackedTime: Int? = null,
+    val lastScreenShotTime: String,
+    val totalTime: Int
+) : DisplayItem()

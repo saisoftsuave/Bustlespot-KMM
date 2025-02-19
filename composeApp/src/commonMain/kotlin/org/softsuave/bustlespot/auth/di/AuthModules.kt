@@ -31,7 +31,7 @@ val sharedModules = module {
             get(), get()
         )
     }
-    single { org.softsuave.bustlespot.SessionManager(get()) }
+    single { org.softsuave.bustlespot.SessionManager(get(),get()) }
     single<SignInRepository> { SignInRepositoryImpl(get()) }
     single<SignUpRepository> { SignUpRepositoryImpl(get()) }
 

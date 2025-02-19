@@ -15,6 +15,7 @@ import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.timer.TrackerModule
 import org.softsuave.bustlespot.tracker.data.TrackerRepository
+import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
 
 class HomeViewModel(
     private val trackerRepository: TrackerRepository
@@ -79,9 +80,9 @@ class HomeViewModel(
     private val _totalIdleTime: MutableStateFlow<Int> = MutableStateFlow(0)
     val totalIdleTime: StateFlow<Int> = _totalIdleTime.asStateFlow()
 
-    fun getAllProjects() {
+    fun getAllProjects(organisationId: String) {
         viewModelScope.launch {
-            trackerRepository.getAllProjects().collect { result ->
+            trackerRepository.getAllProjects(organisationId).collect { result ->
                 when (result) {
                     is Result.Error -> {
                         _uiEvent.value = UiEvent.Failure(result.message ?: "Unknown Error")
@@ -95,12 +96,14 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        _mainProjectList.value = result.data.projectsData.projectList
+                        _mainProjectList.value = result.data.projectLists ?: emptyList()
                         _projectDropDownState.value = _projectDropDownState.value.copy(
-                            dropDownList = result.data.projectsData.projectList,
-                            errorMessage = if (result.data.projectsData.projectList.isEmpty()) "No projects to select" else ""
+                            dropDownList = result.data.projectLists ?: emptyList(),
+                            errorMessage = if (result.data.projectLists.isNullOrEmpty()) "No projects to select" else ""
                         )
-                        trackerScreenData.listOfProject?.addAll(result.data.projectsData.projectList)
+                        trackerScreenData.listOfProject?.addAll(
+                            result.data.projectLists ?: emptyList()
+                        )
                         _uiEvent.value = UiEvent.Success(trackerScreenData)
                     }
                 }
@@ -108,9 +111,17 @@ class HomeViewModel(
         }
     }
 
-    fun getAllTasks() {
+    fun getAllTasks(
+        organisationId: String,
+        projectId: String
+    ) {
         viewModelScope.launch {
-            trackerRepository.getAllTask().collect { result ->
+            trackerRepository.getAllTask(
+                GetTasksRequest(
+                    organisationId = organisationId,
+                    projectId = projectId
+                )
+            ).collect { result ->
                 when (result) {
                     is Result.Error -> {
                         _uiEvent.value = UiEvent.Failure(result.message ?: "Unknown Error")
@@ -124,12 +135,12 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        _mainTaskList.value = result.data.taskList
+                        _mainTaskList.value = result.data.taskDetails
                         _taskDropDownState.value = _taskDropDownState.value.copy(
                             dropDownList = _taskList.value,
                             errorMessage = ""
                         )
-                        trackerScreenData.listOfTask?.addAll(result.data.taskList)
+                        trackerScreenData.listOfTask?.addAll(result.data.taskDetails)
                         _uiEvent.value = UiEvent.Success(trackerScreenData)
                     }
                 }
@@ -153,12 +164,12 @@ class HomeViewModel(
             is DropDownEvents.OnProjectSelection -> {
                 _selectedProject.value = dropDownEvents.selectedProject
                 _projectDropDownState.value = _projectDropDownState.value.copy(
-                    inputText = dropDownEvents.selectedProject.projectName,
+                    inputText = dropDownEvents.selectedProject.name,
                     errorMessage = ""
                 )
 
                 val filteredTasks =
-                    _mainTaskList.value.filter { it.projectId == dropDownEvents.selectedProject.projectId }
+                    _mainTaskList.value.filter { it.projectId.toInt() == dropDownEvents.selectedProject.projectId }
                 _taskDropDownState.value = _taskDropDownState.value.copy(
                     dropDownList = filteredTasks,
                     errorMessage = if (filteredTasks.isEmpty()) "No task available to select" else "",
@@ -191,7 +202,7 @@ class HomeViewModel(
             is DropDownEvents.OnTaskSelection -> {
                 _selectedTask.value = dropDownEvents.selectedTask
                 _taskDropDownState.value = _taskDropDownState.value.copy(
-                    inputText = dropDownEvents.selectedTask.taskName,
+                    inputText = dropDownEvents.selectedTask.name,
                     errorMessage = ""
                 )
             }

@@ -9,8 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.softsuave.bustlespot.SessionManager
+import org.softsuave.bustlespot.auth.signin.data.BaseResponse
 import org.softsuave.bustlespot.auth.signin.data.SignInRepository
-import org.softsuave.bustlespot.auth.signin.data.SignInResponse
+import org.softsuave.bustlespot.auth.signin.data.User
 import org.softsuave.bustlespot.auth.utils.CustomTextFieldState
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
@@ -31,8 +32,8 @@ class LoginViewModel(
         MutableStateFlow(CustomTextFieldState())
     val password: StateFlow<CustomTextFieldState> = _password
 
-    private val _uiEvent: MutableStateFlow<UiEvent<SignInResponse>?> = MutableStateFlow(null)
-    val uiEvent: StateFlow<UiEvent<SignInResponse>?> = _uiEvent
+    private val _uiEvent: MutableStateFlow<UiEvent<User>?> = MutableStateFlow(null)
+    val uiEvent: StateFlow<UiEvent<User>?> = _uiEvent
 
 
     fun onEvent(event: LoginEvent) {
@@ -61,7 +62,8 @@ class LoginViewModel(
                         when (result) {
                             is Result.Success -> {
                                 launch {
-                                    result.data.access_token?.let { newToken ->
+                                    result.data.token?.let { newToken ->
+                                        sessionManager.accessToken = newToken
                                         sessionManager.updateAccessToken(
                                             newToken
                                         )

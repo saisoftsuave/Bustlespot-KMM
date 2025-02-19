@@ -1,19 +1,16 @@
 package org.softsuave.bustlespot.data.network.models.response
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Project(
-    @SerialName("is_delected")
-    val isDelected: Boolean,
-    @SerialName("organisation_id")
-    val organisationId: String,
-    @SerialName("project_id")
-    val projectId: String,
-    @SerialName("project_name")
-    val projectName: String
-): DisplayItem()
+    val projectId: Int,
+    val name: String,
+    val status: Int,
+    val startDate: String,
+    val userId: Int,
+    val roleId: Int
+) : DisplayItem()
 
 open class DisplayItem {
 

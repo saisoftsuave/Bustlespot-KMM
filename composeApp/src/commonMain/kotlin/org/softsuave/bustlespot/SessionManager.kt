@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.collectLatest
 import org.softsuave.bustlespot.data.local.realme.objects.OrganisationObj
 
 
-class SessionManager(private val settings: ObservableSettings) {
+class SessionManager(private val settings: ObservableSettings,private val realmDb: Realm) {
     var isLoggedIn = MutableStateFlow(false)
         private set
 
@@ -48,11 +48,11 @@ class SessionManager(private val settings: ObservableSettings) {
 //        resetRealm(realmDb,realmDb.configuration as RealmConfiguration)
         Log.d("Session cleared. isLoggedIn = $isLoggedIn")
     }
-//    suspend fun resetRealm(realm: Realm, config: RealmConfiguration) {
-//        realm.close()   // Close Realm instance
-//        Realm.deleteRealm(config)  // Delete Realm database
-//        println("Realm database deleted!")
-//    }
+    suspend fun resetRealm(realm: Realm, config: RealmConfiguration) {
+        realm.close()   // Close Realm instance
+        Realm.deleteRealm(config)  // Delete Realm database
+        println("Realm database deleted!")
+    }
     init {
         isLoggedIn = MutableStateFlow(settings.getString("access_token", "").isNotEmpty())
     }

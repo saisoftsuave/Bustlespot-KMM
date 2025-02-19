@@ -52,8 +52,12 @@ fun NavGraphBuilder.homeNavGraph(
             OrganisationScreen(navController = navController)
         }
         composable(
-            route = "${Home.Tracker.route}/{orgId}",
+            route = "${Home.Tracker.route}/{orgId}/{orgName}",
             arguments = listOf(
+                navArgument("orgName") {
+                    defaultValue = "0"
+                    type = NavType.StringType
+                },
                 navArgument("orgId") {
                     defaultValue = "0"
                     type = NavType.StringType
@@ -61,8 +65,14 @@ fun NavGraphBuilder.homeNavGraph(
             )
         ) { navBackStackEntry ->
             val orgId = navBackStackEntry.arguments?.getString("orgId")
+            val orgName = navBackStackEntry.arguments?.getString("orgName")
             orgId?.let { it ->
-                TrackerScreen(navController, organisationName = it, onFocusReceived = onFocusReceived)
+                TrackerScreen(
+                    navController,
+                    organisationName = orgName ?: "",
+                    organisationId = orgId,
+                    onFocusReceived = onFocusReceived
+                )
             }
 
         }
