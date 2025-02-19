@@ -1,13 +1,13 @@
-package org.softsuave.bustlespot.network.models.response
+package org.softsuave.bustlespot.data.network.models.response
+
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-
 @Serializable
-data class ActivityResponseDto(
-    @SerialName("activity_id")
-    val activityId: String,
+data class GetAllTasks(
+    @SerialName("data")
+    val taskList: List<TaskData>,
     @SerialName("message")
     val message: String
 )

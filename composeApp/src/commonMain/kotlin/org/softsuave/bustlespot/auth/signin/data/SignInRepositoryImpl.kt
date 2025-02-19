@@ -1,8 +1,8 @@
 package org.softsuave.bustlespot.auth.signin.data
 
 import org.softsuave.bustlespot.auth.utils.Result
-import org.softsuave.bustlespot.network.APIEndpoints
-import org.softsuave.bustlespot.network.BASEURL
+import org.softsuave.bustlespot.data.network.APIEndpoints
+import org.softsuave.bustlespot.data.network.BASEURL
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

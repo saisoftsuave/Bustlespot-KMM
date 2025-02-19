@@ -18,9 +18,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import org.softsuave.bustlespot.auth.signin.data.AccessTokenResponse
 import org.softsuave.bustlespot.auth.utils.Result
-import org.softsuave.bustlespot.network.APIEndpoints
-import org.softsuave.bustlespot.network.BASEURL
-import org.softsuave.bustlespot.network.models.response.SignOutResponseDto
+import org.softsuave.bustlespot.data.network.APIEndpoints
+import org.softsuave.bustlespot.data.network.BASEURL
+import org.softsuave.bustlespot.data.network.models.response.SignOutResponseDto
 
 class MainViewModel(
     private val settings: ObservableSettings,

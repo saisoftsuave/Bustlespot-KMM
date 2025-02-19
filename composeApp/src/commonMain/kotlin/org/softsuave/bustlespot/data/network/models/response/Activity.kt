@@ -1,4 +1,4 @@
-package org.softsuave.bustlespot.network.models.response
+package org.softsuave.bustlespot.data.network.models.response
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

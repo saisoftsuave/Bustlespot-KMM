@@ -5,9 +5,9 @@ import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
 import org.softsuave.bustlespot.MainViewModel
 import org.softsuave.bustlespot.auth.utils.Result
-import org.softsuave.bustlespot.network.APIEndpoints
-import org.softsuave.bustlespot.network.BASEURL
-import org.softsuave.bustlespot.network.models.response.SignOutResponseDto
+import org.softsuave.bustlespot.data.network.APIEndpoints
+import org.softsuave.bustlespot.data.network.BASEURL
+import org.softsuave.bustlespot.data.network.models.response.SignOutResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth

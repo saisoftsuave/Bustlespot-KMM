@@ -17,22 +17,28 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
+import io.realm.kotlin.Realm
+import io.realm.kotlin.RealmConfiguration
 import kotlinx.serialization.json.Json
 import org.softsuave.bustlespot.MainViewModel
 import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.signin.data.AccessTokenResponse
 import org.softsuave.bustlespot.createSettings
 import org.softsuave.bustlespot.getEngine
-import org.softsuave.bustlespot.network.BASEURL
+import org.softsuave.bustlespot.data.network.BASEURL
 import org.softsuave.bustlespot.tracker.di.trackerModule
 import org.koin.dsl.module
+import org.softsuave.bustlespot.data.local.realme.objects.OrganisationObj
 
 val koinGlobalModule = module {
     single { MainViewModel(get()) { provideUnauthenticatedHttpClient() } }
-    factory { provideHttpClient(get(),get()) }
+    factory { provideHttpClient(get(), get()) }
     trackerModule
     single<ObservableSettings> {
         createSettings()
+    }
+    single<Realm> {
+        provideRealmeDatabase()
     }
 }
 
@@ -86,11 +92,15 @@ fun provideHttpClient(settings: ObservableSettings, sessionManager: SessionManag
                             }
 
                             if (response.status.isSuccess()) {
-                                val newAccessToken = response.body<AccessTokenResponse>().access_token
+                                val newAccessToken =
+                                    response.body<AccessTokenResponse>().access_token
                                 settings.putString("access_token", newAccessToken)
                                 sessionManager.updateAccessToken(newAccessToken)
 
-                                return@refreshTokens BearerTokens(newAccessToken, sessionManager.accessToken)
+                                return@refreshTokens BearerTokens(
+                                    newAccessToken,
+                                    sessionManager.accessToken
+                                )
                             }
                         } catch (e: Exception) {
                             println("Token refresh failed: ${e.message}")
@@ -101,4 +111,14 @@ fun provideHttpClient(settings: ObservableSettings, sessionManager: SessionManag
             }
         }
     }
+}
+
+fun provideRealmeDatabase(): Realm {
+    val config = RealmConfiguration.Builder(
+        schema = setOf(
+            OrganisationObj::class
+        )
+    ).compactOnLaunch()
+        .build()
+    return Realm.open(config)
 }

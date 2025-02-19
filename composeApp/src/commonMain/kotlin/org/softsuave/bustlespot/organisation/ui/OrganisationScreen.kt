@@ -35,7 +35,7 @@ import org.softsuave.bustlespot.auth.navigation.Home
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
-import org.softsuave.bustlespot.network.models.response.Organisation
+import org.softsuave.bustlespot.data.network.models.response.Organisation
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview

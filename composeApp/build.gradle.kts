@@ -11,6 +11,8 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.buildConfig)
     id("com.google.gms.google-services") version "4.4.0" apply false
+    id("io.realm.kotlin") version "2.3.0"
+
 }
 
 kotlin {

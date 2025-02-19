@@ -10,9 +10,9 @@ import kotlinx.coroutines.launch
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.secondsToTime
-import org.softsuave.bustlespot.network.models.response.DisplayItem
-import org.softsuave.bustlespot.network.models.response.Project
-import org.softsuave.bustlespot.network.models.response.TaskData
+import org.softsuave.bustlespot.data.network.models.response.DisplayItem
+import org.softsuave.bustlespot.data.network.models.response.Project
+import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.timer.TrackerModule
 import org.softsuave.bustlespot.tracker.data.TrackerRepository
 

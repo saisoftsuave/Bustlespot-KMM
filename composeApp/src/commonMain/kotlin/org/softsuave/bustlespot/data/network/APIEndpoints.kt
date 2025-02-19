@@ -1,4 +1,4 @@
-package org.softsuave.bustlespot.network
+package org.softsuave.bustlespot.data.network
 
 
 object APIEndpoints {

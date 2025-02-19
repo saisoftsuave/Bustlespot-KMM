@@ -5,11 +5,11 @@ import androidx.lifecycle.viewModelScope
 import org.softsuave.bustlespot.auth.SignOutUseCase
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
-import org.softsuave.bustlespot.network.APIEndpoints
-import org.softsuave.bustlespot.network.BASEURL
-import org.softsuave.bustlespot.network.models.response.GetAllOrganisations
-import org.softsuave.bustlespot.network.models.response.Organisation
-import org.softsuave.bustlespot.network.models.response.SignOutResponseDto
+import org.softsuave.bustlespot.data.network.APIEndpoints
+import org.softsuave.bustlespot.data.network.BASEURL
+import org.softsuave.bustlespot.data.network.models.response.GetAllOrganisations
+import org.softsuave.bustlespot.data.network.models.response.Organisation
+import org.softsuave.bustlespot.data.network.models.response.SignOutResponseDto
 import org.softsuave.bustlespot.organisation.data.OrganisationRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

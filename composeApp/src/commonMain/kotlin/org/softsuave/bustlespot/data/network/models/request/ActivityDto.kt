@@ -1,4 +1,4 @@
-package org.softsuave.bustlespot.network.models.request
+package org.softsuave.bustlespot.data.network.models.request
 
 
 

@@ -15,16 +15,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.utils.Result
-import org.softsuave.bustlespot.network.APIEndpoints.GETALLACTIVITIES
-import org.softsuave.bustlespot.network.APIEndpoints.GETALLPROJECTS
-import org.softsuave.bustlespot.network.APIEndpoints.GETALLTASKS
-import org.softsuave.bustlespot.network.APIEndpoints.POSTACTIVITY
-import org.softsuave.bustlespot.network.BASEURL
-import org.softsuave.bustlespot.network.models.request.ActivityDto
-import org.softsuave.bustlespot.network.models.response.ActivityResponseDto
-import org.softsuave.bustlespot.network.models.response.GetAllActivities
-import org.softsuave.bustlespot.network.models.response.GetAllProjects
-import org.softsuave.bustlespot.network.models.response.GetAllTasks
+import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLACTIVITIES
+import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLPROJECTS
+import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLTASKS
+import org.softsuave.bustlespot.data.network.APIEndpoints.POSTACTIVITY
+import org.softsuave.bustlespot.data.network.BASEURL
+import org.softsuave.bustlespot.data.network.models.request.ActivityDto
+import org.softsuave.bustlespot.data.network.models.response.ActivityResponseDto
+import org.softsuave.bustlespot.data.network.models.response.GetAllActivities
+import org.softsuave.bustlespot.data.network.models.response.GetAllProjects
+import org.softsuave.bustlespot.data.network.models.response.GetAllTasks
 
 class TrackerRepositoryImpl(
     private val client: HttpClient,

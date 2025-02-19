@@ -54,9 +54,9 @@ import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.secondsToTime
 import org.softsuave.bustlespot.auth.utils.secondsToTimeFormat
-import org.softsuave.bustlespot.network.models.response.DisplayItem
-import org.softsuave.bustlespot.network.models.response.Project
-import org.softsuave.bustlespot.network.models.response.TaskData
+import org.softsuave.bustlespot.data.network.models.response.DisplayItem
+import org.softsuave.bustlespot.data.network.models.response.Project
+import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.organisation.ui.BustleSpotAppBar
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
