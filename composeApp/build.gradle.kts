@@ -67,7 +67,8 @@ kotlin {
             implementation(libs.lifecycle.viewmodel.compose)
             api(libs.kmpnotifier)
 
-            implementation("co.touchlab:kermit:2.0.5")
+            implementation(libs.kermit)
+            implementation(libs.library.base)
         }
 
         commonTest.dependencies {
