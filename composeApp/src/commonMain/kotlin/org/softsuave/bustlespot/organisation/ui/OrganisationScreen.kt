@@ -55,6 +55,11 @@ import androidx.navigation.NavController
 import bustlespot.composeapp.generated.resources.Res
 import bustlespot.composeapp.generated.resources.compose_multiplatform
 import bustlespot.composeapp.generated.resources.ic_logout
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
@@ -237,7 +242,7 @@ fun OrganizationList(organizations: List<Organisation>?, navController: NavContr
         organizations?.let {
             items(organizations) { organization ->
                 OrganizationItem(
-                    logoResource = Res.drawable.compose_multiplatform,
+                    imageUrl = organization.imageUrl,
                     organizationName = organization.name,
                     onClick = {
                         navController.navigate(
@@ -264,10 +269,12 @@ fun OrganizationList(organizations: List<Organisation>?, navController: NavContr
 @Preview
 @Composable
 fun OrganizationItem(
-    logoResource: DrawableResource,
+
+    imageUrl: String,
     organizationName: String,
     onClick: () -> Unit
 ) {
+    val platformContext = LocalPlatformContext.current
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -281,14 +288,22 @@ fun OrganizationItem(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Image(
-                painter = painterResource(resource = logoResource),
-                contentDescription = "Organization Logo",
-                modifier = Modifier
+            Box(
+                Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
-
+                    .clip(CircleShape)
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(platformContext)
+                        .data(imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "",
+                    imageLoader = ImageLoader(context = platformContext),
+                    modifier = Modifier,
+                    placeholder = painterResource(resource = Res.drawable.compose_multiplatform)
+                )
+            }
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(

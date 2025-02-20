@@ -81,7 +81,7 @@ class OrganisationRepositoryImpl(
                     copyToRealm(OrganisationObj().apply {
                         name = org.name
                         organisationId = org.organisationId
-                        image = org.image
+                        image = org.imageUrl
                         roleId = org.roleId
                         enableScreenshot = org.enableScreenshot
                         description = org.description

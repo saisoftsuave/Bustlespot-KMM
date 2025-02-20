@@ -1,5 +1,6 @@
 package org.softsuave.bustlespot.data.network.models.response
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 
@@ -7,7 +8,8 @@ import kotlinx.serialization.Serializable
 data class Organisation(
     val name: String,
     val organisationId: Int,
-    val image: String,
+    @SerialName("image")
+    val imageUrl: String,
     val roleId: Int,
     val enableScreenshot: Int,
     val description: String,
