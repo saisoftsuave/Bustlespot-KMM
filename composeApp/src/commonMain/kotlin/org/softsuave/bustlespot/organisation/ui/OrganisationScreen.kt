@@ -269,7 +269,6 @@ fun OrganizationList(organizations: List<Organisation>?, navController: NavContr
 @Preview
 @Composable
 fun OrganizationItem(
-
     imageUrl: String,
     organizationName: String,
     onClick: () -> Unit

@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.secondsToTime
@@ -105,6 +106,39 @@ class HomeViewModel(
                             result.data.projectLists ?: emptyList()
                         )
                         _uiEvent.value = UiEvent.Success(trackerScreenData)
+                        fetchAllTasksForProjects(
+                            projects = result.data.projectLists ?: emptyList(),
+                            organisationId
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun fetchAllTasksForProjects(projects: List<Project>, organisationId: String) {
+        viewModelScope.launch {
+            projects.forEach { project ->
+                trackerRepository.getAllTask(
+                    GetTasksRequest(projectId = project.projectId.toString(), organisationId)
+                ).collect { result ->
+
+                    when (result) {
+                        is Result.Error -> {
+                            _taskDropDownState.value = _taskDropDownState.value.copy(
+                                errorMessage = result.message ?: "Failed to fetch tasks"
+                            )
+                        }
+
+                        is Result.Loading -> {
+                            Log.d("Loading at projects")
+                        }
+
+                        is Result.Success -> {
+                            val taskList = result.data.taskDetails
+                            _mainTaskList.value = _mainTaskList.value.plus(taskList)
+                            trackerScreenData.listOfTask?.addAll(taskList)
+                        }
                     }
                 }
             }
@@ -148,6 +182,7 @@ class HomeViewModel(
         }
     }
 
+
     fun handleDropDownEvents(dropDownEvents: DropDownEvents) {
         when (dropDownEvents) {
             is DropDownEvents.OnProjectSearch -> {
@@ -169,7 +204,7 @@ class HomeViewModel(
                 )
 
                 val filteredTasks =
-                    _mainTaskList.value.filter { it.projectId.toInt() == dropDownEvents.selectedProject.projectId }
+                    _mainTaskList.value.filter { it.projectId == dropDownEvents.selectedProject.projectId }
                 _taskDropDownState.value = _taskDropDownState.value.copy(
                     dropDownList = filteredTasks,
                     errorMessage = if (filteredTasks.isEmpty()) "No task available to select" else "",
@@ -365,7 +400,7 @@ class HomeViewModel(
         }
     }
 
-    fun checkTaskAndProject(): Boolean {
+    private fun checkTaskAndProject(): Boolean {
         if (_selectedProject.value == null) {
             _projectDropDownState.value = _projectDropDownState.value.copy(
                 errorMessage = "Please select the a project"
@@ -380,6 +415,8 @@ class HomeViewModel(
 
         return true
     }
+
+
 }
 
 

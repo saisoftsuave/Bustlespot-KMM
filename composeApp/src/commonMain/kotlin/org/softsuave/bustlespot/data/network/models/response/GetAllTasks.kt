@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class GetAllTasks(
+   @SerialName("taskDetails")
     val taskDetails: List<TaskData>
 )

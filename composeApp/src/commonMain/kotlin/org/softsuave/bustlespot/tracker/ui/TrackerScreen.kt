@@ -97,9 +97,6 @@ fun TrackerScreen(
     // UI event (loading, failure, etc.) from the view model.
     val uiEvent by homeViewModel.uiEvent.collectAsState()
 
-    // Local UI states.
-    var showIdleDialog by remember { mutableStateOf(false) }
-
 
     val totalIdleTime by homeViewModel.totalIdleTime.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -108,7 +105,7 @@ fun TrackerScreen(
 
     // Launch idle dialog effect.
     LaunchedEffect(idleTime) {
-        if (idleTime > customeTimeForIdleTime && !showIdleDialog) {
+        if (idleTime > customeTimeForIdleTime && !homeViewModel.trackerDialogState.value.isDialogShown) {
             onFocusReceived.invoke()
             homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.ShowIdleTimeDialog)
 //            showIdleDialog = true
@@ -121,16 +118,6 @@ fun TrackerScreen(
         homeViewModel.getAllProjects(
             organisationId = organisationId
         )
-    }
-    LaunchedEffect(
-        key1 = selectedProject
-    ) {
-        selectedProject?.projectId?.toString()?.let {
-            homeViewModel.getAllTasks(
-                organisationId = organisationId,
-                projectId = it
-            )
-        }
     }
 
     Scaffold(
@@ -332,6 +319,20 @@ fun TrackerScreen(
     }
 }
 
+//private fun updateTime(task: TaskData) {
+//    val minutes = convertTimeToMinutes(task.lastScreenShotTime.toString())
+//    val timeString = task.lastScreenShotTime.toString()
+//    val parts = timeString.split(":")
+//    if (minutes == 0) {
+//        binding.tvLastImageTime.text = "less than a minute ago"
+//    } else if (minutes < 60) {
+//        binding.tvLastImageTime.text = "$minutes minutes ago"
+//    } else {
+//        if (parts[1].isNullOrEmpty()) binding.tvLastImageTime.setText("about ${parts[0].toInt()}hours ago") else binding.tvLastImageTime.setText(
+//            "about ${parts[0].toInt()} hours ${parts[1].toInt()} mintues ago"
+//        )
+//    }
+//}
 @Composable
 fun DropDownSelectionList(
     modifier: Modifier = Modifier,
