@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +50,9 @@ import bustlespot.composeapp.generated.resources.ic_drop_up
 import bustlespot.composeapp.generated.resources.ic_pause_circle
 import bustlespot.composeapp.generated.resources.ic_play_arrow
 import bustlespot.composeapp.generated.resources.screen
+import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
@@ -57,6 +62,7 @@ import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.secondsToTime
+import org.softsuave.bustlespot.auth.utils.secondsToTimeForScreenshot
 import org.softsuave.bustlespot.auth.utils.secondsToTimeFormat
 import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
@@ -101,6 +107,7 @@ fun TrackerScreen(
     val totalIdleTime by homeViewModel.totalIdleTime.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val isTrackerStarted by mutableStateOf(false)
 
 
     // Launch idle dialog effect.
@@ -247,8 +254,9 @@ fun TrackerScreen(
                     )
 
                     ScreenShotSection(
-                        lastImageTakenTime = secondsToTime(screenShotTakenTime),
-                        imageBitmap = screenShotState
+                        lastImageTakenTime = secondsToTimeForScreenshot(screenShotTakenTime),
+                        imageBitmap = screenShotState,
+                        lastTakenImage = selectedTask?.screenshots
                     )
                 }
             }
@@ -596,7 +604,8 @@ fun TimerSessionSection(
 fun ScreenShotSection(
     modifier: Modifier = Modifier,
     lastImageTakenTime: String = "10min ago",
-    imageBitmap: ImageBitmap? = imageResource(Res.drawable.screen)
+    imageBitmap: ImageBitmap? = imageResource(Res.drawable.screen),
+    lastTakenImage: String? = ""
 ) {
     Column(
         modifier = modifier.fillMaxWidth(0.85f).padding(top = 16.dp)
@@ -620,10 +629,18 @@ fun ScreenShotSection(
         }
         imageBitmap?.let { bitmap ->
             Image(
-                modifier = Modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally),
+                modifier = Modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally)
+                    .aspectRatio(1.8f),
                 bitmap = bitmap,
                 contentDescription = "Screenshot"
             )
-        }
+        } ?: AsyncImage(
+            model = lastTakenImage,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            imageLoader = ImageLoader(LocalPlatformContext.current),
+            modifier = Modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally)
+                .aspectRatio(1.8f)
+        )
     }
 }

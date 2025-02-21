@@ -11,6 +11,7 @@ import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.secondsToTime
+import org.softsuave.bustlespot.auth.utils.timeStringToSeconds
 import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
@@ -28,12 +29,13 @@ class HomeViewModel(
     val trackerTime: StateFlow<Int> = trackerModule.trackerTime
     val isTrackerRunning: StateFlow<Boolean> = trackerModule.isTrackerRunning
     val idealTime: StateFlow<Int> = trackerModule.idealTime
-    val screenShotTakenTime: StateFlow<Int> = trackerModule.screenShotTakenTime
+    var screenShotTakenTime: StateFlow<Int> = trackerModule.screenShotTakenTime
     val keyboradKeyEvents: StateFlow<Int> = trackerModule.keyboradKeyEvents
     val mouseKeyEvents: StateFlow<Int> = trackerModule.mouseKeyEvents
     val mouseMotionCount: StateFlow<Int> = trackerModule.mouseMotionCount
     val customeTimeForIdleTime: StateFlow<Int> = trackerModule.customeTimeForIdleTime
     val screenShotState: StateFlow<ImageBitmap?> = trackerModule.screenShotState
+    var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     fun startTrackerTimer() = trackerModule.startTimer()
     fun stopTrackerTimer() = trackerModule.stopTimer()
@@ -240,6 +242,14 @@ class HomeViewModel(
                     inputText = dropDownEvents.selectedTask.name,
                     errorMessage = ""
                 )
+                trackerModule.setTrackerTime(
+                    dropDownEvents.selectedTask.time ?: 0,
+                    dropDownEvents.selectedTask.unTrackedTime ?: 0
+                )
+                trackerModule.setLastScreenShotTime(
+                    dropDownEvents.selectedTask.lastScreenShotTime?.timeStringToSeconds() ?: 0
+                )
+                _totalIdleTime.value = dropDownEvents.selectedTask.unTrackedTime ?: 0
             }
 
             is DropDownEvents.OnProjectDropDownClick -> {
@@ -380,11 +390,13 @@ class HomeViewModel(
             TimerEvents.PauseTimer -> TODO()
             TimerEvents.ResetTimer -> TODO()
             TimerEvents.StartTimer -> {
-                if (trackerTime.value != 0) {
+                if (trackerTime.value != 0 && isTrackerRunning.value) {
                     resumeTrackerTimer()
                 } else {
-
-                    if (checkTaskAndProject()) startTrackerTimer()
+                    if (checkTaskAndProject()) {
+                        startTrackerTimer()
+                        isTrackerStarted.value = true
+                    }
                 }
             }
 

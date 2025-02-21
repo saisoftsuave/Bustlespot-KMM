@@ -29,6 +29,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
+    actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     private var timer = Timer()
     private var isTaskScheduled = AtomicBoolean(false)
@@ -71,7 +72,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         randomTimes: MutableStateFlow<List<Int>>,
         overallStart: Int,
         overallEnd: Int,
-        numberOfIntervals: Int = 10
+        numberOfIntervals: Int = 1
     ) {
         val totalDuration = overallEnd - overallStart
         if (totalDuration % numberOfIntervals != 0) {
@@ -133,6 +134,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                         println("Random times: ${randomTime.value}")
                         if (trackerIndex < randomTime.value.size && trackerTime.value > randomTime.value[trackerIndex]) {
                             takeScreenShot()
+                            screenShotTakenTime.value = 0
                             trackerIndex++
                             if (trackerIndex == randomTime.value.size) {
                                 val overallStart = trackerTime.value
@@ -175,7 +177,6 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             "Bustle-spot Remainder",
             "Captured screen-shot", file.absolutePath
         )
-        screenShotTakenTime.value = 0
     }
 
     actual fun startScreenshotTask() {
@@ -223,6 +224,15 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun addCustomTimeForIdleTime(time: Int) {
         customeTimeForIdleTime.value = time
+    }
+
+    actual fun setTrackerTime(trackerTime: Int, idealTime: Int) {
+        this.trackerTime.value = trackerTime
+       // this.idealTime.value = idealTime
+    }
+
+    actual fun setLastScreenShotTime(time: Int) {
+        screenShotTakenTime.value = time
     }
 
 

@@ -22,6 +22,7 @@ expect class TrackerModule(
     var customeTimeForIdleTime: MutableStateFlow<Int>
 
     var numberOfScreenshot: MutableStateFlow<Int>
+    var isTrackerStarted: MutableStateFlow<Boolean>
 
     fun startTimer()
     fun resetTimer()
@@ -41,4 +42,7 @@ expect class TrackerModule(
     fun resumeScreenshotTask()
 
     fun addCustomTimeForIdleTime(time: Int)
+
+    fun setTrackerTime(trackerTime: Int, idealTime: Int)
+    fun setLastScreenShotTime(time: Int)
 }
