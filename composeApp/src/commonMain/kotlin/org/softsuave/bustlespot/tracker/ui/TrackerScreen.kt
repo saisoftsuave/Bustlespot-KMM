@@ -129,7 +129,6 @@ fun TrackerScreen(
         homeViewModel.getAllProjects(
             organisationId = organisationId
         )
-        homeViewModel.addCustomTimeForIdleTime(10)
     }
 
     Scaffold(
