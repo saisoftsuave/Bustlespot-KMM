@@ -8,16 +8,19 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -39,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,6 +57,7 @@ import bustlespot.composeapp.generated.resources.screen
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
@@ -69,7 +74,6 @@ import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.organisation.ui.BustleSpotAppBar
 
-@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun TrackerScreen(
     navController: NavHostController,
@@ -125,6 +129,7 @@ fun TrackerScreen(
         homeViewModel.getAllProjects(
             organisationId = organisationId
         )
+        homeViewModel.addCustomTimeForIdleTime(10)
     }
 
     Scaffold(
@@ -177,18 +182,21 @@ fun TrackerScreen(
                 }
 
                 is UiEvent.Success -> {
-                    DropDownSelectionList(title = "Project",
+                    DropDownSelectionList(
+                        title = "Project",
                         dropDownList = projectDropDownState.dropDownList,
                         onItemClick = { selectedItem ->
-                            if (selectedProject == null && !isTrackerRunning) {
-                                homeViewModel.handleDropDownEvents(
-                                    DropDownEvents.OnProjectSelection(selectedItem as Project)
-                                )
-                            } else {
+                            // true and true ->
+                            // true and false
+                            if (isTrackerRunning && selectedItem != selectedProject) {
                                 homeViewModel.handleTrackerDialogEvents(
                                     TrackerDialogEvents.ShowProjectChangeDialog(
                                         selectedItem as Project
                                     )
+                                )
+                            } else if (selectedItem != selectedProject) {
+                                homeViewModel.handleDropDownEvents(
+                                    DropDownEvents.OnProjectSelection(selectedItem as Project)
                                 )
                             }
                         },
@@ -206,22 +214,34 @@ fun TrackerScreen(
                             )
                         },
                         onNoOptionClick = {
-                            homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectSearch(""))
-                        })
+//                            if (selectedProject == null) {
+                                homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectSearch(""))
+//                            } else {
+//                                homeViewModel.handleDropDownEvents(
+//                                    DropDownEvents.OnProjectSelection(
+//                                        selectedProject = selectedProject!!
+//                                    )
+//                                )
+//                            }
+                        },
+                        selectedProject = selectedProject,
+                        isSelected = selectedProject != null
+                    )
 
 
-                    DropDownSelectionList(title = "Task",
+                    DropDownSelectionList(
+                        title = "Task",
                         dropDownList = taskDropDownState.dropDownList,
                         onItemClick = { selectedItem ->
-                            if (selectedTask == null && !isTrackerRunning) {
-                                homeViewModel.handleDropDownEvents(
-                                    DropDownEvents.OnTaskSelection(selectedItem as TaskData)
-                                )
-                            } else {
+                            if (isTrackerRunning && selectedItem != selectedTask) {
                                 homeViewModel.handleTrackerDialogEvents(
                                     TrackerDialogEvents.ShowTaskChangeDialog(
                                         selectedItem as TaskData
                                     )
+                                )
+                            } else if (selectedItem != selectedTask) {
+                                homeViewModel.handleDropDownEvents(
+                                    DropDownEvents.OnTaskSelection(selectedItem as TaskData)
                                 )
                             }
                         },
@@ -231,6 +251,17 @@ fun TrackerScreen(
                         onDropDownClick = {
                             homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskDropDownClick)
                         },
+                        onNoOptionClick = {
+//                            if (selectedTask == null) {
+                                homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskSearch(""))
+//                            } else {
+//                                homeViewModel.handleDropDownEvents(
+//                                    DropDownEvents.OnTaskSelection(
+//                                        selectedTask = selectedTask!!
+//                                    )
+//                                )
+//                            }
+                        },
                         inputText = taskDropDownState.inputText,
                         onSearchText = { searchText ->
                             homeViewModel.handleDropDownEvents(
@@ -239,9 +270,9 @@ fun TrackerScreen(
                                 )
                             )
                         },
-                        onNoOptionClick = {
-                            homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskSearch(""))
-                        })
+                        selectedTask = selectedTask,
+                        isSelected = selectedTask != null
+                    )
 
                     TimerSessionSection(
                         trackerTimer = trackerTimer,
@@ -281,7 +312,7 @@ fun TrackerScreen(
 
             if (trackerDialogState.isDialogShown) {
                 CustomAlertDialog(title = trackerDialogState.title,
-                    text = trackerDialogState.text,
+                    text = trackerDialogState.text.replace("%s", secondsToTime(homeViewModel.idealTime.value)),
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -327,20 +358,6 @@ fun TrackerScreen(
     }
 }
 
-//private fun updateTime(task: TaskData) {
-//    val minutes = convertTimeToMinutes(task.lastScreenShotTime.toString())
-//    val timeString = task.lastScreenShotTime.toString()
-//    val parts = timeString.split(":")
-//    if (minutes == 0) {
-//        binding.tvLastImageTime.text = "less than a minute ago"
-//    } else if (minutes < 60) {
-//        binding.tvLastImageTime.text = "$minutes minutes ago"
-//    } else {
-//        if (parts[1].isNullOrEmpty()) binding.tvLastImageTime.setText("about ${parts[0].toInt()}hours ago") else binding.tvLastImageTime.setText(
-//            "about ${parts[0].toInt()} hours ${parts[1].toInt()} mintues ago"
-//        )
-//    }
-//}
 @Composable
 fun DropDownSelectionList(
     modifier: Modifier = Modifier,
@@ -353,24 +370,45 @@ fun DropDownSelectionList(
     onDropDownClick: () -> Unit = {},
     onNoOptionClick: () -> Unit = {},
     error: String? = null,
+    selectedProject: Project? = null,
+    selectedTask: TaskData? = null,
+    isSelected: Boolean = false
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     // We also track whether we've already notified the parent for this open.
     var hasNotifiedOnOpen by remember { mutableStateOf(false) }
-
     // Log state changes only when isMenuExpanded changes.
     LaunchedEffect(isMenuExpanded) {
         println("isMenuExpanded changed to: $isMenuExpanded")
     }
+    val density = LocalDensity.current
 
-    // Memoize the filtered list based on the input text.
-    val filteredList by remember(inputText, dropDownList) {
+    val screenWidth = remember(density) {
+        with(density) { 600.dp.toPx() } // Default fallback width (adjust for desktop/iOS)
+    }
+
+    val maxHeight = with(density) { (screenWidth * 0.4f).toDp() } // Max width = 40% of screen
+    val filteredList by remember(
+        inputText,
+        dropDownList,
+        isSelected,
+        selectedProject,
+        selectedTask
+    ) {
         derivedStateOf {
-            dropDownList.filter {
-                when (it) {
-                    is Project -> it.name.contains(inputText, ignoreCase = true)
-                    is TaskData -> it.name.contains(inputText, ignoreCase = true)
-                    else -> true
+            if (!isSelected) {
+                dropDownList.filter {
+                    when (it) {
+                        is Project -> it.name.contains(inputText, ignoreCase = true)
+                        is TaskData -> it.name.contains(inputText, ignoreCase = true)
+                        else -> true
+                    }
+                }
+            } else {
+                when (dropDownList.firstOrNull()) {
+                    is Project -> dropDownList.moveToFirst(selectedProject)
+                    is TaskData -> dropDownList.moveToFirst(selectedTask)
+                    else -> dropDownList
                 }
             }
         }
@@ -427,7 +465,7 @@ fun DropDownSelectionList(
                 hasNotifiedOnOpen = false
                 println("dismiss called")
             },
-            modifier = Modifier.fillMaxWidth(0.85f),
+            modifier = Modifier.fillMaxWidth(0.85f).heightIn(max = maxHeight),
             properties = PopupProperties(focusable = false),
             containerColor = Color.White
         ) {
@@ -435,24 +473,35 @@ fun DropDownSelectionList(
                 filteredList.forEach { item ->
                     when (item) {
                         is Project -> {
-                            DropdownMenuItem(text = {
-                                Text(
-                                    text = item.name, modifier = Modifier.fillMaxWidth()
-                                )
-                            }, onClick = {
-                                isMenuExpanded = false
-                                onItemClick(item)
-                            }, modifier = Modifier.background(Color.White)
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        text = item.name, modifier = Modifier.fillMaxWidth()
+                                    )
+                                },
+                                onClick = {
+                                    isMenuExpanded = false
+                                    onItemClick(item)
+                                },
+                                modifier = Modifier.background(
+                                    if (item == selectedProject) Color.Red.copy(alpha = 0.2f) else Color.White
+                                ),
                             )
                         }
 
+
                         is TaskData -> {
-                            DropdownMenuItem(text = {
-                                Text(text = item.name, modifier = Modifier.fillMaxWidth())
-                            }, onClick = {
-                                isMenuExpanded = false
-                                onItemClick(item)
-                            }, modifier = Modifier.background(Color.White)
+                            DropdownMenuItem(
+                                text = {
+                                    Text(text = item.name, modifier = Modifier.fillMaxWidth())
+                                },
+                                onClick = {
+                                    isMenuExpanded = false
+                                    onItemClick(item)
+                                },
+                                modifier = Modifier.background(
+                                    if (item == selectedTask) Color.Red.copy(alpha = 0.2f) else Color.White
+                                )
                             )
                         }
                     }
@@ -643,4 +692,12 @@ fun ScreenShotSection(
                 .aspectRatio(1.8f)
         )
     }
+}
+
+fun <T> List<T>.moveToFirst(item: T): List<T> {
+    val mutableList = this.toMutableList()
+    if (mutableList.remove(item)) { // Only move if the item exists
+        mutableList.add(0, item)
+    }
+    return mutableList
 }

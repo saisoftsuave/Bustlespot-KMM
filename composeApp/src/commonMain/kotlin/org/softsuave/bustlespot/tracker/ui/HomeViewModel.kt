@@ -303,7 +303,7 @@ class HomeViewModel(
                 _trackerDialogState.value = _trackerDialogState.value.copy(
                     isDialogShown = true,
                     title = "IdleTime",
-                    text = "You are idle for ${secondsToTime(this.idealTime.value)}. Do you want to add idle time to the session?",
+                    text = "You are idle for %s. Do you want to add idle time to the session?",
                     confirmButtonText = "Okay",
                     dismissButtonText = "Cancel",
                     onConfirm = {

@@ -33,7 +33,7 @@ fun secondsToTimeFormat(seconds: Int): String {
     val hoursStr = if (hours < 10) "0$hours" else "$hours"
     val minutesStr = if (minutes < 10) "0$minutes" else "$minutes"
     val secsStr = if (secs < 10) "0$secs" else "$secs"
-    return "${hoursStr}hrs ${minutesStr}min"
+    return "${hoursStr}hrs ${minutesStr}min ${secsStr}sec"
 }
 
 fun String.timeStringToSeconds(): Int {
