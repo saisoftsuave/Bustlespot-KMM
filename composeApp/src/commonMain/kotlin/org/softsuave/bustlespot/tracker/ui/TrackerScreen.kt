@@ -2,6 +2,7 @@ package org.softsuave.bustlespot.tracker.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,13 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -57,18 +56,18 @@ import bustlespot.composeapp.generated.resources.screen
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
-import io.ktor.client.HttpClient
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.annotation.KoinExperimentalAPI
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.secondsToTime
 import org.softsuave.bustlespot.auth.utils.secondsToTimeForScreenshot
 import org.softsuave.bustlespot.auth.utils.secondsToTimeFormat
+import org.softsuave.bustlespot.browser.WebLinks.USER_ACTIVITY
+import org.softsuave.bustlespot.browser.openWebLink
 import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
@@ -214,7 +213,7 @@ fun TrackerScreen(
                         },
                         onNoOptionClick = {
 //                            if (selectedProject == null) {
-                                homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectSearch(""))
+                            homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectSearch(""))
 //                            } else {
 //                                homeViewModel.handleDropDownEvents(
 //                                    DropDownEvents.OnProjectSelection(
@@ -252,7 +251,7 @@ fun TrackerScreen(
                         },
                         onNoOptionClick = {
 //                            if (selectedTask == null) {
-                                homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskSearch(""))
+                            homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskSearch(""))
 //                            } else {
 //                                homeViewModel.handleDropDownEvents(
 //                                    DropDownEvents.OnTaskSelection(
@@ -288,6 +287,14 @@ fun TrackerScreen(
                         imageBitmap = screenShotState,
                         lastTakenImage = selectedTask?.screenshots
                     )
+                    SyncNowSection(
+                        onClickUserActivity = {
+                            openWebLink(USER_ACTIVITY)
+                        },
+                        onClickSyncNow = {
+                            println("Sync Now Clicked")
+                        }
+                    )
                 }
             }
 
@@ -311,7 +318,10 @@ fun TrackerScreen(
 
             if (trackerDialogState.isDialogShown) {
                 CustomAlertDialog(title = trackerDialogState.title,
-                    text = trackerDialogState.text.replace("%s", secondsToTime(homeViewModel.idealTime.value)),
+                    text = trackerDialogState.text.replace(
+                        "%s",
+                        secondsToTime(homeViewModel.idealTime.value)
+                    ),
                     confirmButton = {
                         TextButton(
                             onClick = {
@@ -692,6 +702,43 @@ fun ScreenShotSection(
         )
     }
 }
+
+
+@Composable
+fun SyncNowSection(
+    modifier: Modifier = Modifier,
+    lastSyncTime: String = "11:50",
+    onClickUserActivity: () -> Unit = {},
+    onClickSyncNow: () -> Unit = {}
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(0.85f).padding(top = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row {
+            Text(
+                text = "Synced @ $lastSyncTime. Syncs every 10 minutes.",
+                style = MaterialTheme.typography.labelSmall
+            )
+            Text(
+                text = "Sync Now",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable {
+                    onClickSyncNow()
+                })
+        }
+        Text(
+            text = "User Activity",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.clickable {
+                onClickUserActivity()
+            })
+    }
+}
+
 
 fun <T> List<T>.moveToFirst(item: T): List<T> {
     val mutableList = this.toMutableList()

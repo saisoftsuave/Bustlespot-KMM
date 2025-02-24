@@ -58,10 +58,12 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.softsuave.bustlespot.MainViewModel
 import org.softsuave.bustlespot.SessionManager
-import org.softsuave.bustlespot.auth.navigation.AuthScreen
 import org.softsuave.bustlespot.auth.navigation.Home
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
+import org.softsuave.bustlespot.browser.WebLinks.FORGOT_PASSWORD
+import org.softsuave.bustlespot.browser.WebLinks.SIGN_UP
+import org.softsuave.bustlespot.browser.openWebLink
 
 @Composable
 fun LoginScreen(
@@ -220,7 +222,8 @@ fun LoginScreen(
                                 text = "Forgot Password?",
                                 color = Color.Black,
                                 modifier = Modifier.padding(16.dp).clickable {
-                                    navController.navigate(AuthScreen.ForgotPassword.route)
+                                    // navController.navigate(AuthScreen.ForgotPassword.route)
+                                    openWebLink(FORGOT_PASSWORD)
                                 },
                                 textAlign = TextAlign.End,
                                 style = MaterialTheme.typography.bodyMedium,
@@ -271,6 +274,7 @@ fun LoginScreen(
                                 color = Color.Red,
                                 modifier = Modifier.clickable {
                                     //navController.navigate(AuthScreen.SignUp.route)
+                                    openWebLink(SIGN_UP)
                                 },
                                 style = MaterialTheme.typography.bodyLarge,
                             )

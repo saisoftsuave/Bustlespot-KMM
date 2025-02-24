@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
-import org.softsuave.bustlespot.auth.utils.secondsToTime
 import org.softsuave.bustlespot.auth.utils.timeStringToSeconds
 import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
@@ -82,6 +81,9 @@ class HomeViewModel(
 
     private val _totalIdleTime: MutableStateFlow<Int> = MutableStateFlow(0)
     val totalIdleTime: StateFlow<Int> = _totalIdleTime.asStateFlow()
+
+    // actual is 7200
+    val idealTimeThreshold: Int = 7200
 
     fun getAllProjects(organisationId: String) {
         viewModelScope.launch {
@@ -310,7 +312,8 @@ class HomeViewModel(
                         _trackerDialogState.value = _trackerDialogState.value.copy(
                             isDialogShown = false
                         )
-                        _totalIdleTime.value += idealTime.value
+                        if (idealTime.value < idealTimeThreshold)
+                            _totalIdleTime.value += idealTime.value
                         resetIdleTimer()
                         resumeTrackerTimer()
                     },
