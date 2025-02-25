@@ -56,6 +56,7 @@ import bustlespot.composeapp.generated.resources.screen
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
@@ -123,6 +124,23 @@ fun TrackerScreen(
             homeViewModel.updateTrackerTimer()
         }
     }
+
+    LaunchedEffect(Unit) {
+        var dialogShown = false
+        while (true) {
+            delay(6000)
+            if (!isTrackerRunning && !dialogShown) {
+                homeViewModel.handleTrackerDialogEvents(
+                    TrackerDialogEvents.ShowTrackerNotStartedDialog
+                )
+                dialogShown = true
+            } else if (isTrackerRunning) {
+                dialogShown = false
+            }
+        }
+    }
+
+
 
     LaunchedEffect(key1 = Unit) {
         homeViewModel.getAllProjects(

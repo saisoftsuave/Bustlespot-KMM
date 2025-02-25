@@ -376,6 +376,26 @@ class HomeViewModel(
             TrackerDialogEvents.ShowTrackerAlertDialog -> {
                 TODO()
             }
+
+            TrackerDialogEvents.ShowTrackerNotStartedDialog -> {
+                _trackerDialogState.value = _trackerDialogState.value.copy(
+                    isDialogShown = true,
+                    title = "Alert",
+                    text = "You are not started a tracker yet",
+                    confirmButtonText = "Ok",
+                    dismissButtonText = "Cancel",
+                    onConfirm = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                    },
+                    onDismiss = {
+                        _trackerDialogState.value = _trackerDialogState.value.copy(
+                            isDialogShown = false
+                        )
+                    }
+                )
+            }
         }
     }
 
@@ -471,10 +491,11 @@ sealed class TrackerDialogEvents {
     data object ShowIdleTimeDialog : TrackerDialogEvents()
     data class ShowProjectChangeDialog(val selectedProject: Project) : TrackerDialogEvents()
     data class ShowTaskChangeDialog(val selectedTask: TaskData) : TrackerDialogEvents()
+    data object ShowTrackerNotStartedDialog : TrackerDialogEvents()
 
     //    data object showExitDialog : TrackerDialogEvents()
-//    data object showProjectChangeDialog : TrackerDialogEvents()
-//    data object showTaskChangeDialog : TrackerDialogEvents()
+    //    data object showProjectChangeDialog : TrackerDialogEvents()
+    //    data object showTaskChangeDialog : TrackerDialogEvents()
     // no confirmed design
     data object ShowTrackerAlertDialog : TrackerDialogEvents()
 }
