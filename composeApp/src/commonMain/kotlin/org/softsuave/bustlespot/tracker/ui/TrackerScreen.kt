@@ -56,7 +56,6 @@ import bustlespot.composeapp.generated.resources.screen
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
@@ -73,6 +72,7 @@ import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.organisation.ui.BustleSpotAppBar
+import org.softsuave.bustlespot.utils.requestPermission
 
 @Composable
 fun TrackerScreen(
@@ -125,7 +125,8 @@ fun TrackerScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
+    // code for lunching the tracker not started dialog
+    /*LaunchedEffect(Unit) {
         var dialogShown = false
         while (true) {
             delay(6000)
@@ -138,7 +139,7 @@ fun TrackerScreen(
                 dialogShown = false
             }
         }
-    }
+    }*/
 
 
 
@@ -606,7 +607,11 @@ fun TimerSessionSection(
 //                            homeViewModel.resetTrackerTimer()
 //                        }
 //                    }
-
+//
+//                    if (isAndroid()){
+//                        println("_____android___ + Requesting Permissions")
+                        requestPermission()
+//                    }
                     if (isTrackerRunning) {
                         homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
                     } else {

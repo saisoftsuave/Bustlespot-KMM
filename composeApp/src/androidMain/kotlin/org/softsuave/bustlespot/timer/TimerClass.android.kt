@@ -4,7 +4,10 @@ import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import org.softsuave.bustlespot.Log
+import org.softsuave.bustlespot.accessability.GlobalAccessibilityEvents
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
@@ -23,12 +26,13 @@ actual class TrackerModule actual constructor(
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
+    actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
 
     private var timer = Timer()
     private var isTaskScheduled = AtomicBoolean(false)
     private var isIdleTaskScheduled = AtomicBoolean(false)
 
-    //    private val globalEventListener: GlobalEventListener = GlobalEventListener()
     private val screenShot = MutableStateFlow<ImageBitmap?>(null)
     actual val screenShotState: StateFlow<ImageBitmap?> = screenShot
     private val randomTime: MutableStateFlow<List<Int>> = MutableStateFlow(emptyList())
@@ -52,12 +56,12 @@ actual class TrackerModule actual constructor(
 
     actual fun stopTimer() {
         isTrackerRunning.value = false
-//        globalEventListener.unregisterListeners()
+        //   globalEventListener.unregisterListeners()
     }
 
     actual fun resumeTracker() {
         isTrackerRunning.value = true
-//        globalEventListener.registerListeners()
+        //  globalEventListener.registerListeners()
     }
 
     private fun setRandomTimes(
@@ -80,7 +84,7 @@ actual class TrackerModule actual constructor(
 
     actual fun startTimer() {
         isTrackerRunning.value = true
-//        globalEventListener.registerListeners()
+        //   globalEventListener.registerListeners()
         setRandomTimes(
             randomTime,
             overallStart = 0,
@@ -88,23 +92,31 @@ actual class TrackerModule actual constructor(
             numberOfIntervals = screenShotFrequency
         )
         trackerIndex = 0
+        // Collect key events
         viewModelScope.launch {
-//            globalEventListener.fKeyCount.collectLatest { count ->
-//                keyboradKeyEvents.emit(count)
-//                idealTime.value = 0
-//            }
+            GlobalAccessibilityEvents.keyCountFlow.collectLatest { count ->
+                keyboradKeyEvents.emit(count)
+                idealTime.value = 0
+                Log.d("TrackerModule Key Count: $count")
+            }
         }
+
+        // Collect click events
         viewModelScope.launch {
-//            globalEventListener.fMouseCount.collectLatest { count ->
-//                mouseKeyEvents.emit(count)
-//                idealTime.value = 0
-//            }
+            GlobalAccessibilityEvents.mouseCountFlow.collectLatest { count ->
+                mouseKeyEvents.emit(count)
+                idealTime.value = 0
+                Log.d("TrackerModule Mouse Click Count: $count")
+            }
         }
+
+        // Collect mouse motion events
         viewModelScope.launch {
-//            globalEventListener.fMouseMotionCount.collectLatest { count ->
-//                mouseMotionCount.emit(count)
-//                idealTime.value = 0
-//            }
+            GlobalAccessibilityEvents.mouseMotionCountFlow.collectLatest { count ->
+                mouseMotionCount.emit(count)
+                idealTime.value = 0
+                Log.d("TrackerModule Mouse Motion Count: $count")
+            }
         }
         if (!isIdleTaskScheduled.getAndSet(true)) {
             idleTimerTask = object : TimerTask() {
@@ -218,4 +230,14 @@ actual class TrackerModule actual constructor(
 //        super.onCleared()
 //        timer.cancel()
 //    }
+
+    actual fun setTrackerTime(trackerTime: Int, idealTime: Int) {
+        this.trackerTime.value = trackerTime
+        // this.idealTime.value = idealTime
+    }
+
+    actual fun setLastScreenShotTime(time: Int) {
+        screenShotTakenTime.value = time
+    }
+
 }
