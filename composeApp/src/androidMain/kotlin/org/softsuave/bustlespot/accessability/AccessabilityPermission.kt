@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
-import android.widget.Toast
 import org.koin.java.KoinJavaComponent.inject
 
 class AccessibilityPermission {
@@ -26,11 +25,12 @@ class AccessibilityPermission {
         return enabledServices.any { it.resolveInfo.serviceInfo.name == service.name }
     }
 
-    fun requestAccessibilityPermission() {
+    fun requestAccessibilityPermission(
+        onPermissionGranted: () -> Unit,
+    ) {
         val service: Class<out AccessibilityService> = TrackerAccessibilityService::class.java
         if (isAccessibilityServiceEnabledAlternative(activity, service)) {
-            Toast.makeText(activity, "Accessibility permission already granted", Toast.LENGTH_SHORT)
-                .show()
+            onPermissionGranted()
         } else {
             val accessibilityIntent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             accessibilityIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK

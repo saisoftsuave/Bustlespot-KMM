@@ -610,7 +610,9 @@ fun TimerSessionSection(
 //
 //                    if (isAndroid()){
 //                        println("_____android___ + Requesting Permissions")
-                        requestPermission()
+                    requestPermission {
+                        homeViewModel.startTrackerTimer()
+                    }
 //                    }
                     if (isTrackerRunning) {
                         homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)

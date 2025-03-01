@@ -1,46 +1,89 @@
 package org.softsuave.bustlespot.ui
 
+import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import org.softsuave.bustlespot.MediaProjectionHelper
+import org.softsuave.bustlespot.R
 
 class MediaProjectionService : Service() {
 
-    companion object {
-        const val CHANNEL_ID = "MediaProjectionChannel"
-        const val NOTIFICATION_ID = 100
-    }
+    private var mediaProjectionHelper: MediaProjectionHelper? = null
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel()
-        // Create a minimal notification to run this service in foreground.
-        val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Screen Capture")
-            .setContentText("Screen capture is active")
-            .setSmallIcon(android.R.drawable.ic_menu_camera)
-            .build()
-        startForeground(NOTIFICATION_ID, notification)
+        Log.d(TAG, "Service created.")
+        startForegroundService()
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID,
-                "Screen Capture",
-                NotificationManager.IMPORTANCE_LOW
-            ).apply {
-                description = "Foreground service for screen capture"
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Log.d(TAG, "Service started.")
+
+        val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED) ?: Activity.RESULT_CANCELED
+        val resultData = intent?.getParcelableExtra<Intent>("data")
+
+        Log.d(TAG, "Received resultCode: $resultCode")
+        Log.d(TAG, "Received resultData: $resultData")
+
+        if (resultCode == RESULT_OK && resultData != null) {
+            if (mediaProjectionHelper == null) {
+                mediaProjectionHelper = MediaProjectionHelper(this)
             }
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
+
+            mediaProjectionHelper?.startScreenCapture(resultCode, resultData)
+        } else {
+            Log.e(TAG, "Invalid resultCode or missing data. Stopping service.")
+            stopSelf() // Stop service if permission is denied
         }
+
+        return START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "Service destroyed.")
+        mediaProjectionHelper?.stopScreenCapture()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun startForegroundService() {
+        val channelId = "media_projection_service_channel"
+        val channelName = "Media Projection Service"
+        val notificationManager = getSystemService(NotificationManager::class.java)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_LOW)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("Screen Capture")
+            .setContentText("Capturing screen...")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .build()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
+        } else {
+            startForeground(1, notification)
+        }
+    }
+
+    companion object {
+        private const val TAG = "MediaProjectionService"
+    }
 }
