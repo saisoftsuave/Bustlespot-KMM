@@ -103,7 +103,7 @@ class TrackerRepositoryImpl(
                     val data: ActivityDataResponse = response.body()
                     emit(Result.Success(data))
                 } else {
-                    emit(Result.Error(message = "Failed to fetch Projects: ${response.status}"))
+                    emit(Result.Error(message = "Failed post activity: ${response.status}"))
                 }
             } catch (e: Exception) {
                 emit(Result.Error(e.message ?: "Unknown error"))

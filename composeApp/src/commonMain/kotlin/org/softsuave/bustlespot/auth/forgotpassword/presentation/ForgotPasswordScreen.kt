@@ -15,7 +15,7 @@ fun ForgotPasswordScreen(
 ) {
     Box(
         modifier = Modifier.fillMaxSize().clickable {
-            navController.popBackStack()
+            navController.navigateUp()
         },
         contentAlignment = Alignment.Center
     ) {

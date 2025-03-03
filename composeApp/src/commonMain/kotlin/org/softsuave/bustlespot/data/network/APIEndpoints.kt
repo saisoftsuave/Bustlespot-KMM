@@ -11,6 +11,6 @@ object APIEndpoints {
     const val GETALLPROJECTS = "/api/project/getProjectList"
     const val GETALLTASKS = "/api/task/getTaskByProjectId"
 
-    const val POSTACTIVITY = "/activity/create-activity"
-    const val GETALLACTIVITIES = "/activity/get-all-activity"
+    const val POSTACTIVITY = "/api/activity/addActivityList"
+    const val GETALLACTIVITIES = "/api/activity/get-all-activity"
 }

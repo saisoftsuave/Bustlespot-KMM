@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.accessability.GlobalAccessibilityEvents
+import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
@@ -238,6 +239,14 @@ actual class TrackerModule actual constructor(
 
     actual fun setLastScreenShotTime(time: Int) {
         screenShotTakenTime.value = time
+    }
+
+    actual var startTime: String
+        get() = TODO("Not yet implemented")
+        set(value) {}
+
+    actual fun buildPostSingleActivityRequest(): PostActivityRequest {
+        TODO("Not yet implemented")
     }
 
 }

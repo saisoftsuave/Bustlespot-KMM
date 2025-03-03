@@ -159,10 +159,10 @@ fun TrackerScreen(
                         homeViewModel.handleTrackerDialogEvents(
                             TrackerDialogEvents.ShowExitDialog,
                             handleNavAction = {
-                                navController.popBackStack()
+                                navController.navigateUp()
                             })
                     } else {
-                        navController.popBackStack()
+                        navController.navigateUp()
                     }
                 },
                 isNavigationEnabled = true,
@@ -298,7 +298,8 @@ fun TrackerScreen(
                         mouseCount = mouseCount,
                         idleTime = totalIdleTime,
                         isTrackerRunning = isTrackerRunning,
-                        taskName = selectedTask?.name ?: ""
+                        taskName = selectedTask?.name ?: "",
+                        organisationId = organisationId
                     )
 
                     ScreenShotSection(
@@ -562,6 +563,7 @@ fun TimerSessionSection(
     mouseCount: Int,
     keyCount: Int,
     isTrackerRunning: Boolean,
+    organisationId: String
 ) {
     var isPlaying by remember { mutableStateOf(false) }
     Column(
@@ -613,6 +615,9 @@ fun TimerSessionSection(
                     requestPermission {
                         homeViewModel.startTrackerTimer()
                     }
+                    homeViewModel.startPostingActivity(
+                        organisationId = organisationId.toInt()
+                    )
 //                    }
                     if (isTrackerRunning) {
                         homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)

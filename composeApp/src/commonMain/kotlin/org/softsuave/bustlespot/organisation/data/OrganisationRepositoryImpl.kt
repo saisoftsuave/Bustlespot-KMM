@@ -38,33 +38,35 @@ class OrganisationRepositoryImpl(
         if (localData.isNotEmpty()) {
             Log.d("Data fetched from local DB")
             emit(Result.Success(GetAllOrganisations(listOfOrganisations = localData)))
-        }
+        } else {
 
-        // 2️⃣ Fetch from API and update local storage
-        try {
-            val response: HttpResponse = httpClient.get("$BASEURL$GETALLORGANISATIONS") {
-                contentType(ContentType.Application.Json)
-                bearerAuth(sessionManager.accessToken)
-            }
+            // 2️⃣ Fetch from API and update local storage
+            try {
+                val response: HttpResponse = httpClient.get("$BASEURL$GETALLORGANISATIONS") {
+                    contentType(ContentType.Application.Json)
+                    bearerAuth(sessionManager.accessToken)
+                }
 
-            if (response.status == HttpStatusCode.OK) {
-                val result: BaseResponse<GetAllOrganisations> = response.body()
-                // Update local database with fresh data
-                saveOrganisationsToLocal(result.data ?: GetAllOrganisations(listOf()))
-                emit(Result.Success(result.data ?: GetAllOrganisations(listOf())))
-            } else {
-                val res: BaseResponse<ErrorResponse> = response.body()
-                emit(Result.Error("${res.message}"))
+                if (response.status == HttpStatusCode.OK) {
+                    val result: BaseResponse<GetAllOrganisations> = response.body()
+                    // Update local database with fresh data
+                    saveOrganisationsToLocal(result.data ?: GetAllOrganisations(listOf()))
+                    emit(Result.Success(result.data ?: GetAllOrganisations(listOf())))
+                } else {
+                    val res: BaseResponse<ErrorResponse> = response.body()
+                    emit(Result.Error("${res.message}"))
+                }
+            } catch (e: Exception) {
+                emit(Result.Error(e.message ?: "Unknown error"))
             }
-        } catch (e: Exception) {
-            emit(Result.Error(e.message ?: "Unknown error"))
         }
     }
 
     // ✅ Get all organisations from SQLDelight
-    private fun getLocalOrganisations(): List<Organisation> =
-        db.databaseQueries.selectAllOrganisations().executeAsList().map { it.toDomain() }
-
+    private fun getLocalOrganisations(): List<Organisation> {
+        Log.d("data is fetching")
+     return db.databaseQueries.selectAllOrganisations().executeAsList().map { it.toDomain() }
+    }
 
     // ✅ Save organisations to SQLDelight
     private fun saveOrganisationsToLocal(data: GetAllOrganisations) {

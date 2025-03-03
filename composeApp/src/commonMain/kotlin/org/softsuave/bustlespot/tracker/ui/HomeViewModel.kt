@@ -3,10 +3,13 @@ package org.softsuave.bustlespot.tracker.ui
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
@@ -16,7 +19,10 @@ import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.timer.TrackerModule
 import org.softsuave.bustlespot.tracker.data.TrackerRepository
+import org.softsuave.bustlespot.tracker.data.model.ActivityData
+import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
 import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
+import kotlin.time.Duration
 
 class HomeViewModel(
     private val trackerRepository: TrackerRepository
@@ -37,6 +43,58 @@ class HomeViewModel(
     var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
     fun startTrackerTimer() = trackerModule.startTimer()
+
+    private fun constructPostActivityRequest(
+        organisationId: Int
+    ): PostActivityRequest {
+        val taskId = _selectedTask.value?.taskId ?: 0
+        val projectId = _selectedProject.value?.projectId ?: 0
+        //TODO("Need to work on startTime and endTime")
+        val startTime = Clock.System.now().toString()
+        val endTime = Clock.System.now().plus(Duration.parse("7200s")).toString()
+        val mouseActivity = mouseMotionCount.value
+        val keyboardActivity = keyboradKeyEvents.value
+        val totalActivity = mouseActivity + keyboardActivity
+        val notes = _selectedTask.value?.notes ?: "Activity recorded"
+        val uri = ""
+        val unTrackedTime = _totalIdleTime.value.toLong()
+        val activityData = ActivityData(
+            taskId = taskId,
+            projectId = projectId,
+            startTime = startTime,
+            endTime = endTime,
+            mouseActivity = mouseActivity,
+            keyboardActivity = keyboardActivity,
+            totalActivity = totalActivity,
+            billable = "",
+            notes = notes,
+            orgId = organisationId,
+            uri = uri,
+            unTrackedTime = unTrackedTime
+        )
+        return PostActivityRequest(activityData = arrayListOf(activityData))
+    }
+
+    fun startPostingActivity(
+        organisationId: Int
+    ) {
+        viewModelScope.launch {
+            while (isActive) {
+                try {
+                    val request = constructPostActivityRequest(
+                        organisationId
+                    )
+                    Log.d("$request----reguest")
+                    postUserActivity(request)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                delay(10 * 60 * 1000L)
+            }
+        }
+    }
+
+
     fun stopTrackerTimer() = trackerModule.stopTimer()
     fun resetTrackerTimer() = trackerModule.resetTimer()
     fun resumeTrackerTimer() = trackerModule.resumeTracker()
@@ -143,6 +201,32 @@ class HomeViewModel(
                             _mainTaskList.value = _mainTaskList.value.plus(taskList)
                             trackerScreenData.listOfTask?.addAll(taskList)
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun postUserActivity(postActivityRequest: PostActivityRequest) {
+        viewModelScope.launch {
+            trackerRepository.postUserActivity(
+                postActivityRequest
+            ).collect { result ->
+
+                when (result) {
+                    is Result.Error -> {
+                        _taskDropDownState.value = _taskDropDownState.value.copy(
+                            errorMessage = result.message ?: "Failed to post activity"
+                        )
+                    }
+
+                    is Result.Loading -> {
+                        Log.d("posting activity")
+                    }
+
+                    is Result.Success -> {
+                        val taskList = result.data
+                        print(taskList)
                     }
                 }
             }

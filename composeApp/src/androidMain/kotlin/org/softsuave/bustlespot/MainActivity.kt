@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                requestScreenCapturePermission()
+                //requestScreenCapturePermission()
                 Toast.makeText(this, "Notification Permission Granted", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this, "Notification Permission Denied", Toast.LENGTH_SHORT).show()
@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
                 requestNotificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
             }
             else{
-                requestScreenCapturePermission()
+                //requestScreenCapturePermission()
             }
         }
     }

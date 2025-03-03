@@ -13,7 +13,6 @@ data class PostActivityRequest(
 data class ActivityData(
     @SerialName("taskId") var taskId: Int? = 0,
     @SerialName("projectId") var projectId: Int? = 0,
-//    @SerialName("time") var time: Long? = 0,
     @SerialName("startTime") var startTime: String? = null,
     @SerialName("endTime") var endTime: String? = null,
     @SerialName("mouseActivity") var mouseActivity: Int? = 0,

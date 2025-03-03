@@ -20,5 +20,6 @@ class BustlespotApplication : Application() {
             androidLogger()
             androidContext(this@BustlespotApplication)
         }
+
     }
 }
