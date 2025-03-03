@@ -113,7 +113,7 @@ fun provideHttpClient(settings: ObservableSettings, sessionManager: SessionManag
 }
 
 fun provideSqlDelightDatabase(): Database {
-    return Database(createDriver())
+    return Database.invoke(createDriver())
 }
 
 //fun provideRealmeDatabase(): Realm {

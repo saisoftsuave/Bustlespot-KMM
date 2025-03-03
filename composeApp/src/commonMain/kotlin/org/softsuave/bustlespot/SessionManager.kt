@@ -1,5 +1,6 @@
 package org.softsuave.bustlespot
 
+import com.example.Database
 import com.russhwolf.settings.ObservableSettings
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -8,7 +9,9 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.collectLatest
 
 
-class SessionManager(private val settings: ObservableSettings ) {
+class SessionManager(private val settings: ObservableSettings ,
+    private val db : Database
+) {
     var isLoggedIn = MutableStateFlow(false)
         private set
 
@@ -41,7 +44,7 @@ class SessionManager(private val settings: ObservableSettings ) {
     suspend fun clearSession() {
         isLoggedIn.value = false
         settings.remove("access_token")
-
+        db.databaseQueries.deleteAllOrganisations()
 //        resetRealm(realmDb,realmDb.configuration as RealmConfiguration)
         Log.d("Session cleared. isLoggedIn = $isLoggedIn")
     }

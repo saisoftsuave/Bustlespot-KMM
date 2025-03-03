@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.softsuave.bustlespot.Log
 
 class OrganisationViewModel(
     private val organisationRepository: OrganisationRepository,
@@ -45,6 +46,8 @@ class OrganisationViewModel(
             organisationRepository.getAllOrganisation().collect { result ->
                 when (result) {
                     is Result.Error -> {
+                        Log.d("${result.exception}")
+                        Log.d("${result.message}")
                         _uiEvent.value = UiEvent.Failure(result.message ?: "Unknown Error")
                     }
 
