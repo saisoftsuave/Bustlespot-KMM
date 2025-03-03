@@ -26,12 +26,17 @@ import org.softsuave.bustlespot.data.network.models.response.ErrorResponse
 import org.softsuave.bustlespot.data.network.models.response.GetAllActivities
 import org.softsuave.bustlespot.data.network.models.response.GetAllProjects
 import org.softsuave.bustlespot.data.network.models.response.GetAllTasks
+import org.softsuave.bustlespot.tracker.data.model.ActivityDataResponse
 import org.softsuave.bustlespot.tracker.data.model.GetProjectRequest
+import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
 import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
 
 class TrackerRepositoryImpl(
     private val client: HttpClient,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+
+    //realm for local data base
+//    private val realm : Realm
 ) : TrackerRepository {
 
     override fun getAllProjects(organisationId: String): Flow<Result<GetAllProjects>> {
@@ -85,17 +90,17 @@ class TrackerRepositoryImpl(
         }
     }
 
-    override fun postUserActivity(activityDto: ActivityDto): Flow<Result<ActivityResponseDto>> {
+    override fun postUserActivity(postActivityRequest: PostActivityRequest): Flow<Result<ActivityDataResponse>> {
         return flow {
             try {
                 emit(Result.Loading)
                 val response: HttpResponse = client.post("$BASEURL$POSTACTIVITY") {
                     contentType(ContentType.Application.Json)
-                    setBody(activityDto, bodyType = TypeInfo(ActivityDto::class))
+                    setBody(postActivityRequest, bodyType = TypeInfo(PostActivityRequest::class))
                     bearerAuth(sessionManager.accessToken)
                 }
                 if (response.status == HttpStatusCode.OK) {
-                    val data: ActivityResponseDto = response.body()
+                    val data: ActivityDataResponse = response.body()
                     emit(Result.Success(data))
                 } else {
                     emit(Result.Error(message = "Failed to fetch Projects: ${response.status}"))

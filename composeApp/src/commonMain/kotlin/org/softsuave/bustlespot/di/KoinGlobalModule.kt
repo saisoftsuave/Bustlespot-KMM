@@ -17,8 +17,6 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
-import io.realm.kotlin.Realm
-import io.realm.kotlin.RealmConfiguration
 import kotlinx.serialization.json.Json
 import org.softsuave.bustlespot.MainViewModel
 import org.softsuave.bustlespot.SessionManager
@@ -28,7 +26,8 @@ import org.softsuave.bustlespot.getEngine
 import org.softsuave.bustlespot.data.network.BASEURL
 import org.softsuave.bustlespot.tracker.di.trackerModule
 import org.koin.dsl.module
-import org.softsuave.bustlespot.data.local.realme.objects.OrganisationObj
+import org.softsuave.bustlespot.data.local.createDriver
+import com.example.Database
 
 val koinGlobalModule = module {
     single { MainViewModel(get()) { provideUnauthenticatedHttpClient() } }
@@ -37,8 +36,8 @@ val koinGlobalModule = module {
     single<ObservableSettings> {
         createSettings()
     }
-    single<Realm> {
-        provideRealmeDatabase()
+    single<Database> {
+        provideSqlDelightDatabase()
     }
 }
 
@@ -113,12 +112,16 @@ fun provideHttpClient(settings: ObservableSettings, sessionManager: SessionManag
     }
 }
 
-fun provideRealmeDatabase(): Realm {
-    val config = RealmConfiguration.Builder(
-        schema = setOf(
-            OrganisationObj::class
-        )
-    ).compactOnLaunch()
-        .build()
-    return Realm.open(config)
+fun provideSqlDelightDatabase(): Database {
+    return Database(createDriver())
 }
+
+//fun provideRealmeDatabase(): Realm {
+//    val config = RealmConfiguration.Builder(
+//        schema = setOf(
+//            OrganisationObj::class
+//        )
+//    ).compactOnLaunch()
+//        .build()
+//    return Realm.open(config)
+//}

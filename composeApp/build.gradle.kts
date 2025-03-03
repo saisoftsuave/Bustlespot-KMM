@@ -1,3 +1,4 @@
+import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
@@ -11,16 +12,16 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.buildConfig)
     id("com.google.gms.google-services") version "4.4.0" apply false
-    id("io.realm.kotlin") version "2.3.0"
+    id("app.cash.sqldelight") version "2.0.2"
 
 }
 
 kotlin {
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
+//        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+//        compilerOptions {
+//            jvmTarget.set(JvmTarget.JVM_11)
+//        }
     }
 
     listOf(
@@ -68,9 +69,11 @@ kotlin {
 
             implementation(libs.lifecycle.viewmodel.compose)
             api(libs.kmpnotifier)
-
             implementation(libs.kermit)
-            implementation(libs.library.base)
+//            implementation(libs.library.base)
+
+            implementation(libs.coroutines.extensions)
+            implementation(libs.stately.common) // Needed by SQLDelight
         }
 
         commonTest.dependencies {
@@ -89,6 +92,10 @@ kotlin {
 
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
+            implementation(libs.android.driver)
+
+            // AndroidX
+            implementation(libs.androidx.startup.runtime)
         }
 
         desktopMain.dependencies {
@@ -96,15 +103,23 @@ kotlin {
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.jnativehook)
+            implementation(libs.sqlite.driver)
         }
 
         nativeMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.native.driver)
         }
 
     }
 }
-
+sqldelight {
+    databases {
+        create("Database") {
+            packageName.set("com.example")
+        }
+    }
+}
 android {
     namespace = "org.softsuave.bustlespot"
     compileSdk = 35
@@ -125,13 +140,17 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+    kotlin {
+        jvmToolchain(21)
     }
 }
 
 dependencies {
-    implementation(libs.androidx.startup.runtime)
+//    implementation(libs.androidx.startup.runtime)
+//    implementation(libs.androidx.room.common)
     debugImplementation(compose.uiTooling)
 }
 
@@ -154,7 +173,6 @@ compose.desktop {
                 shortcut = true
 
             }
-
 
 
             // macOS configuration

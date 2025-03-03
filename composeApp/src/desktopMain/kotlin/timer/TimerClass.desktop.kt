@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.notifications.sendLocalNotification
+import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.Timer
@@ -233,6 +234,14 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun setLastScreenShotTime(time: Int) {
         screenShotTakenTime.value = time
+    }
+
+    actual var startTime: String
+        get() = TODO("Not yet implemented")
+        set(value) {}
+
+    actual fun buildPostSingleActivityRequest(): PostActivityRequest {
+        TODO("Not yet implemented")
     }
 
 

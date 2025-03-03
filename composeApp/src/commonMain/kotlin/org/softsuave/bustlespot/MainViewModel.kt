@@ -50,7 +50,7 @@ class MainViewModel(
     // MainViewModel.kt
     suspend fun refreshAccessToken(): Result<AccessTokenResponse> {
         return try {
-            println("Refreshing token...")
+            Log.d("Refreshing token...")
             val response: HttpResponse = httpClient.invoke().get("$BASEURL/auth/refresh-token") {
                 bearerAuth(accessToken.value)
 
