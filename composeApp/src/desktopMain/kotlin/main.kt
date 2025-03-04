@@ -10,7 +10,10 @@ import androidx.compose.ui.window.rememberWindowState
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.softsuave.bustlespot.di.initKoin
+import java.awt.Desktop
 import java.awt.Dimension
+import java.awt.Frame
+import javax.swing.SwingUtilities
 
 fun main() = application {
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -31,11 +34,24 @@ fun main() = application {
     ) {
         window.minimumSize = Dimension(350, 600)
         App {
-            window.toFront()
-            window.requestFocus()
+            val desktop = Desktop.getDesktop()
+            if (desktop.isSupported(Desktop.Action.APP_EVENT_FOREGROUND)) {
+                desktop.requestForeground(true)
+                window.toFront()
+                window.requestFocus()
+            } else {
+                if (window.state == Frame.ICONIFIED) {
+                    window.state = Frame.NORMAL
+                }
+                SwingUtilities.invokeLater {
+                    window.toFront()
+                    window.requestFocus()
+                }
+            }
         }
     }
 }
+
 
 @Preview
 @Composable
