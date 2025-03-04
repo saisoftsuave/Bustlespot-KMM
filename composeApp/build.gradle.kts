@@ -174,6 +174,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.softsuave.bustlespot"
             packageVersion = "1.0.0"
+            modules("java.sql")
 
             windows {
 //                targetFormats(TargetFormat.Exe) Exe if needed

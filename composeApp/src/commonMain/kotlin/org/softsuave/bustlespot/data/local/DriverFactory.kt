@@ -1,7 +1,7 @@
 package org.softsuave.bustlespot.data.local
 
 import app.cash.sqldelight.db.SqlDriver
-import com.example.Database
+
 
 const val DB_NAME = "sqldelight.db"
 
