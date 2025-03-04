@@ -6,8 +6,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.accessability.GlobalAccessibilityEvents
+import org.softsuave.bustlespot.tracker.data.model.ActivityData
 import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
 import java.util.Timer
 import java.util.TimerTask
@@ -241,11 +243,18 @@ actual class TrackerModule actual constructor(
         screenShotTakenTime.value = time
     }
 
-    actual var startTime: String
+    actual var startTime: Instant
+        get() = TODO("Not yet implemented")
+        set(value) {}
+    actual var canCallApi: MutableStateFlow<Boolean>
         get() = TODO("Not yet implemented")
         set(value) {}
 
-    actual fun buildPostSingleActivityRequest(): PostActivityRequest {
+    actual fun getActivityData(): ActivityData {
+        TODO("Not yet implemented")
+    }
+
+    actual fun getUntrackedActivityData(): ActivityData {
         TODO("Not yet implemented")
     }
 

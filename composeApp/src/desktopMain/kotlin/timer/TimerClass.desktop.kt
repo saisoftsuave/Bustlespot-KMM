@@ -8,9 +8,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.notifications.sendLocalNotification
-import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
+import org.softsuave.bustlespot.tracker.data.model.ActivityData
 import java.awt.image.BufferedImage
 import java.io.File
 import java.util.Timer
@@ -41,6 +43,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private val randomTime: MutableStateFlow<List<Int>> = MutableStateFlow(emptyList())
     private var screenshotRepeatingTask: TimerTask? = null
     private var screenshotOneShotTask: TimerTask? = null
+
 
     @Volatile
     private var isPaused = false
@@ -116,6 +119,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                 idealTime.value = 0
             }
         }
+        startTime = Clock.System.now()
         if (!isIdleTaskScheduled.getAndSet(true)) {
             idleTimerTask = object : TimerTask() {
                 override fun run() {
@@ -128,6 +132,12 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             trackerTimerTask = object : TimerTask() {
                 override fun run() {
                     if (isTrackerRunning.value) {
+                        val currentTime = Clock.System.now()
+                        val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
+                        if(timeDifference >= 600){
+                            canCallApi.value = true
+                        }
+                        Log.d("$timeDifference and ${canCallApi.value}")
                         trackerTime.value++
                         // need to add initial ideal time
                         screenShotTakenTime.value++
@@ -236,13 +246,40 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         screenShotTakenTime.value = time
     }
 
-    actual var startTime: String
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    actual var startTime: Instant = Instant.DISTANT_FUTURE
 
-    actual fun buildPostSingleActivityRequest(): PostActivityRequest {
-        TODO("Not yet implemented")
+    actual fun getActivityData():ActivityData{
+        val activity = ActivityData(
+            startTime = startTime.toString(),
+            endTime = Clock.System.now().toString(),
+            mouseActivity = mouseKeyEvents.value,
+            keyboardActivity = keyboradKeyEvents.value,
+            totalActivity = (mouseKeyEvents.value + keyboradKeyEvents.value) % 100,
+            billable = "",
+            notes = "",
+        )
+        startTime = Clock.System.now()
+        canCallApi.value = false
+        return activity
     }
 
+    actual fun getUntrackedActivityData() : ActivityData{
+        val activity = ActivityData(
+            startTime = startTime.toString(),
+            endTime = Clock.System.now().toString(),
+            mouseActivity = 0,
+            keyboardActivity = 0,
+            totalActivity = 0,
+            billable = "",
+            notes = "",
+            unTrackedTime = idealTime.value.toLong()
+        )
+        startTime = Clock.System.now()
+        mouseKeyEvents.value = 0
+        keyboradKeyEvents.value = 0
+        return activity
+    }
+
+    actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 }

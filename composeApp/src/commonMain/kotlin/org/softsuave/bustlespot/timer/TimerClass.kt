@@ -4,7 +4,8 @@ import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
+import kotlinx.datetime.Instant
+import org.softsuave.bustlespot.tracker.data.model.ActivityData
 
 
 expect class TrackerModule(
@@ -17,8 +18,9 @@ expect class TrackerModule(
     val screenShotState: StateFlow<ImageBitmap?>
     var screenShotTakenTime: MutableStateFlow<Int>
 
-    var startTime :String
+    var startTime : Instant
 
+    var canCallApi : MutableStateFlow<Boolean>
     var mouseKeyEvents: MutableStateFlow<Int>
     var keyboradKeyEvents: MutableStateFlow<Int>
     var mouseMotionCount: MutableStateFlow<Int>
@@ -49,6 +51,7 @@ expect class TrackerModule(
     fun setTrackerTime(trackerTime: Int, idealTime: Int)
     fun setLastScreenShotTime(time: Int)
 
-    //
-    fun buildPostSingleActivityRequest(): PostActivityRequest
+    fun getActivityData(): ActivityData
+
+    fun getUntrackedActivityData() : ActivityData
 }

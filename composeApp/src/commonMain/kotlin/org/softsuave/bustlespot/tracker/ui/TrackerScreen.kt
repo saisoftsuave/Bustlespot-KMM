@@ -60,6 +60,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
@@ -118,13 +119,29 @@ fun TrackerScreen(
     LaunchedEffect(idleTime) {
         if (idleTime > customeTimeForIdleTime && !homeViewModel.trackerDialogState.value.isDialogShown) {
             onFocusReceived.invoke()
-            homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.ShowIdleTimeDialog)
+            homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.ShowIdleTimeDialog){
+                homeViewModel.startPostingUntrackedActivity(
+                    organisationId = organisationId.toInt()
+                )
+            }
+            homeViewModel.startPostingActivity(
+                organisationId = organisationId.toInt()
+            )
 //            showIdleDialog = true
             homeViewModel.stopTrackerTimer()
             homeViewModel.updateTrackerTimer()
         }
     }
-
+    LaunchedEffect(homeViewModel.canCallApi.value) {
+        Log.d("isChanged ${homeViewModel.canCallApi.value}")
+        if (homeViewModel.canCallApi.value) {
+            homeViewModel.startPostingActivity(
+                organisationId = organisationId.toInt()
+            )
+        } else {
+            Log.d("call restored")
+        }
+    }
     // code for lunching the tracker not started dialog
     /*LaunchedEffect(Unit) {
         var dialogShown = false
@@ -410,6 +427,7 @@ fun DropDownSelectionList(
     LaunchedEffect(isMenuExpanded) {
         println("isMenuExpanded changed to: $isMenuExpanded")
     }
+
     val density = LocalDensity.current
 
     val screenWidth = remember(density) {
@@ -585,7 +603,7 @@ fun TimerSessionSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = if (isTrackerRunning) taskName else "",
+                text = taskName,
                 color = Color.Red,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
@@ -615,12 +633,13 @@ fun TimerSessionSection(
                     requestPermission {
                         homeViewModel.startTrackerTimer()
                     }
-                    homeViewModel.startPostingActivity(
-                        organisationId = organisationId.toInt()
-                    )
+
 //                    }
                     if (isTrackerRunning) {
                         homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
+                        homeViewModel.startPostingActivity(
+                            organisationId = organisationId.toInt()
+                        )
                     } else {
                         homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
                     }

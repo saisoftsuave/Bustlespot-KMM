@@ -41,58 +41,80 @@ class HomeViewModel(
     val customeTimeForIdleTime: StateFlow<Int> = trackerModule.customeTimeForIdleTime
     val screenShotState: StateFlow<ImageBitmap?> = trackerModule.screenShotState
     var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    var canCallApi: MutableStateFlow<Boolean> = trackerModule.canCallApi
+
 
     fun startTrackerTimer() = trackerModule.startTimer()
 
     private fun constructPostActivityRequest(
-        organisationId: Int
+        organisationId: Int,
+        activityDataOfModule: ActivityData
     ): PostActivityRequest {
-        val taskId = _selectedTask.value?.taskId ?: 0
-        val projectId = _selectedProject.value?.projectId ?: 0
-        //TODO("Need to work on startTime and endTime")
-        val startTime = Clock.System.now().toString()
-        val endTime = Clock.System.now().plus(Duration.parse("7200s")).toString()
-        val mouseActivity = mouseMotionCount.value
-        val keyboardActivity = keyboradKeyEvents.value
-        val totalActivity = mouseActivity + keyboardActivity
-        val notes = _selectedTask.value?.notes ?: "Activity recorded"
-        val uri = ""
-        val unTrackedTime = _totalIdleTime.value.toLong()
-        val activityData = ActivityData(
-            taskId = taskId,
-            projectId = projectId,
-            startTime = startTime,
-            endTime = endTime,
-            mouseActivity = mouseActivity,
-            keyboardActivity = keyboardActivity,
-            totalActivity = totalActivity,
-            billable = "",
-            notes = notes,
-            orgId = organisationId,
-            uri = uri,
-            unTrackedTime = unTrackedTime
-        )
-        return PostActivityRequest(activityData = arrayListOf(activityData))
+//        val taskId = _selectedTask.value?.taskId ?: 0
+//        val projectId = _selectedProject.value?.projectId ?: 0
+//        //TODO("Need to work on startTime and endTime")
+//        val startTime = activityDataOfModule.startTime
+//        val endTime = activityDataOfModule.endTime
+//        val mouseActivity =activityDataOfModule.mouseActivity
+//        val keyboardActivity = keyboradKeyEvents.value
+//        val totalActivity = mouseActivity + keyboardActivity
+//        val notes = _selectedTask.value?.notes ?: "Activity recorded"
+//        val uri = ""
+//        val unTrackedTime = _totalIdleTime.value.toLong()
+//        val activityData = ActivityData(
+//            taskId = taskId,
+//            projectId = projectId,
+//            startTime = startTime,
+//            endTime = endTime,
+//            mouseActivity = mouseActivity,
+//            keyboardActivity = keyboardActivity,
+//            totalActivity = totalActivity,
+//            billable = "",
+//            notes = notes,
+//            orgId = organisationId,
+//            uri = uri,
+//            unTrackedTime = unTrackedTime
+//        )
+
+        activityDataOfModule.apply {
+            this.taskId = _selectedTask.value?.taskId ?: 0
+            this.projectId = _selectedProject.value?.projectId ?: 0
+            this.orgId = organisationId
+            this.uri = ""
+        }
+        return PostActivityRequest(activityData = arrayListOf(activityDataOfModule))
     }
 
     fun startPostingActivity(
-        organisationId: Int
+        organisationId: Int,
     ) {
-        viewModelScope.launch {
-            while (isActive) {
-                try {
-                    val request = constructPostActivityRequest(
-                        organisationId
-                    )
-                    Log.d("$request----reguest")
-                    postUserActivity(request)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                delay(10 * 60 * 1000L)
-            }
+        try {
+            val request = constructPostActivityRequest(
+                organisationId,
+                activityDataOfModule = trackerModule.getActivityData()
+            )
+            Log.d("$request----reguest")
+            postUserActivity(request)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
+
+    fun startPostingUntrackedActivity(
+        organisationId: Int,
+    ) {
+        try {
+            val request = constructPostActivityRequest(
+                organisationId,
+                activityDataOfModule = trackerModule.getUntrackedActivityData()
+            )
+            Log.d("$request----reguest")
+            postUserActivity(request)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
 
 
     fun stopTrackerTimer() = trackerModule.stopTimer()
@@ -212,12 +234,12 @@ class HomeViewModel(
             trackerRepository.postUserActivity(
                 postActivityRequest
             ).collect { result ->
-
                 when (result) {
                     is Result.Error -> {
-                        _taskDropDownState.value = _taskDropDownState.value.copy(
-                            errorMessage = result.message ?: "Failed to post activity"
-                        )
+//                        _taskDropDownState.value = _taskDropDownState.value.copy(
+//                            errorMessage = result.message ?: "Failed to post activity"
+//                        )
+                        Log.d("postUserActi")
                     }
 
                     is Result.Loading -> {
@@ -226,7 +248,7 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         val taskList = result.data
-                        print(taskList)
+                        Log.d(taskList.toString())
                     }
                 }
             }
@@ -398,6 +420,7 @@ class HomeViewModel(
                         )
                         if (idealTime.value < idealTimeThreshold)
                             _totalIdleTime.value += idealTime.value
+                        handleNavAction()
                         resetIdleTimer()
                         resumeTrackerTimer()
                     },
@@ -409,8 +432,6 @@ class HomeViewModel(
                         resumeTrackerTimer()
                     }
                 )
-
-
             }
 
             is TrackerDialogEvents.ShowProjectChangeDialog -> {
