@@ -651,7 +651,8 @@ fun TimerSessionSection(
                 text = secondsToTimeFormat(idleTime),
                 color = Color.Black,
             )
-        }/*        Row(
+        }
+        /*        Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically

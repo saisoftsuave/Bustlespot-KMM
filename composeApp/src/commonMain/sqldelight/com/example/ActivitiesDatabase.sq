@@ -1,0 +1,38 @@
+CREATE TABLE ActivityData (
+    taskId INTEGER,
+    projectId INTEGER,
+    startTime TEXT,
+    endTime TEXT,
+    mouseActivity INTEGER DEFAULT 0,
+    keyboardActivity INTEGER DEFAULT 0,
+    totalActivity INTEGER DEFAULT 0,
+    billable TEXT DEFAULT '',
+    notes TEXT,
+    organisationId INTEGER,
+    uri TEXT,
+    unTrackedTime INTEGER,
+    PRIMARY KEY (taskId, projectId)
+);
+
+-- Insert or Replace Activity Data
+insertActivity:
+INSERT OR REPLACE INTO  ActivityData (
+    taskId, projectId, startTime, endTime, mouseActivity, keyboardActivity, totalActivity,
+    billable, notes, organisationId, uri, unTrackedTime
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+getAllActivities:
+-- Select All Activities
+SELECT * FROM ActivityData;
+
+getActivityBYId:
+-- Select Activity by Task & Project ID
+SELECT * FROM ActivityData WHERE taskId = ? AND projectId = ?;
+
+deleteActivityById:
+-- Delete Activity by Task & Project ID
+DELETE FROM ActivityData WHERE taskId = ? AND projectId = ?;
+
+deleteAllActivities:
+-- Delete All Activities
+DELETE FROM ActivityData;

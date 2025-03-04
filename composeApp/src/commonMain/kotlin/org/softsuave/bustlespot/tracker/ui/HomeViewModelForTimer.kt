@@ -58,7 +58,7 @@ class HomeViewModelForTimer : ViewModel() {
     fun startTask() {
         if (viewModelJob == null || viewModelJob?.isCancelled == true) {
             viewModelJob = viewModelScope.launch {
-                while (isActive) {
+                while (true) {
                     if (!isPaused) {
                         val randomDelay =
                             Random.nextLong(0, 10 * 60 * 1000) // Random delay within 10 minutes
