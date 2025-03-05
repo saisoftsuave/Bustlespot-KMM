@@ -131,6 +131,9 @@ class HomeViewModel(
     fun addCustomTimeForIdleTime(time: Int) = trackerModule.addCustomTimeForIdleTime(time)
 
 
+    fun stopIdleTimer() = trackerModule.stopIdleTimer()
+
+
     private val _taskList = kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
     private val _mainTaskList =
         kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
@@ -530,6 +533,7 @@ class HomeViewModel(
 
             TimerEvents.StopTimer -> {
                 stopTrackerTimer()
+                stopIdleTimer()
             }
 
             TimerEvents.UpdateTime -> TODO()

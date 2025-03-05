@@ -52,7 +52,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private var idleTimerTask: TimerTask? = null
     private var trackerIndex = 0
     private val screenShotFrequency = 1
-    private val screenshotLimit = 1
+    private val screenshotLimit = 10
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -93,6 +93,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun startTimer() {
         Log.d("startTimer")
         isTrackerRunning.value = true
+        isIdealTimerRunning.value = true
         globalEventListener.registerListeners()
         setRandomTimes(
             randomTime,
@@ -123,7 +124,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         if (!isIdleTaskScheduled.getAndSet(true)) {
             idleTimerTask = object : TimerTask() {
                 override fun run() {
-                    idealTime.value += 1
+                    if (isIdealTimerRunning.value) {
+                        idealTime.value += 1
+                    }
                 }
             }
             timer.scheduleAtFixedRate(idleTimerTask, 1000, 1000)
@@ -134,7 +137,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     if (isTrackerRunning.value) {
                         val currentTime = Clock.System.now()
                         val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
-                        if(timeDifference >= 600){
+                        if (timeDifference >= 600) {
                             canCallApi.value = true
                         }
                         Log.d("$timeDifference and ${canCallApi.value}")
@@ -167,7 +170,6 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual fun resetIdleTimer() {
-        isIdealTimerRunning.value = false
         idealTime.value = 0
     }
 
@@ -239,7 +241,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun setTrackerTime(trackerTime: Int, idealTime: Int) {
         this.trackerTime.value = trackerTime
-       // this.idealTime.value = idealTime
+        // this.idealTime.value = idealTime
     }
 
     actual fun setLastScreenShotTime(time: Int) {
@@ -248,7 +250,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual var startTime: Instant = Instant.DISTANT_FUTURE
 
-    actual fun getActivityData():ActivityData{
+    actual fun getActivityData(): ActivityData {
         val activity = ActivityData(
             startTime = startTime.toString(),
             endTime = Clock.System.now().toString(),
@@ -263,7 +265,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         return activity
     }
 
-    actual fun getUntrackedActivityData() : ActivityData{
+    actual fun getUntrackedActivityData(): ActivityData {
         val activity = ActivityData(
             startTime = startTime.toString(),
             endTime = Clock.System.now().toString(),
