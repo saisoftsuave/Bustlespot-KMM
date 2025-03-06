@@ -7,9 +7,9 @@ import org.koin.dsl.module
 
 val trackerModule = module{
     single<TrackerRepository>{
-        TrackerRepositoryImpl(get(),get())
+        TrackerRepositoryImpl(get(),get(),get())
     }
     factory {
-        HomeViewModel(get())
+        HomeViewModel(get(),get())
     }
 }

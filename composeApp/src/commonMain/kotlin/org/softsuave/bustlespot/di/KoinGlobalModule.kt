@@ -28,6 +28,8 @@ import org.softsuave.bustlespot.tracker.di.trackerModule
 import org.koin.dsl.module
 import org.softsuave.bustlespot.data.local.createDriver
 import com.example.Database
+import org.softsuave.bustlespot.network.NetworkMonitor
+import org.softsuave.bustlespot.network.NetworkMonitorProvider
 
 val koinGlobalModule = module {
     single { MainViewModel(get()) { provideUnauthenticatedHttpClient() } }
@@ -38,6 +40,9 @@ val koinGlobalModule = module {
     }
     single<Database> {
         provideSqlDelightDatabase()
+    }
+    single<NetworkMonitor> {
+        provideNetworkMonitorInstance()
     }
 }
 
@@ -87,7 +92,7 @@ fun provideHttpClient(settings: ObservableSettings, sessionManager: SessionManag
                     refreshTokens {
                         try {
                             val response: HttpResponse = client.get("$BASEURL/auth/refresh-token") {
-                                bearerAuth(sessionManager.accessToken ?: return@refreshTokens null)
+                                bearerAuth(sessionManager.accessToken)
                             }
 
                             if (response.status.isSuccess()) {
@@ -114,6 +119,11 @@ fun provideHttpClient(settings: ObservableSettings, sessionManager: SessionManag
 
 fun provideSqlDelightDatabase(): Database {
     return Database.invoke(createDriver())
+}
+
+
+fun provideNetworkMonitorInstance() : NetworkMonitor {
+    return NetworkMonitorProvider.getInstance()
 }
 
 //fun provideRealmeDatabase(): Realm {

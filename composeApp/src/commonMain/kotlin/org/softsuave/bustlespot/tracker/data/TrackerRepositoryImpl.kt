@@ -1,5 +1,6 @@
 package org.softsuave.bustlespot.tracker.data
 
+import com.example.Database
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.bearerAuth
@@ -12,9 +13,11 @@ import io.ktor.http.contentType
 import io.ktor.util.reflect.TypeInfo
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.signin.data.BaseResponse
 import org.softsuave.bustlespot.auth.utils.Result
+import org.softsuave.bustlespot.data.local.toDomain
 import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLACTIVITIES
 import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLPROJECTS
 import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLTASKS
@@ -32,9 +35,7 @@ import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
 class TrackerRepositoryImpl(
     private val client: HttpClient,
     private val sessionManager: SessionManager,
-
-    //realm for local data base
-//    private val realm : Realm
+    private val db : Database,
 ) : TrackerRepository {
 
     override fun getAllProjects(organisationId: String): Flow<Result<GetAllProjects>> {
@@ -101,9 +102,13 @@ class TrackerRepositoryImpl(
                     val data: ActivityDataResponse = response.body()
                     emit(Result.Success(data))
                 } else {
+                    Log.d("postActivity --> failed")
+                    saveFailedPostUserActivity(postActivityRequest)
                     emit(Result.Error(message = "Failed post activity: ${response.status}"))
                 }
             } catch (e: Exception) {
+                Log.d("postActivity --> failed")
+                saveFailedPostUserActivity(postActivityRequest)
                 emit(Result.Error(e.message ?: "Unknown error"))
             }
         }
@@ -125,6 +130,50 @@ class TrackerRepositoryImpl(
                 }
             } catch (e: Exception) {
                 emit(Result.Error(e.message ?: "Unknown error"))
+            }
+        }
+    }
+    
+    private fun saveFailedPostUserActivity(postActivityRequest: PostActivityRequest) {
+        postActivityRequest.activityData.forEach { activityData ->
+            db.transaction {
+                db.activitiesDatabaseQueries.insertActivity(
+                    taskId = activityData.taskId?.toLong(),
+                    projectId = activityData.projectId?.toLong(),
+                    startTime = activityData.startTime,
+                    endTime = activityData.endTime,
+                    mouseActivity = activityData.mouseActivity?.toLong(),
+                    keyboardActivity = activityData.keyboardActivity?.toLong(),
+                    totalActivity = activityData.totalActivity?.toLong(),
+                    billable = activityData.billable,
+                    notes = activityData.notes,
+                    organisationId = activityData.orgId?.toLong(),
+                    uri = activityData.uri,
+                    unTrackedTime = activityData.unTrackedTime
+                )
+            }
+        }
+        Log.d("call saved to db")
+    }
+
+   override suspend fun checkLocalDbAndPostActivity(){
+       Log.d("post local failed call is started")
+        val localData = db.activitiesDatabaseQueries.getAllActivities().executeAsList().map { it.toDomain() }
+        if(localData.isNotEmpty()){
+            val postActivityRequest = PostActivityRequest(localData.toMutableList())
+            postUserActivity(postActivityRequest).collect{ result ->
+                when(result){
+                    is Result.Error ->  {
+                        Log.d("failed to post from local db")
+                    }
+                    is Result.Loading -> {
+
+                    }
+                    is Result.Success -> {
+                        Log.d("Success to post from local db")
+                        db.activitiesDatabaseQueries.deleteAllActivities()
+                    }
+                }
             }
         }
     }

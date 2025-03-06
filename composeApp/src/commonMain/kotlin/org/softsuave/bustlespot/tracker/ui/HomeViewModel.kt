@@ -3,13 +3,10 @@ package org.softsuave.bustlespot.tracker.ui
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
@@ -17,32 +14,29 @@ import org.softsuave.bustlespot.auth.utils.timeStringToSeconds
 import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
+import org.softsuave.bustlespot.network.NetworkMonitor
 import org.softsuave.bustlespot.timer.TrackerModule
 import org.softsuave.bustlespot.tracker.data.TrackerRepository
 import org.softsuave.bustlespot.tracker.data.model.ActivityData
 import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
 import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
-import kotlin.time.Duration
 
 class HomeViewModel(
-    private val trackerRepository: TrackerRepository
-) : ViewModel() {
+    private val trackerRepository: TrackerRepository,
+    private val networkMonitor : NetworkMonitor
+) : ViewModel(){
 
 
     private val trackerModule = TrackerModule(viewModelScope)
-
     val trackerTime: StateFlow<Int> = trackerModule.trackerTime
     val isTrackerRunning: StateFlow<Boolean> = trackerModule.isTrackerRunning
     val idealTime: StateFlow<Int> = trackerModule.idealTime
     var screenShotTakenTime: StateFlow<Int> = trackerModule.screenShotTakenTime
-    val keyboradKeyEvents: StateFlow<Int> = trackerModule.keyboradKeyEvents
-    val mouseKeyEvents: StateFlow<Int> = trackerModule.mouseKeyEvents
-    val mouseMotionCount: StateFlow<Int> = trackerModule.mouseMotionCount
     val customeTimeForIdleTime: StateFlow<Int> = trackerModule.customeTimeForIdleTime
     val screenShotState: StateFlow<ImageBitmap?> = trackerModule.screenShotState
     var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
     var canCallApi: MutableStateFlow<Boolean> = trackerModule.canCallApi
-
+//    val isNetworkAvailable: Flow<Boolean> = networkMonitor.isConnected
 
     fun startTrackerTimer() = trackerModule.startTimer()
 
@@ -80,6 +74,7 @@ class HomeViewModel(
             this.taskId = _selectedTask.value?.taskId ?: 0
             this.projectId = _selectedProject.value?.projectId ?: 0
             this.orgId = organisationId
+            this.uri = ""
         }
         return PostActivityRequest(activityData = arrayListOf(activityDataOfModule))
     }
@@ -120,20 +115,20 @@ class HomeViewModel(
     fun resetTrackerTimer() = trackerModule.resetTimer()
     fun resumeTrackerTimer() = trackerModule.resumeTracker()
 
-    fun startScreenshotTask() = trackerModule.startScreenshotTask()
-    fun pauseScreenshotTask() = trackerModule.pauseScreenshotTask()
-    fun resumeScreenshotTask() = trackerModule.resumeScreenshotTask()
-    fun stopScreenshotTask() = trackerModule.stopScreenshotTask()
+//    fun startScreenshotTask() = trackerModule.startScreenshotTask()
+//    fun pauseScreenshotTask() = trackerModule.pauseScreenshotTask()
+//    fun resumeScreenshotTask() = trackerModule.resumeScreenshotTask()
+//    fun stopScreenshotTask() = trackerModule.stopScreenshotTask()
 
     fun resetIdleTimer() = trackerModule.resetIdleTimer()
     fun updateTrackerTimer() = trackerModule.updateTrackerTimer()
-    fun addCustomTimeForIdleTime(time: Int) = trackerModule.addCustomTimeForIdleTime(time)
+//    fun addCustomTimeForIdleTime(time: Int) = trackerModule.addCustomTimeForIdleTime(time)
 
 
     fun stopIdleTimer() = trackerModule.stopIdleTimer()
 
 
-    private val _taskList = kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
+//    private val _taskList = kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
     private val _mainTaskList =
         kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
     private val _mainProjectList =
@@ -241,6 +236,7 @@ class HomeViewModel(
 //                        _taskDropDownState.value = _taskDropDownState.value.copy(
 //                            errorMessage = result.message ?: "Failed to post activity"
 //                        )
+
                         Log.d("postUserActi")
                     }
 
@@ -257,44 +253,15 @@ class HomeViewModel(
         }
     }
 
-    fun getAllTasks(
-        organisationId: String,
-        projectId: String
-    ) {
+    fun checkAndPostActivities(){
         viewModelScope.launch {
-            trackerRepository.getAllTask(
-                GetTasksRequest(
-                    organisationId = organisationId,
-                    projectId = projectId
-                )
-            ).collect { result ->
-                when (result) {
-                    is Result.Error -> {
-                        _uiEvent.value = UiEvent.Failure(result.message ?: "Unknown Error")
-                        _taskDropDownState.value = _taskDropDownState.value.copy(
-                            errorMessage = result.message ?: "Failed to fetch tasks"
-                        )
-                    }
-
-                    Result.Loading -> {
-                        _uiEvent.value = UiEvent.Loading
-                    }
-
-                    is Result.Success -> {
-                        _mainTaskList.value = result.data.taskDetails
-                        _taskDropDownState.value = _taskDropDownState.value.copy(
-                            dropDownList = _taskList.value,
-                            errorMessage = ""
-                        )
-                        trackerScreenData.listOfTask?.addAll(result.data.taskDetails)
-                        _uiEvent.value = UiEvent.Success(trackerScreenData)
-                    }
+            networkMonitor.isConnected.collect{ isNetworkAvailable ->
+                if(isNetworkAvailable){
+                    trackerRepository.checkLocalDbAndPostActivity()
                 }
             }
         }
     }
-
-
     fun handleDropDownEvents(dropDownEvents: DropDownEvents) {
         when (dropDownEvents) {
             is DropDownEvents.OnProjectSearch -> {
@@ -506,13 +473,7 @@ class HomeViewModel(
         }
     }
 
-    fun handleTrackerScreenEvents(trackerScreenEvents: TrackerScreenEvents) {
-        when (trackerScreenEvents) {
-            TrackerScreenEvents.OnExitClick -> {
-                TODO()
-            }
-        }
-    }
+
 
     fun handleTrackerTimerEvents(timerEvents: TimerEvents) {
         when (timerEvents) {
@@ -606,10 +567,6 @@ sealed class TrackerDialogEvents {
     //    data object showTaskChangeDialog : TrackerDialogEvents()
     // no confirmed design
     data object ShowTrackerAlertDialog : TrackerDialogEvents()
-}
-
-sealed class TrackerScreenEvents {
-    data object OnExitClick : TrackerScreenEvents()
 }
 
 

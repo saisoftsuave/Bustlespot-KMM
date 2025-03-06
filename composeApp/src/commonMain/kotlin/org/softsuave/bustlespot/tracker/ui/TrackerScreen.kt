@@ -97,7 +97,7 @@ fun TrackerScreen(
     val screenShotState by homeViewModel.screenShotState.collectAsState()
     val screenShotTakenTime by homeViewModel.screenShotTakenTime.collectAsState()
     val customeTimeForIdleTime by homeViewModel.customeTimeForIdleTime.collectAsState()
-    val isNetworkAvailable by homeViewModel.isNetworkAvailable.collectAsState(false)
+//    val isNetworkAvailable by homeViewModel.isNetworkAvailable.collectAsState(false)
     // Collect the consolidated drop-down states from HomeViewModel.
     val projectDropDownState by homeViewModel.projectDropDownState.collectAsState()
     val taskDropDownState by homeViewModel.taskDropDownState.collectAsState()
@@ -133,6 +133,10 @@ fun TrackerScreen(
             homeViewModel.stopTrackerTimer()
             homeViewModel.updateTrackerTimer()
         }
+    }
+
+    LaunchedEffect(key1 = Unit){
+            homeViewModel.checkAndPostActivities()
     }
     LaunchedEffect(homeViewModel.canCallApi.value) {
         Log.d("isChanged ${homeViewModel.canCallApi.value}")
