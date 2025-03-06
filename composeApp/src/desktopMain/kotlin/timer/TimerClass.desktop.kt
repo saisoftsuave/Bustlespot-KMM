@@ -40,7 +40,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-    private val currentImageUri : MutableStateFlow<String> = MutableStateFlow("")
+    private val currentImageUri: MutableStateFlow<String> = MutableStateFlow("")
     private var timer = Timer()
     private var isTaskScheduled = AtomicBoolean(false)
     private var isIdleTaskScheduled = AtomicBoolean(false)
@@ -60,8 +60,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private var trackerIndex = 0
     private val screenShotFrequency = 1
     private val screenshotLimit = 1
-    private var idealStartTime : Instant = Instant.DISTANT_PAST
-    private val postActivityInterval:Int = 600 //in second
+    private var idealStartTime: Instant = Instant.DISTANT_PAST
+    private val postActivityInterval: Int = 600 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -147,7 +147,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     if (isTrackerRunning.value) {
                         val currentTime = Clock.System.now()
                         val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
-                        if(timeDifference >= postActivityInterval){
+                        if (timeDifference >= postActivityInterval) {
                             canCallApi.value = true
                         }
                         Log.d("$timeDifference and ${canCallApi.value}")
@@ -260,7 +260,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual var startTime: Instant = Instant.DISTANT_FUTURE
 
-    actual fun getActivityData():ActivityData{
+    actual fun getActivityData(): ActivityData {
         base64Converter()
         val activity = ActivityData(
             startTime = startTime.toString(),
@@ -277,7 +277,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         return activity
     }
 
-    actual fun getUntrackedActivityData() : ActivityData{
+    actual fun getUntrackedActivityData(): ActivityData {
         base64Converter()
         val activity = ActivityData(
             startTime = idealStartTime.toString(),
@@ -295,7 +295,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         keyboradKeyEvents.value = 0
         return activity
     }
-    private fun base64Converter(){
+
+    private fun base64Converter() {
 
 //        screenShot.value?.toString()?.let { Log.d("this is great $it") }
         viewModelScope.launch {
@@ -310,6 +311,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
 
     }
+
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 }
