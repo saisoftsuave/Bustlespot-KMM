@@ -36,10 +36,11 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var keyboradKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
-    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(20)
+    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
+    private val currentImageUri : MutableStateFlow<String> = MutableStateFlow("")
     private var timer = Timer()
     private var isTaskScheduled = AtomicBoolean(false)
     private var isIdleTaskScheduled = AtomicBoolean(false)
@@ -250,7 +251,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun setTrackerTime(trackerTime: Int, idealTime: Int) {
         this.trackerTime.value = trackerTime
-       // this.idealTime.value = idealTime
+        // this.idealTime.value = idealTime
     }
 
     actual fun setLastScreenShotTime(time: Int) {
@@ -260,6 +261,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var startTime: Instant = Instant.DISTANT_FUTURE
 
     actual fun getActivityData():ActivityData{
+        base64Converter()
         val activity = ActivityData(
             startTime = startTime.toString(),
             endTime = Clock.System.now().toString(),
@@ -268,7 +270,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             totalActivity = (mouseKeyEvents.value + keyboradKeyEvents.value) % 100,
             billable = "",
             notes = "",
-            uri = base64Converter()
+            uri = currentImageUri.value
         )
         startTime = Clock.System.now()
         canCallApi.value = false
@@ -276,35 +278,37 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual fun getUntrackedActivityData() : ActivityData{
-           val activity = ActivityData(
-                startTime = idealStartTime.toString(),
-                endTime = Clock.System.now().toString(),
-                mouseActivity = 0,
-                keyboardActivity = 0,
-                totalActivity = 0,
-                billable = "",
-                notes = "",
-                unTrackedTime = idealTime.value.toLong(),
-                uri = base64Converter()
-            )
+        base64Converter()
+        val activity = ActivityData(
+            startTime = idealStartTime.toString(),
+            endTime = Clock.System.now().toString(),
+            mouseActivity = 0,
+            keyboardActivity = 0,
+            totalActivity = 0,
+            billable = "",
+            notes = "",
+            unTrackedTime = idealTime.value.toLong(),
+            uri = currentImageUri.value
+        )
         startTime = Clock.System.now()
         mouseKeyEvents.value = 0
         keyboradKeyEvents.value = 0
         return activity
     }
-    private fun base64Converter(): String? {
-        var result: String? = ""
+    private fun base64Converter(){
+
+//        screenShot.value?.toString()?.let { Log.d("this is great $it") }
         viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                result = screenShot.value?.let {
-                    val byteArrayOutputStream = ByteArrayOutputStream()
-                    ImageIO.write(it.toAwtImage(), "png", byteArrayOutputStream)
-                    val bytes = byteArrayOutputStream.toByteArray()
-                    Base64.getEncoder().encodeToString(bytes)
-                }
-            }
+            currentImageUri.value = screenShot.value?.let {
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                ImageIO.write(it.toAwtImage(), "png", byteArrayOutputStream)
+                val bytes = byteArrayOutputStream.toByteArray()
+                Log.d("$bytes y")
+                Base64.getEncoder().encodeToString(bytes)
+            }.toString()
         }
-       return result
+
+
     }
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
