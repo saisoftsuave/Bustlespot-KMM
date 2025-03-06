@@ -119,7 +119,7 @@ fun TrackerScreen(
     LaunchedEffect(idleTime) {
         if (idleTime > customeTimeForIdleTime && !homeViewModel.trackerDialogState.value.isDialogShown) {
             onFocusReceived.invoke()
-            homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.ShowIdleTimeDialog){
+            homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.ShowIdleTimeDialog) {
                 homeViewModel.startPostingUntrackedActivity(
                     organisationId = organisationId.toInt()
                 )
@@ -176,6 +176,7 @@ fun TrackerScreen(
                         homeViewModel.handleTrackerDialogEvents(
                             TrackerDialogEvents.ShowExitDialog,
                             handleNavAction = {
+                                homeViewModel.startPostingActivity(organisationId = organisationId.toInt())
                                 navController.navigateUp()
                             })
                     } else {

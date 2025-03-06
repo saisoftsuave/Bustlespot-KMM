@@ -36,10 +36,12 @@ fun main() = application {
         App {
             val desktop = Desktop.getDesktop()
             if (desktop.isSupported(Desktop.Action.APP_EVENT_FOREGROUND)) {
+                // works for Mac OS
                 desktop.requestForeground(true)
                 window.toFront()
                 window.requestFocus()
             } else {
+                //works for Windows
                 if (window.state == Frame.ICONIFIED) {
                     window.state = Frame.NORMAL
                 }

@@ -2,19 +2,25 @@ package org.softsuave.bustlespot.timer
 
 import GlobalEventListener
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asSkiaBitmap
 import androidx.compose.ui.graphics.toAwtImage
+import androidx.compose.ui.graphics.toComposeImageBitmap
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.notifications.sendLocalNotification
 import org.softsuave.bustlespot.tracker.data.model.ActivityData
 import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.util.Base64
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
@@ -30,7 +36,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var keyboradKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
-    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
+    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(20)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -52,7 +58,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private var idleTimerTask: TimerTask? = null
     private var trackerIndex = 0
     private val screenShotFrequency = 1
-    private val screenshotLimit = 10
+    private val screenshotLimit = 1
+    private var idealStartTime : Instant = Instant.DISTANT_PAST
+    private val postActivityInterval:Int = 600 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -63,6 +71,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun stopTimer() {
         Log.d("stopTimer")
         isTrackerRunning.value = false
+        idealStartTime = Clock.System.now()
         globalEventListener.unregisterListeners()
     }
 
@@ -137,7 +146,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     if (isTrackerRunning.value) {
                         val currentTime = Clock.System.now()
                         val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
-                        if (timeDifference >= 600) {
+                        if(timeDifference >= postActivityInterval){
                             canCallApi.value = true
                         }
                         Log.d("$timeDifference and ${canCallApi.value}")
@@ -241,7 +250,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun setTrackerTime(trackerTime: Int, idealTime: Int) {
         this.trackerTime.value = trackerTime
-        // this.idealTime.value = idealTime
+       // this.idealTime.value = idealTime
     }
 
     actual fun setLastScreenShotTime(time: Int) {
@@ -250,7 +259,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual var startTime: Instant = Instant.DISTANT_FUTURE
 
-    actual fun getActivityData(): ActivityData {
+    actual fun getActivityData():ActivityData{
         val activity = ActivityData(
             startTime = startTime.toString(),
             endTime = Clock.System.now().toString(),
@@ -259,29 +268,44 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             totalActivity = (mouseKeyEvents.value + keyboradKeyEvents.value) % 100,
             billable = "",
             notes = "",
+            uri = base64Converter()
         )
         startTime = Clock.System.now()
         canCallApi.value = false
         return activity
     }
 
-    actual fun getUntrackedActivityData(): ActivityData {
-        val activity = ActivityData(
-            startTime = startTime.toString(),
-            endTime = Clock.System.now().toString(),
-            mouseActivity = 0,
-            keyboardActivity = 0,
-            totalActivity = 0,
-            billable = "",
-            notes = "",
-            unTrackedTime = idealTime.value.toLong()
-        )
+    actual fun getUntrackedActivityData() : ActivityData{
+           val activity = ActivityData(
+                startTime = idealStartTime.toString(),
+                endTime = Clock.System.now().toString(),
+                mouseActivity = 0,
+                keyboardActivity = 0,
+                totalActivity = 0,
+                billable = "",
+                notes = "",
+                unTrackedTime = idealTime.value.toLong(),
+                uri = base64Converter()
+            )
         startTime = Clock.System.now()
         mouseKeyEvents.value = 0
         keyboradKeyEvents.value = 0
         return activity
     }
-
+    private fun base64Converter(): String? {
+        var result: String? = ""
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                result = screenShot.value?.let {
+                    val byteArrayOutputStream = ByteArrayOutputStream()
+                    ImageIO.write(it.toAwtImage(), "png", byteArrayOutputStream)
+                    val bytes = byteArrayOutputStream.toByteArray()
+                    Base64.getEncoder().encodeToString(bytes)
+                }
+            }
+        }
+       return result
+    }
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 }

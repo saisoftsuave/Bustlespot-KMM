@@ -20,8 +20,6 @@ import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLPROJECTS
 import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLTASKS
 import org.softsuave.bustlespot.data.network.APIEndpoints.POSTACTIVITY
 import org.softsuave.bustlespot.data.network.BASEURL
-import org.softsuave.bustlespot.data.network.models.request.ActivityDto
-import org.softsuave.bustlespot.data.network.models.response.ActivityResponseDto
 import org.softsuave.bustlespot.data.network.models.response.ErrorResponse
 import org.softsuave.bustlespot.data.network.models.response.GetAllActivities
 import org.softsuave.bustlespot.data.network.models.response.GetAllProjects
