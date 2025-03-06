@@ -3,6 +3,8 @@ package org.softsuave.bustlespot.tracker.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,8 +42,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -90,11 +95,9 @@ fun TrackerScreen(
     val isTrackerRunning by homeViewModel.isTrackerRunning.collectAsState()
     val idleTime by homeViewModel.idealTime.collectAsState()
     val screenShotState by homeViewModel.screenShotState.collectAsState()
-    val keyCount by homeViewModel.keyboradKeyEvents.collectAsState()
-    val mouseCount by homeViewModel.mouseKeyEvents.collectAsState()
     val screenShotTakenTime by homeViewModel.screenShotTakenTime.collectAsState()
     val customeTimeForIdleTime by homeViewModel.customeTimeForIdleTime.collectAsState()
-
+    val isNetworkAvailable by homeViewModel.isNetworkAvailable.collectAsState(false)
     // Collect the consolidated drop-down states from HomeViewModel.
     val projectDropDownState by homeViewModel.projectDropDownState.collectAsState()
     val taskDropDownState by homeViewModel.taskDropDownState.collectAsState()
@@ -112,7 +115,6 @@ fun TrackerScreen(
     val totalIdleTime by homeViewModel.totalIdleTime.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val isTrackerStarted by mutableStateOf(false)
 
 
     // Launch idle dialog effect.
@@ -312,8 +314,6 @@ fun TrackerScreen(
                     TimerSessionSection(
                         trackerTimer = trackerTimer,
                         homeViewModel = homeViewModel,
-                        keyCount = keyCount,
-                        mouseCount = mouseCount,
                         idleTime = totalIdleTime,
                         isTrackerRunning = isTrackerRunning,
                         taskName = selectedTask?.name ?: "",
@@ -579,12 +579,9 @@ fun TimerSessionSection(
     trackerTimer: Int,
     homeViewModel: HomeViewModel,
     idleTime: Int,
-    mouseCount: Int,
-    keyCount: Int,
     isTrackerRunning: Boolean,
     organisationId: String
 ) {
-    var isPlaying by remember { mutableStateOf(false) }
     Column(
         modifier = modifier.fillMaxWidth(0.85f), verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -762,6 +759,10 @@ fun SyncNowSection(
     onClickUserActivity: () -> Unit = {},
     onClickSyncNow: () -> Unit = {}
 ) {
+    val syncNowInteractionSource = remember { MutableInteractionSource() }
+    val isHovered by syncNowInteractionSource.collectIsHoveredAsState()
+    val userActivityInteractionSource = remember { MutableInteractionSource() }
+    val isHoveredOne by userActivityInteractionSource.collectIsHoveredAsState()
     Column(
         modifier = modifier.fillMaxWidth(0.85f).padding(top = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -776,20 +777,35 @@ fun SyncNowSection(
                 text = "Sync Now",
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable {
+                modifier = Modifier.clickable(
+                    interactionSource = syncNowInteractionSource,
+                    indication = null,
+                    enabled = true,
+                    onClickLabel = "clicked",
+                    role = Role.Button
+                ) {
                     onClickSyncNow()
-                })
+                }.pointerHoverIcon(PointerIcon.Hand),
+                color = if (isHovered) Color.Red else Color.Black,
+            )
         }
         Text(
             text = "User Activity",
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.clickable {
+            modifier = Modifier.clickable(
+                interactionSource = userActivityInteractionSource,
+                indication = null,
+                enabled = true,
+                onClickLabel = "clicked",
+                role = Role.Button
+            ) {
                 onClickUserActivity()
-            })
+            }.pointerHoverIcon(PointerIcon.Hand),
+            color = if (isHoveredOne) Color.Red else Color.Black,
+        )
     }
 }
-
 
 fun <T> List<T>.moveToFirst(item: T): List<T> {
     val mutableList = this.toMutableList()
