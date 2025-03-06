@@ -80,7 +80,6 @@ class HomeViewModel(
             this.taskId = _selectedTask.value?.taskId ?: 0
             this.projectId = _selectedProject.value?.projectId ?: 0
             this.orgId = organisationId
-            this.uri = ""
         }
         return PostActivityRequest(activityData = arrayListOf(activityDataOfModule))
     }
