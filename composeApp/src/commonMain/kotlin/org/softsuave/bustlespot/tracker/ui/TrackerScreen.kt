@@ -334,7 +334,9 @@ fun TrackerScreen(
                             openWebLink(USER_ACTIVITY)
                         },
                         onClickSyncNow = {
-                            println("Sync Now Clicked")
+                            homeViewModel.startPostingActivity(
+                                organisationId = organisationId.toInt()
+                            )
                         }
                     )
                 }
