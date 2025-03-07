@@ -3,6 +3,8 @@ package org.softsuave.bustlespot.tracker.ui
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -414,6 +416,7 @@ class HomeViewModel(
                             isDialogShown = false
                         )
                         resetTrackerTimer()
+                        resetIdleTimer()
                         handleDropDownEvents(DropDownEvents.OnProjectSelection(trackerDialogEvents.selectedProject))
                     },
                     onDismiss = {
@@ -436,6 +439,7 @@ class HomeViewModel(
                             isDialogShown = false
                         )
                         resetTrackerTimer()
+                        resetIdleTimer()
                         handleDropDownEvents(DropDownEvents.OnTaskSelection(trackerDialogEvents.selectedTask))
                     },
                     onDismiss = {
