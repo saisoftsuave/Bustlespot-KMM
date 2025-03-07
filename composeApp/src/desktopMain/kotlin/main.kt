@@ -7,6 +7,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.github.kwhat.jnativehook.GlobalScreen
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.softsuave.bustlespot.di.initKoin
@@ -17,6 +18,11 @@ import javax.swing.SwingUtilities
 
 fun main() = application {
     Runtime.getRuntime().addShutdownHook(Thread {
+        try {
+            GlobalScreen.unregisterNativeHook()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         // clean up logic
     })
 

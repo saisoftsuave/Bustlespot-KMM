@@ -59,12 +59,13 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private var idleTimerTask: TimerTask? = null
     private var trackerIndex = 0
     private val screenShotFrequency = 1
-    private val screenshotLimit = 1
+    private val screenshotLimit = 10
     private var idealStartTime: Instant = Instant.DISTANT_PAST
     private val postActivityInterval: Int = 600 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
+        globalEventListener.unregisterListeners()
         idealTime.value = 0
         trackerTime.value = 0
     }
@@ -185,6 +186,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun stopIdleTimer() {
         isIdealTimerRunning.value = false
+        globalEventListener.unregisterListeners()
     }
 
     actual fun startIdleTimerClock() {

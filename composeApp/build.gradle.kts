@@ -172,8 +172,9 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.softsuave.bustlespot"
+            packageName = "Bustlespot"
             packageVersion = "1.0.0"
+            vendor = "Soft Suave Technologies"
             modules("java.sql")
 
             windows {
@@ -184,9 +185,7 @@ compose.desktop {
                 iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_windows.ico"))
                 perUserInstall = false
                 shortcut = true
-
             }
-
 
             // macOS configuration
             macOS {

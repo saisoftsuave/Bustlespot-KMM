@@ -194,9 +194,13 @@ fun LoginScreen(
                                         Res.drawable.ic_password_visibility_off
                                     ),
                                     contentDescription = "Toggle Password Visibility",
-                                    modifier = Modifier.clickable {
+                                    modifier = Modifier.clickable(
+                                        interactionSource = MutableInteractionSource(),
+                                        indication = null
+                                    ) {
                                         passwordVisibility = !passwordVisibility
-                                    }
+                                    }.pointerHoverIcon(PointerIcon.Hand)
+                                        .focusable(interactionSource = MutableInteractionSource())
                                 )
                             },
                             isError = passwordState.value.error.isNotEmpty(),
@@ -221,10 +225,13 @@ fun LoginScreen(
                             Text(
                                 text = "Forgot Password?",
                                 color = Color.Black,
-                                modifier = Modifier.padding(16.dp).clickable {
+                                modifier = Modifier.padding(16.dp).clickable(
+                                    interactionSource = MutableInteractionSource(),
+                                    indication = null
+                                ) {
                                     // navController.navigate(AuthScreen.ForgotPassword.route)
                                     openWebLink(FORGOT_PASSWORD)
-                                },
+                                }.pointerHoverIcon(PointerIcon.Hand),
                                 textAlign = TextAlign.End,
                                 style = MaterialTheme.typography.bodyMedium,
                             )
@@ -272,10 +279,13 @@ fun LoginScreen(
                             Text(
                                 text = "Sign Up",
                                 color = Color.Red,
-                                modifier = Modifier.clickable {
+                                modifier = Modifier.clickable(
+                                    interactionSource = MutableInteractionSource(),
+                                    indication = null
+                                ) {
                                     //navController.navigate(AuthScreen.SignUp.route)
                                     openWebLink(SIGN_UP)
-                                },
+                                }.pointerHoverIcon(PointerIcon.Hand),
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                         }
