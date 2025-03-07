@@ -1,8 +1,5 @@
-import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -32,15 +29,20 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-         //   export("io.github.mirzemehdi:kmpnotifier:1.4.0")
+            //   export("io.github.mirzemehdi:kmpnotifier:1.4.0")
             baseName = "ComposeApp"
             isStatic = true
-            linkerOpts("-lsqlite3","_sqlite3")
+            linkerOpts("-lsqlite3", "_sqlite3")
             project.extensions.findByType(KotlinMultiplatformExtension::class.java)?.apply {
                 targets
                     .filterIsInstance<KotlinNativeTarget>()
                     .flatMap { it.binaries }
-                    .forEach { compilationUnit -> compilationUnit.linkerOpts("-lsqlite3","_sqlite3") }
+                    .forEach { compilationUnit ->
+                        compilationUnit.linkerOpts(
+                            "-lsqlite3",
+                            "_sqlite3"
+                        )
+                    }
             }
         }
     }
@@ -77,10 +79,9 @@ kotlin {
             implementation(libs.bundles.ktor)
 
             implementation(libs.lifecycle.viewmodel.compose)
- //           api(libs.kmpnotifier)
+            //           api(libs.kmpnotifier)
             implementation(libs.kermit)
 //            implementation(libs.library.base)
-
             implementation(libs.coroutines.extensions)
             implementation(libs.stately.common) // Needed by SQLDelight
         }
@@ -152,11 +153,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlin {
-        jvmToolchain(21)
+        jvmToolchain(17)
     }
 }
 
@@ -172,7 +173,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Bustlespot"
+            packageName = "Bustlespot-KMM"
             packageVersion = "1.0.0"
             vendor = "Soft Suave Technologies"
             modules("java.sql")
@@ -191,6 +192,50 @@ compose.desktop {
             macOS {
                 bundleID = "org.softsuave.bustlespot.app"
                 iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_macos.icns"))
+                infoPlist(
+                    fn = {
+                        extraKeysRawXml = """
+            <key>NSCameraUsageDescription</key>
+            <string>This app requires access to the camera for capturing media.</string>
+            
+            <key>NSMicrophoneUsageDescription</key>
+            <string>This app requires access to the microphone for recording audio.</string>
+            
+            <key>NSPhotoLibraryUsageDescription</key>
+            <string>This app requires access to the photo library to save and select images.</string>
+            
+            <key>NSPhotoLibraryAddUsageDescription</key>
+            <string>This app requires permission to add photos to your library.</string>
+            
+            <key>NSFileAccessUsageDescription</key>
+            <string>This app requires access to files for reading and writing.</string>
+            
+            <key>NSDocumentsFolderUsageDescription</key>
+            <true/>
+            
+            <key>NSDownloadsFolderUsageDescription</key>
+            <true/>
+            
+            <key>NSDesktopFolderUsageDescription</key>
+            <true/>
+            
+            <key>NSAccessibilityAccess</key>
+            <true/>
+            
+            <key>NSScreenCaptureDescription</key>
+            <true/>
+            
+            <key>NSFileProtectionComplete</key>
+            <true/>
+            
+            <key>NSFileProtectionCompleteUnlessOpen</key>
+            <true/>
+            
+            <key>NSFileProtectionCompleteUntilFirstUserAuthentication</key>
+            <true/>
+        """.trimIndent()
+                    }
+                )
             }
             // Linux configuration
             linux {
