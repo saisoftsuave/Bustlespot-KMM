@@ -1,4 +1,3 @@
-import com.android.aaptcompiler.parseUiModeType
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
@@ -83,7 +82,6 @@ kotlin {
             //           api(libs.kmpnotifier)
             implementation(libs.kermit)
 //            implementation(libs.library.base)
-
             implementation(libs.coroutines.extensions)
             implementation(libs.stately.common) // Needed by SQLDelight
         }
@@ -155,11 +153,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlin {
-        jvmToolchain(21)
+        jvmToolchain(17)
     }
 }
 
@@ -175,7 +173,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Bustlespot"
+            packageName = "Bustlespot-KMM"
             packageVersion = "1.0.0"
             vendor = "Soft Suave Technologies"
             modules("java.sql")
@@ -194,6 +192,50 @@ compose.desktop {
             macOS {
                 bundleID = "org.softsuave.bustlespot.app"
                 iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_macos.icns"))
+                infoPlist(
+                    fn = {
+                        extraKeysRawXml = """
+            <key>NSCameraUsageDescription</key>
+            <string>This app requires access to the camera for capturing media.</string>
+            
+            <key>NSMicrophoneUsageDescription</key>
+            <string>This app requires access to the microphone for recording audio.</string>
+            
+            <key>NSPhotoLibraryUsageDescription</key>
+            <string>This app requires access to the photo library to save and select images.</string>
+            
+            <key>NSPhotoLibraryAddUsageDescription</key>
+            <string>This app requires permission to add photos to your library.</string>
+            
+            <key>NSFileAccessUsageDescription</key>
+            <string>This app requires access to files for reading and writing.</string>
+            
+            <key>NSDocumentsFolderUsageDescription</key>
+            <true/>
+            
+            <key>NSDownloadsFolderUsageDescription</key>
+            <true/>
+            
+            <key>NSDesktopFolderUsageDescription</key>
+            <true/>
+            
+            <key>NSAccessibilityAccess</key>
+            <true/>
+            
+            <key>NSScreenCaptureDescription</key>
+            <true/>
+            
+            <key>NSFileProtectionComplete</key>
+            <true/>
+            
+            <key>NSFileProtectionCompleteUnlessOpen</key>
+            <true/>
+            
+            <key>NSFileProtectionCompleteUntilFirstUserAuthentication</key>
+            <true/>
+        """.trimIndent()
+                    }
+                )
             }
             // Linux configuration
             linux {
