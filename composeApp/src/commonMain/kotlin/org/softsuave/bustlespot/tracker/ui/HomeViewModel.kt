@@ -36,7 +36,6 @@ class HomeViewModel(
     var screenShotTakenTime: StateFlow<Int> = trackerModule.screenShotTakenTime
     val customeTimeForIdleTime: StateFlow<Int> = trackerModule.customeTimeForIdleTime
     val screenShotState: StateFlow<ImageBitmap?> = trackerModule.screenShotState
-    var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
     var canCallApi: MutableStateFlow<Boolean> = trackerModule.canCallApi
 //    val isNetworkAvailable: Flow<Boolean> = networkMonitor.isConnected
 
@@ -489,7 +488,6 @@ class HomeViewModel(
                 } else {
                     if (checkTaskAndProject()) {
                         startTrackerTimer()
-                        isTrackerStarted.value = true
                     }
                 }
             }

@@ -36,7 +36,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var keyboradKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
-    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
+    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(30)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -59,9 +59,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private var idleTimerTask: TimerTask? = null
     private var trackerIndex = 0
     private val screenShotFrequency = 1
-    private val screenshotLimit = 10
+    private val screenshotLimit = 1
     private var idealStartTime: Instant = Instant.DISTANT_PAST
-    private val postActivityInterval: Int = 600 //in second
+    private val postActivityInterval: Int = 60 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false

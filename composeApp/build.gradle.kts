@@ -1,8 +1,6 @@
-import org.gradle.declarative.dsl.schema.FqName.Empty.packageName
+import com.android.aaptcompiler.parseUiModeType
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
@@ -32,15 +30,20 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-         //   export("io.github.mirzemehdi:kmpnotifier:1.4.0")
+            //   export("io.github.mirzemehdi:kmpnotifier:1.4.0")
             baseName = "ComposeApp"
             isStatic = true
-            linkerOpts("-lsqlite3","_sqlite3")
+            linkerOpts("-lsqlite3", "_sqlite3")
             project.extensions.findByType(KotlinMultiplatformExtension::class.java)?.apply {
                 targets
                     .filterIsInstance<KotlinNativeTarget>()
                     .flatMap { it.binaries }
-                    .forEach { compilationUnit -> compilationUnit.linkerOpts("-lsqlite3","_sqlite3") }
+                    .forEach { compilationUnit ->
+                        compilationUnit.linkerOpts(
+                            "-lsqlite3",
+                            "_sqlite3"
+                        )
+                    }
             }
         }
     }
@@ -77,7 +80,7 @@ kotlin {
             implementation(libs.bundles.ktor)
 
             implementation(libs.lifecycle.viewmodel.compose)
- //           api(libs.kmpnotifier)
+            //           api(libs.kmpnotifier)
             implementation(libs.kermit)
 //            implementation(libs.library.base)
 

@@ -21,36 +21,13 @@ fun captureFullScreenScreenshot(imageName: String): ImageBitmap? {
         // Capture the entire screen
         val screenshot = robot.createScreenCapture(screenRect)
 
-        // Define the directory path
-        val directoryPath =
-            "/Users/softsuave/Downloads/bustlespotSample/composeApp/src/commonMain/composeResources/drawable"
-        val directory = File(directoryPath)
-
-        // Ensure the directory exists, create it if it doesn't
-        if (!directory.exists()) {
-            directory.mkdirs()
-        }
-
-        // Save the image to the specified file in the directory
-        val file = File(directory, "$imageName.png")
-        ImageIO.write(screenshot, "png", file)
-
-        println("Screenshot saved at: ${file.absolutePath}")
-
-        // Convert BufferedImage to ImageBitmap and return
-        fileToImageBitmap(
-            file
-        )
+        screenshot.toComposeImageBitmap()
     } catch (e: Exception) {
         e.printStackTrace()
         null
     }
 }
 
-fun fileToImageBitmap(file: File): ImageBitmap {
-    val image = Image.makeFromEncoded(file.readBytes())
-    return image.toComposeImageBitmap()
-}
 
 actual fun takeScreenShot(): ImageBitmap? {
     return captureFullScreenScreenshot(
