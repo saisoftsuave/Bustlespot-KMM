@@ -3,7 +3,7 @@ package org.softsuave.bustlespot.di
 import org.softsuave.bustlespot.auth.di.platformModule
 import org.softsuave.bustlespot.auth.di.sharedModules
 import org.softsuave.bustlespot.organisation.di.organisationModule
-import org.softsuave.bustlespot.tracker.di.trackerModule
+import org.softsuave.bustlespot.tracker.di.trackerDiModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 
@@ -12,6 +12,6 @@ fun initKoin(
 ) {
     startKoin {
         config?.invoke(this)
-        modules(koinGlobalModule,sharedModules, platformModule,organisationModule,trackerModule)
+        modules(koinGlobalModule,sharedModules, platformModule,organisationModule,trackerDiModule)
     }
 }

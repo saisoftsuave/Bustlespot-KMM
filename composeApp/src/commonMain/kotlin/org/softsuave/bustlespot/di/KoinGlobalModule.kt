@@ -24,7 +24,7 @@ import org.softsuave.bustlespot.auth.signin.data.AccessTokenResponse
 import org.softsuave.bustlespot.createSettings
 import org.softsuave.bustlespot.getEngine
 import org.softsuave.bustlespot.data.network.BASEURL
-import org.softsuave.bustlespot.tracker.di.trackerModule
+import org.softsuave.bustlespot.tracker.di.trackerDiModule
 import org.koin.dsl.module
 import org.softsuave.bustlespot.data.local.createDriver
 import com.example.Database
@@ -34,7 +34,7 @@ import org.softsuave.bustlespot.network.NetworkMonitorProvider
 val koinGlobalModule = module {
     single { MainViewModel(get()) { provideUnauthenticatedHttpClient() } }
     factory { provideHttpClient(get(), get()) }
-    trackerModule
+    trackerDiModule
     single<ObservableSettings> {
         createSettings()
     }

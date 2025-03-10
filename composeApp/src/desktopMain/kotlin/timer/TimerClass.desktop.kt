@@ -36,7 +36,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var keyboradKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
-    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(30)
+    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -61,7 +61,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private val screenShotFrequency = 1
     private val screenshotLimit = 1
     private var idealStartTime: Instant = Instant.DISTANT_PAST
-    private val postActivityInterval: Int = 60 //in second
+    private val postActivityInterval: Int = 600 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -194,16 +194,22 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     fun takeScreenShot() {
-        screenShot.value = org.softsuave.bustlespot.screenshot.takeScreenShot()
-        val bufferedImage: BufferedImage? = screenShot.value?.toAwtImage()
-        val file = File(System.getProperty("java.io.tmpdir"), "sampleFile")
-        ImageIO.write(bufferedImage, "png", file)
+        screenShot.value = org.softsuave.bustlespot.screenshot.takeScreenShot() ?: return
+        val bufferedImage: BufferedImage =  screenShot.value?.toAwtImage() ?: return
+
+        val file = File(System.getProperty("java.io.tmpdir"), "sampleFile.png")
+
+        ByteArrayOutputStream().use { byteArrayOutputStream ->
+            ImageIO.write(bufferedImage, "png", file)
+            ImageIO.write(bufferedImage, "png", byteArrayOutputStream)
+            currentImageUri.value = Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray())
+        }
         sendLocalNotification(
-            "Bustle-spot Remainder",
-            "Captured screen-shot", file.absolutePath
+          "Bustle-spot Reminder",
+           "Captured screenshot",
+            imageFile = file.absolutePath
         )
     }
-
     actual fun startScreenshotTask() {
         if (screenshotRepeatingTask == null) {
             screenshotRepeatingTask = object : TimerTask() {
@@ -263,7 +269,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var startTime: Instant = Instant.DISTANT_FUTURE
 
     actual fun getActivityData(): ActivityData {
-        base64Converter()
+//        base64Converter()
         val activity = ActivityData(
             startTime = startTime.toString(),
             endTime = Clock.System.now().toString(),
@@ -280,7 +286,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual fun getUntrackedActivityData(): ActivityData {
-        base64Converter()
+//        base64Converter()
         val activity = ActivityData(
             startTime = idealStartTime.toString(),
             endTime = Clock.System.now().toString(),

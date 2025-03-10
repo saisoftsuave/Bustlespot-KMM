@@ -5,7 +5,7 @@ import org.softsuave.bustlespot.tracker.data.TrackerRepositoryImpl
 import org.softsuave.bustlespot.tracker.ui.HomeViewModel
 import org.koin.dsl.module
 
-val trackerModule = module{
+val trackerDiModule = module{
     single<TrackerRepository>{
         TrackerRepositoryImpl(get(),get(),get())
     }

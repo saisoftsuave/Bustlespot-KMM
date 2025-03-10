@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -135,8 +136,8 @@ fun TrackerScreen(
         }
     }
 
-    LaunchedEffect(key1 = Unit){
-            homeViewModel.checkAndPostActivities()
+    LaunchedEffect(key1 = Unit) {
+        homeViewModel.checkAndPostActivities()
     }
     LaunchedEffect(homeViewModel.canCallApi.value) {
         Log.d("isChanged ${homeViewModel.canCallApi.value}")
@@ -430,12 +431,22 @@ fun DropDownSelectionList(
     var isMenuExpanded by remember { mutableStateOf(false) }
     // We also track whether we've already notified the parent for this open.
     var hasNotifiedOnOpen by remember { mutableStateOf(false) }
+
     // Log state changes only when isMenuExpanded changes.
     LaunchedEffect(isMenuExpanded) {
         println("isMenuExpanded changed to: $isMenuExpanded")
     }
-
+    val mutableInteractionSource = remember { MutableInteractionSource() }
     val density = LocalDensity.current
+
+    val isFocused = mutableInteractionSource.collectIsFocusedAsState()
+    LaunchedEffect(isFocused.value) {
+        Log.d("isFocused ${isFocused.value}")
+        if (isFocused.value) {
+            isMenuExpanded = true
+            hasNotifiedOnOpen = true
+        }
+    }
 
     val screenWidth = remember(density) {
         with(density) { 600.dp.toPx() } // Default fallback width (adjust for desktop/iOS)
@@ -471,46 +482,56 @@ fun DropDownSelectionList(
     Column(
         modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TextField(value = inputText, onValueChange = {
-            onSearchText(it)
-            isMenuExpanded = true
-            hasNotifiedOnOpen = true
-        }, singleLine = true, modifier = Modifier.fillMaxWidth(), trailingIcon = {
-            IconButton(onClick = {
-                onDropDownClick()
-                if (!isMenuExpanded && isEnabled) {
-                    isMenuExpanded = true
-                    // Only call onDropDownClick if we haven't already for this open cycle.
-                    if (!hasNotifiedOnOpen) {
-                        hasNotifiedOnOpen = true
+        TextField(
+            value = inputText,
+            onValueChange = {
+                onSearchText(it)
+                isMenuExpanded = true
+                hasNotifiedOnOpen = true
+            },
+            interactionSource = mutableInteractionSource,
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                IconButton(onClick = {
+                    onDropDownClick()
+                    if (!isMenuExpanded && isEnabled) {
+                        isMenuExpanded = true
+                        // Only call onDropDownClick if we haven't already for this open cycle.
+                        if (!hasNotifiedOnOpen) {
+                            hasNotifiedOnOpen = true
+                        }
+                    } else {
+                        // Close the dropdown and reset our notification flag.
+                        isMenuExpanded = false
+                        hasNotifiedOnOpen = false
                     }
-                } else {
-                    // Close the dropdown and reset our notification flag.
-                    isMenuExpanded = false
-                    hasNotifiedOnOpen = false
+                    println("icon clicked")
+                }) {
+                    Icon(
+                        painter = painterResource(
+                            if (isMenuExpanded) Res.drawable.ic_drop_up else Res.drawable.ic_drop_down
+                        ), contentDescription = "Toggle Dropdown"
+                    )
                 }
-                println("icon clicked")
-            }) {
-                Icon(
-                    painter = painterResource(
-                        if (isMenuExpanded) Res.drawable.ic_drop_up else Res.drawable.ic_drop_down
-                    ), contentDescription = "Toggle Dropdown"
+            },
+            label = {
+                Text(
+                    text = title, color = Color.Red, modifier = Modifier.fillMaxWidth()
                 )
-            }
-        }, label = {
-            Text(
-                text = title, color = Color.Red, modifier = Modifier.fillMaxWidth()
-            )
-        }, supportingText = {
-            if (error?.isNotEmpty() == true) {
-                Text(text = error, color = Color.Red)
-            }
-        }, colors = TextFieldDefaults.colors(
-            disabledContainerColor = Color.White,
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
-            focusedIndicatorColor = Color.Red,
-        ), isError = error?.isNotEmpty() ?: false
+            },
+            supportingText = {
+                if (error?.isNotEmpty() == true) {
+                    Text(text = error, color = Color.Red)
+                }
+            },
+            colors = TextFieldDefaults.colors(
+                disabledContainerColor = Color.White,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White,
+                focusedIndicatorColor = Color.Red,
+            ),
+            isError = error?.isNotEmpty() ?: false
         )
         DropdownMenu(
             expanded = isMenuExpanded && hasNotifiedOnOpen && isEnabled,
