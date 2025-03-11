@@ -7,13 +7,13 @@ import kotlin.random.Random
 actual fun sendLocalNotification(
     notificationTitle: String,
     notificationBody: String,
-    imageFile: String
+    imageFile: String?
 ) {
     val notifier = NotifierManager.getLocalNotifier()
     notifier.notify {
         id = Random.nextInt(0, Int.MAX_VALUE)
         title = notificationTitle
         body = notificationBody
-        image = NotificationImage.File(imageFile)
+        image = imageFile?.let { NotificationImage.File(it) }
     }
 }

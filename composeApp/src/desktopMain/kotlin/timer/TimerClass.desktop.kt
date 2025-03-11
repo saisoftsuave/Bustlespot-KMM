@@ -140,7 +140,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     }
                 }
             }
-            timer.scheduleAtFixedRate(idleTimerTask, 1000, 1000)
+            timer.schedule(idleTimerTask, 1000, 1000)
         }
         if (!isTaskScheduled.getAndSet(true)) {
             trackerTimerTask = object : TimerTask() {
@@ -176,7 +176,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     }
                 }
             }
-            timer.scheduleAtFixedRate(trackerTimerTask, 1000, 1000)
+            timer.schedule(trackerTimerTask, 1000, 1000)
         }
     }
 

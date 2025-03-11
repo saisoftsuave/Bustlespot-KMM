@@ -1,24 +1,28 @@
 package org.softsuave.bustlespot.timer
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.accessability.GlobalAccessibilityEvents
+import org.softsuave.bustlespot.notifications.sendLocalNotification
 import org.softsuave.bustlespot.tracker.data.model.ActivityData
 import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.util.Base64
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.random.Random
-
-actual class TrackerModule actual constructor(
-    private val viewModelScope: CoroutineScope
-) {
+actual class TrackerModule actual constructor(private val viewModelScope: CoroutineScope) {
     actual var trackerTime: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var isTrackerRunning: MutableStateFlow<Boolean> = MutableStateFlow(false)
     actual var isIdealTimerRunning: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -31,16 +35,16 @@ actual class TrackerModule actual constructor(
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
-
+    private val currentImageUri: MutableStateFlow<String> = MutableStateFlow("")
     private var timer = Timer()
     private var isTaskScheduled = AtomicBoolean(false)
     private var isIdleTaskScheduled = AtomicBoolean(false)
-
     private val screenShot = MutableStateFlow<ImageBitmap?>(null)
     actual val screenShotState: StateFlow<ImageBitmap?> = screenShot
     private val randomTime: MutableStateFlow<List<Int>> = MutableStateFlow(emptyList())
     private var screenshotRepeatingTask: TimerTask? = null
     private var screenshotOneShotTask: TimerTask? = null
+
 
     @Volatile
     private var isPaused = false
@@ -50,19 +54,25 @@ actual class TrackerModule actual constructor(
     private var trackerIndex = 0
     private val screenShotFrequency = 1
     private val screenshotLimit = 1
+    private var idealStartTime: Instant = Instant.DISTANT_PAST
+    private val postActivityInterval: Int = 600 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
+    //    globalEventListener.unregisterListeners()
         idealTime.value = 0
         trackerTime.value = 0
     }
 
     actual fun stopTimer() {
+        Log.d("stopTimer")
         isTrackerRunning.value = false
-        //   globalEventListener.unregisterListeners()
+        idealStartTime = Clock.System.now()
+     //   globalEventListener.unregisterListeners()
     }
 
     actual fun resumeTracker() {
+        Log.d("resumeTracker")
         isTrackerRunning.value = true
         //  globalEventListener.registerListeners()
     }
@@ -71,7 +81,7 @@ actual class TrackerModule actual constructor(
         randomTimes: MutableStateFlow<List<Int>>,
         overallStart: Int,
         overallEnd: Int,
-        numberOfIntervals: Int = 10
+        numberOfIntervals: Int = 1
     ) {
         val totalDuration = overallEnd - overallStart
         if (totalDuration % numberOfIntervals != 0) {
@@ -87,7 +97,8 @@ actual class TrackerModule actual constructor(
 
     actual fun startTimer() {
         isTrackerRunning.value = true
-        //   globalEventListener.registerListeners()
+        isIdealTimerRunning.value = true
+    //    globalEventListener.registerListeners()
         setRandomTimes(
             randomTime,
             overallStart = 0,
@@ -95,52 +106,53 @@ actual class TrackerModule actual constructor(
             numberOfIntervals = screenShotFrequency
         )
         trackerIndex = 0
-        // Collect key events
         viewModelScope.launch {
             GlobalAccessibilityEvents.keyCountFlow.collectLatest { count ->
                 keyboradKeyEvents.emit(count)
                 idealTime.value = 0
-                Log.d("TrackerModule Key Count: $count")
             }
         }
-
-        // Collect click events
         viewModelScope.launch {
             GlobalAccessibilityEvents.mouseCountFlow.collectLatest { count ->
                 mouseKeyEvents.emit(count)
                 idealTime.value = 0
-                Log.d("TrackerModule Mouse Click Count: $count")
             }
         }
-
-        // Collect mouse motion events
         viewModelScope.launch {
             GlobalAccessibilityEvents.mouseMotionCountFlow.collectLatest { count ->
                 mouseMotionCount.emit(count)
                 idealTime.value = 0
-                Log.d("TrackerModule Mouse Motion Count: $count")
             }
         }
+        startTime = Clock.System.now()
         if (!isIdleTaskScheduled.getAndSet(true)) {
             idleTimerTask = object : TimerTask() {
                 override fun run() {
-                    idealTime.value += 1
+                    if (isIdealTimerRunning.value) {
+                        idealTime.value += 1
+                    }
                 }
             }
-            timer.scheduleAtFixedRate(idleTimerTask, 1000, 1000)
+            timer.schedule(idleTimerTask, 1000, 1000)
         }
         if (!isTaskScheduled.getAndSet(true)) {
             trackerTimerTask = object : TimerTask() {
                 override fun run() {
                     if (isTrackerRunning.value) {
-                        trackerTime.value++
-                        if (trackerTime.value % 60 == 0) {
-                            screenShotTakenTime.value++
+                        val currentTime = Clock.System.now()
+                        val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
+                        if (timeDifference >= postActivityInterval) {
+                            canCallApi.value = true
                         }
+                        Log.d("$timeDifference and ${canCallApi.value}")
+                        trackerTime.value++
+                        // need to add initial ideal time
+                        screenShotTakenTime.value++
                         println("Current minute: ${(trackerTime.value % 3600) / 60}")
                         println("Random times: ${randomTime.value}")
                         if (trackerIndex < randomTime.value.size && trackerTime.value > randomTime.value[trackerIndex]) {
                             takeScreenShot()
+                            screenShotTakenTime.value = 0
                             trackerIndex++
                             if (trackerIndex == randomTime.value.size) {
                                 val overallStart = trackerTime.value
@@ -162,12 +174,12 @@ actual class TrackerModule actual constructor(
     }
 
     actual fun resetIdleTimer() {
-        isIdealTimerRunning.value = false
         idealTime.value = 0
     }
 
     actual fun stopIdleTimer() {
         isIdealTimerRunning.value = false
+       // globalEventListener.unregisterListeners()
     }
 
     actual fun startIdleTimerClock() {
@@ -175,11 +187,14 @@ actual class TrackerModule actual constructor(
     }
 
     fun takeScreenShot() {
-        viewModelScope.launch {
-            screenShot.value = org.softsuave.bustlespot.screenshot.takeScreenShot()
-            screenShotTakenTime.value = 0
-        }
-
+        screenShot.value = org.softsuave.bustlespot.screenshot.takeScreenShot()
+//        val bufferedImage: ImageBitmap? = screenShot.value
+//        val file = File(System.getProperty("java.io.tmpdir"), "sampleFile")
+//        ImageIO.write(bufferedImage, "png", file)
+        sendLocalNotification(
+            "Bustle-spot Remainder",
+            "Captured screen-shot", null
+        )
     }
 
     actual fun startScreenshotTask() {
@@ -198,7 +213,7 @@ actual class TrackerModule actual constructor(
                     }
                 }
             }
-            timer.schedule(screenshotRepeatingTask, 0, 60 * 1000)
+            timer.scheduleAtFixedRate(screenshotRepeatingTask, 0, 60 * 1000)
         }
     }
 
@@ -229,11 +244,6 @@ actual class TrackerModule actual constructor(
         customeTimeForIdleTime.value = time
     }
 
-//    override fun onCleared() {
-//        super.onCleared()
-//        timer.cancel()
-//    }
-
     actual fun setTrackerTime(trackerTime: Int, idealTime: Int) {
         this.trackerTime.value = trackerTime
         // this.idealTime.value = idealTime
@@ -243,19 +253,63 @@ actual class TrackerModule actual constructor(
         screenShotTakenTime.value = time
     }
 
-    actual var startTime: Instant
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    actual var canCallApi: MutableStateFlow<Boolean>
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    actual var startTime: Instant = Instant.DISTANT_FUTURE
 
+    @RequiresApi(Build.VERSION_CODES.O)
     actual fun getActivityData(): ActivityData {
-        TODO("Not yet implemented")
+        base64Converter()
+        val activity = ActivityData(
+            startTime = startTime.toString(),
+            endTime = Clock.System.now().toString(),
+            mouseActivity = mouseKeyEvents.value,
+            keyboardActivity = keyboradKeyEvents.value,
+            totalActivity = (mouseKeyEvents.value + keyboradKeyEvents.value) % 100,
+            billable = "",
+            notes = "",
+            uri = currentImageUri.value
+        )
+        startTime = Clock.System.now()
+        canCallApi.value = false
+        return activity
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     actual fun getUntrackedActivityData(): ActivityData {
-        TODO("Not yet implemented")
+        base64Converter()
+        val activity = ActivityData(
+            startTime = idealStartTime.toString(),
+            endTime = Clock.System.now().toString(),
+            mouseActivity = 0,
+            keyboardActivity = 0,
+            totalActivity = 0,
+            billable = "",
+            notes = "",
+            unTrackedTime = idealTime.value.toLong(),
+            uri = currentImageUri.value
+        )
+        startTime = Clock.System.now()
+        mouseKeyEvents.value = 0
+        keyboradKeyEvents.value = 0
+        return activity
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun base64Converter() {
+
+//        screenShot.value?.toString()?.let { Log.d("this is great $it") }
+        viewModelScope.launch {
+            currentImageUri.value = screenShot.value?.let {
+                val byteArrayOutputStream = ByteArrayOutputStream()
+              //  ImageIO.write(it.toAwtImage(), "png", byteArrayOutputStream)
+                val bytes = byteArrayOutputStream.toByteArray()
+                Log.d("$bytes y")
+                Base64.getEncoder().encodeToString(bytes)
+            }.toString()
+        }
+
+
+    }
+
+    actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 }

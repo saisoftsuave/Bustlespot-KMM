@@ -6,6 +6,7 @@ import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfig
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.softsuave.bustlespot.di.initKoin
+import org.softsuave.bustlespot.network.NetworkMonitorProvider
 
 class BustlespotApplication : Application() {
     override fun onCreate() {
@@ -16,6 +17,7 @@ class BustlespotApplication : Application() {
             )
         )
         super.onCreate()
+        NetworkMonitorProvider.init(context = this)
         initKoin {
             androidLogger()
             androidContext(this@BustlespotApplication)
