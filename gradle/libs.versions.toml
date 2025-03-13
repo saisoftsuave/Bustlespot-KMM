@@ -66,6 +66,7 @@ roomCommon = "2.6.1"
 roomCompiler = "2.6.1"
 coroutinesExtensions = "2.0.2"
 statelyCommon = "2.0.5"
+adaptiveAndroid = "1.0.0"
 [libraries]
 
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
@@ -114,7 +115,8 @@ androidx-room-common = { group = "androidx.room", name = "room-common", version.
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
 
 coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "coroutinesExtensions" }
-stately-common = { module = "co.touchlab:stately-common", version.ref = "statelyCommon" } # (needed by SQLDeligt)
+stately-common = { module = "co.touchlab:stately-common", version.ref = "statelyCommon" }
+androidx-adaptive-android = { group = "androidx.compose.material3.adaptive", name = "adaptive-android", version.ref = "adaptiveAndroid" } # (needed by SQLDeligt)
 
 [plugins]
 
