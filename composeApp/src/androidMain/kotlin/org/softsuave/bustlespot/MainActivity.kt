@@ -73,13 +73,16 @@ class MainActivity : ComponentActivity() {
 
     private fun checkAndRequestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
-                != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                )
+                != PackageManager.PERMISSION_GRANTED
+            ) {
                 requestNotificationPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
             }
-            else{
-                requestScreenCapturePermission()
-            }
+        }else {
+            requestScreenCapturePermission()
         }
     }
 
@@ -87,6 +90,8 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
         ComponentActivityReference.clear()
         mediaProjectionHelper.stopScreenCapture()
+        val serviceIntent = Intent(this, MediaProjectionService::class.java)
+        stopService(serviceIntent)
     }
 
 
