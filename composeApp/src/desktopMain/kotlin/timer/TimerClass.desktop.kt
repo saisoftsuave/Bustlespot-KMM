@@ -316,9 +316,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                 Base64.getEncoder().encodeToString(bytes)
             }.toString()
         }
-
-
     }
+
 
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
 

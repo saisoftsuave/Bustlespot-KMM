@@ -56,6 +56,7 @@ class MediaProjectionService : Service() {
         super.onDestroy()
         Log.d(TAG, "Service destroyed.")
         mediaProjectionHelper?.stopScreenCapture()
+        this.stopSelf()
     }
 
     @RequiresApi(Build.VERSION_CODES.M)

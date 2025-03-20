@@ -662,35 +662,15 @@ fun TimerSessionSection(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 IconButton(modifier = Modifier, onClick = {
-//                    isPlaying = !isPlaying
-//                    if (isTrackerRunning) {
-//                        if (isTrackerRunning || homeViewModel.trackerTime.value != 0) {
-//                            homeViewModel.resumeTrackerTimer()
-//                        } else {
-//                            homeViewModel.startTrackerTimer()
-//                        }
-//                    } else {
-//                        if (isTrackerRunning) {
-//                            homeViewModel.stopTrackerTimer()
-//                        } else {
-//                            homeViewModel.resetTrackerTimer()
-//                        }
-//                    }
-//
-//                    if (isAndroid()){
-//                        println("_____android___ + Requesting Permissions")
                     requestPermission {
-                        homeViewModel.startTrackerTimer()
-                    }
-
-//                    }
-                    if (isTrackerRunning) {
-                        homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
-                        homeViewModel.startPostingActivity(
-                            organisationId = organisationId.toInt()
-                        )
-                    } else {
-                        homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
+                        if (isTrackerRunning) {
+                            homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
+                            homeViewModel.startPostingActivity(
+                                organisationId = organisationId.toInt()
+                            )
+                        } else {
+                            homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
+                        }
                     }
                 }) {
                     Icon(
