@@ -84,6 +84,7 @@ import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.organisation.ui.BustleSpotAppBar
+import org.softsuave.bustlespot.utils.BustleSpotRed
 import org.softsuave.bustlespot.utils.handleBackPress
 import org.softsuave.bustlespot.utils.requestPermission
 
@@ -205,7 +206,7 @@ fun TrackerScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             BustleSpotAppBar(
-                title = { Text(text = organisationName, color = Color.Red) },
+                title = { Text(text = organisationName, color = BustleSpotRed) },
                 onNavigationBackClick = {
                     if (isTrackerRunning) {
                         homeViewModel.handleTrackerDialogEvents(
@@ -414,7 +415,7 @@ fun TrackerScreen(
                                 trackerDialogState.onConfirm()
                             },
                             colors = ButtonColors(
-                                containerColor = Color.Red,
+                                containerColor = BustleSpotRed,
                                 contentColor = Color.White,
                                 disabledContainerColor = Color.Gray,
                                 disabledContentColor = Color.Black
@@ -423,7 +424,8 @@ fun TrackerScreen(
                             elevation = ButtonDefaults.buttonElevation(
                                 defaultElevation = 5.dp,
                                 focusedElevation = 7.dp,
-                            )
+                            ),
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                         ) {
                             Text(trackerDialogState.confirmButtonText)
                         }
@@ -435,7 +437,7 @@ fun TrackerScreen(
                             },
                             colors = ButtonColors(
                                 containerColor = Color.White,
-                                contentColor = Color.Red,
+                                contentColor = BustleSpotRed,
                                 disabledContainerColor = Color.Gray,
                                 disabledContentColor = Color.Black
                             ),
@@ -443,7 +445,8 @@ fun TrackerScreen(
                             elevation = ButtonDefaults.buttonElevation(
                                 defaultElevation = 5.dp,
                                 focusedElevation = 7.dp,
-                            )
+                            ),
+                            modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                         ) {
                             Text(trackerDialogState.dismissButtonText)
                         }
@@ -534,21 +537,23 @@ fun DropDownSelectionList(
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             trailingIcon = {
-                IconButton(onClick = {
-                    onDropDownClick()
-                    if (!isMenuExpanded && isEnabled) {
-                        isMenuExpanded = true
-                        // Only call onDropDownClick if we haven't already for this open cycle.
-                        if (!hasNotifiedOnOpen) {
-                            hasNotifiedOnOpen = true
+                IconButton(
+                    onClick = {
+                        onDropDownClick()
+                        if (!isMenuExpanded && isEnabled) {
+                            isMenuExpanded = true
+                            // Only call onDropDownClick if we haven't already for this open cycle.
+                            if (!hasNotifiedOnOpen) {
+                                hasNotifiedOnOpen = true
+                            }
+                        } else {
+                            // Close the dropdown and reset our notification flag.
+                            isMenuExpanded = false
+                            hasNotifiedOnOpen = false
                         }
-                    } else {
-                        // Close the dropdown and reset our notification flag.
-                        isMenuExpanded = false
-                        hasNotifiedOnOpen = false
-                    }
-                    println("icon clicked")
-                }) {
+                        println("icon clicked")
+                    }, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
                     Icon(
                         painter = painterResource(
                             if (isMenuExpanded) Res.drawable.ic_drop_up else Res.drawable.ic_drop_down
@@ -558,19 +563,19 @@ fun DropDownSelectionList(
             },
             label = {
                 Text(
-                    text = title, color = Color.Red, modifier = Modifier.fillMaxWidth()
+                    text = title, color = BustleSpotRed, modifier = Modifier.fillMaxWidth()
                 )
             },
             supportingText = {
                 if (error?.isNotEmpty() == true) {
-                    Text(text = error, color = Color.Red)
+                    Text(text = error, color = BustleSpotRed)
                 }
             },
             colors = TextFieldDefaults.colors(
                 disabledContainerColor = Color.White,
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White,
-                focusedIndicatorColor = Color.Red,
+                focusedIndicatorColor = BustleSpotRed,
             ),
             isError = error?.isNotEmpty() ?: false
         )
@@ -600,8 +605,8 @@ fun DropDownSelectionList(
                                     onItemClick(item)
                                 },
                                 modifier = Modifier.background(
-                                    if (item == selectedProject) Color.Red.copy(alpha = 0.2f) else Color.White
-                                ),
+                                    if (item == selectedProject) BustleSpotRed.copy(alpha = 0.2f) else Color.White
+                                ).pointerHoverIcon(PointerIcon.Hand),
                             )
                         }
 
@@ -616,8 +621,8 @@ fun DropDownSelectionList(
                                     onItemClick(item)
                                 },
                                 modifier = Modifier.background(
-                                    if (item == selectedTask) Color.Red.copy(alpha = 0.2f) else Color.White
-                                )
+                                    if (item == selectedTask) BustleSpotRed.copy(alpha = 0.2f) else Color.White
+                                ).pointerHoverIcon(PointerIcon.Hand)
                             )
                         }
                     }
@@ -671,7 +676,7 @@ fun TimerSessionSection(
         ) {
             Text(
                 text = taskName,
-                color = Color.Red,
+                color = BustleSpotRed,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 overflow = TextOverflow.Ellipsis,
@@ -683,16 +688,18 @@ fun TimerSessionSection(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(onClick = {
-                    requestPermission {
-                        if (isTrackerRunning) {
-                            homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
-                            homeViewModel.startPostingActivity(organisationId.toInt())
-                        } else {
-                            homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
+                IconButton(
+                    onClick = {
+                        requestPermission {
+                            if (isTrackerRunning) {
+                                homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
+                                homeViewModel.startPostingActivity(organisationId.toInt())
+                            } else {
+                                homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
+                            }
                         }
-                    }
-                }) {
+                    }, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
+                ) {
                     Icon(
                         painter = painterResource(
                             if (isTrackerRunning) Res.drawable.ic_pause_circle else Res.drawable.ic_play_arrow
@@ -716,7 +723,7 @@ fun TimerSessionSection(
         ) {
             Text(
                 text = "IdleTime",
-                color = Color.Red,
+                color = BustleSpotRed,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -751,7 +758,7 @@ fun ScreenShotSection(
             )
             Text(
                 text = lastImageTakenTime,
-                color = Color.Red,
+                color = BustleSpotRed,
                 style = MaterialTheme.typography.labelSmall
             )
         }
@@ -808,7 +815,7 @@ fun SyncNowSection(
                 ) {
                     onClickSyncNow()
                 }.pointerHoverIcon(PointerIcon.Hand),
-                color = if (isHovered) Color.Red else Color.Black,
+                color = if (isHovered) BustleSpotRed else Color.Black,
             )
         }
         Text(
@@ -824,7 +831,7 @@ fun SyncNowSection(
             ) {
                 onClickUserActivity()
             }.pointerHoverIcon(PointerIcon.Hand),
-            color = if (isHoveredOne) Color.Red else Color.Black,
+            color = if (isHoveredOne) BustleSpotRed else Color.Black,
         )
     }
 }

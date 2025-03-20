@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import org.softsuave.bustlespot.utils.BustleSpotRed
 
 @Composable
 fun LoadingScreen() {
@@ -21,6 +22,6 @@ fun LoadingScreen() {
             ),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator(color = Color.Red)
+        CircularProgressIndicator(color = BustleSpotRed)
     }
 }

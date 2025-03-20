@@ -33,7 +33,7 @@ fun CustomTitleBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.Red)
+            .background(BustleSpotRed)
             .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center

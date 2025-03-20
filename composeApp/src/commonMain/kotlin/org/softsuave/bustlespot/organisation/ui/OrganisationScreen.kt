@@ -47,6 +47,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -75,6 +77,7 @@ import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.data.network.models.response.Organisation
+import org.softsuave.bustlespot.utils.BustleSpotRed
 
 
 @Composable
@@ -130,7 +133,7 @@ fun OrganisationScreen(
                             organisationViewModel.logOutDisMissed()
                         }, colors = ButtonColors(
                             containerColor = Color.White,
-                            contentColor = Color.Red,
+                            contentColor = BustleSpotRed,
                             disabledContainerColor = Color.Gray,
                             disabledContentColor = Color.Black
                         ),
@@ -138,7 +141,8 @@ fun OrganisationScreen(
                         elevation = ButtonDefaults.buttonElevation(
                             defaultElevation = 5.dp,
                             focusedElevation = 7.dp,
-                        )
+                        ),
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                     ) {
                         Text("Cancel")
                     }
@@ -148,7 +152,7 @@ fun OrganisationScreen(
                         onClick = {
                             organisationViewModel.performLogOut()
                         }, colors = ButtonColors(
-                            containerColor = Color.Red,
+                            containerColor = BustleSpotRed,
                             contentColor = Color.White,
                             disabledContainerColor = Color.Gray,
                             disabledContentColor = Color.Black
@@ -157,7 +161,8 @@ fun OrganisationScreen(
                         elevation = ButtonDefaults.buttonElevation(
                             defaultElevation = 5.dp,
                             focusedElevation = 7.dp,
-                        )
+                        ),
+                        modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                     ) {
                         Text("Logout")
                     }
@@ -282,7 +287,7 @@ fun OrganizationItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp).pointerHoverIcon(PointerIcon.Hand),
         onClick = onClick
     ) {
         Row(
@@ -319,7 +324,7 @@ fun OrganizationItem(
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Arrow Icon",
-                tint = Color.Red
+                tint = BustleSpotRed
             )
         }
     }
@@ -374,7 +379,8 @@ fun BustleSpotAppBar(
                 IconButton(
                     onClick = {
                         onNavigationBackClick()
-                    }
+                    },
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -388,7 +394,8 @@ fun BustleSpotAppBar(
                 IconButton(
                     onClick = {
                         onLogOutClick()
-                    }
+                    },
+                    modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
                 ) {
                     Icon(
                         modifier = Modifier.weight(.8f),
@@ -411,8 +418,8 @@ fun BustleSpotAppBar(
         colors =
         TopAppBarColors(
             containerColor = Color.White,
-            navigationIconContentColor = Color.Red,
-            titleContentColor = Color.Red,
+            navigationIconContentColor = BustleSpotRed,
+            titleContentColor = BustleSpotRed,
             scrolledContainerColor = Color.Unspecified,
             actionIconContentColor = Color.Unspecified
         )
@@ -430,13 +437,13 @@ fun AppBarIcon(
         modifier = modifier.size(40.dp).border(
             width = 1.dp,
             shape = CircleShape,
-            color = Color.Red,
-        ).background(color = Color.Red.copy(alpha = .3f), shape = CircleShape),
+            color = BustleSpotRed,
+        ).background(color = BustleSpotRed.copy(alpha = .3f), shape = CircleShape),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = showWord,
-            color = Color.Red,
+            color = BustleSpotRed,
             maxLines = 1,
             overflow = TextOverflow.Visible,
             fontSize = 20.sp,

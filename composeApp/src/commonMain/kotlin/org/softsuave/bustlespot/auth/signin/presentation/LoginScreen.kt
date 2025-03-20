@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -40,6 +41,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +57,7 @@ import bustlespot.composeapp.generated.resources.Res
 import bustlespot.composeapp.generated.resources.ic_bustlespot
 import bustlespot.composeapp.generated.resources.ic_password_visibility_off
 import bustlespot.composeapp.generated.resources.ic_password_visible
+import bustlespot.composeapp.generated.resources.loginBustleIcon
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -64,6 +71,7 @@ import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.browser.WebLinks.FORGOT_PASSWORD
 import org.softsuave.bustlespot.browser.WebLinks.SIGN_UP
 import org.softsuave.bustlespot.browser.openWebLink
+import org.softsuave.bustlespot.utils.BustleSpotRed
 
 @Composable
 fun LoginScreen(
@@ -93,7 +101,7 @@ fun LoginScreen(
     }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color.Red,
+        containerColor = BustleSpotRed,
         snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) }
     ) { innerPadding ->
         Box(
@@ -113,9 +121,9 @@ fun LoginScreen(
 
 
                 Image(
-                    painter = painterResource(Res.drawable.ic_bustlespot),
+                    painter = painterResource(Res.drawable.loginBustleIcon),
                     contentDescription = "Bustlespot Logo",
-                    modifier = Modifier.size(150.dp)
+                    modifier = Modifier.size(180.dp)
                 )
 
 
@@ -132,12 +140,12 @@ fun LoginScreen(
                         Text(
                             text = "Sign In",
                             color = Color.Black,
-                            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp),
+                            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                             style = MaterialTheme.typography.headlineLarge,
                         )
                         Box(
                             modifier = Modifier.width(64.dp).height(5.dp).background(
-                                Color.Red,
+                                BustleSpotRed,
                                 RoundedCornerShape(20.dp)
                             )
                         )
@@ -154,7 +162,7 @@ fun LoginScreen(
                                 focusedIndicatorColor = androidx.compose.material3.MaterialTheme.colorScheme.onBackground,
                             ),
                             placeholder = { Text("Email", modifier = Modifier.alpha(0.5f)) },
-                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(),
                             isError = emailState.value.error.isNotEmpty(),
                             maxLines = 1,
                             trailingIcon = {
@@ -191,8 +199,19 @@ fun LoginScreen(
                             ),
                             placeholder = { Text("Password", modifier = Modifier.alpha(0.5f)) },
                             modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
+                                .padding(horizontal = 16.dp)
+                                .padding(top = 8.dp)
+                                .fillMaxWidth()
+                                .onKeyEvent { keyEvent ->
+                                if (keyEvent.key == Key.Enter || keyEvent.key == Key.Tab) {
+                                    if (emailState.value.isValid && passwordState.value.isValid) {
+                                        loginViewModel.onEvent(LoginEvent.SubmitLogin)
+                                    }
+                                    true // Consume event
+                                } else {
+                                    false
+                                }
+                            },
                             maxLines = 1,
                             trailingIcon = {
                                 Icon(
@@ -231,7 +250,7 @@ fun LoginScreen(
                             Text(
                                 text = "Forgot Password?",
                                 color = Color.Black,
-                                modifier = Modifier.padding(16.dp).clickable(
+                                modifier = Modifier.padding(horizontal = 16.dp).clickable(
                                     interactionSource = MutableInteractionSource(),
                                     indication = null
                                 ) {
@@ -248,7 +267,8 @@ fun LoginScreen(
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp)
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .padding(top = 8.dp)
                                 .focusable(enabled = true)
                                 .then(
                                     if (emailState.value.isValid && passwordState.value.isValid) {
@@ -260,7 +280,7 @@ fun LoginScreen(
                                 ),
                             shape = RoundedCornerShape(20.dp),
                             colors = ButtonDefaults.buttonColors().copy(
-                                containerColor = Color.Red,
+                                containerColor = BustleSpotRed,
                                 contentColor = Color.White
                             ),
                             enabled = emailState.value.isValid && passwordState.value.isValid,
@@ -273,7 +293,7 @@ fun LoginScreen(
                         }
 
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.Center,
                         ) {
                             Text(
@@ -284,7 +304,7 @@ fun LoginScreen(
                             )
                             Text(
                                 text = "Sign Up",
-                                color = Color.Red,
+                                color = BustleSpotRed,
                                 modifier = Modifier.clickable(
                                     interactionSource = MutableInteractionSource(),
                                     indication = null
@@ -307,13 +327,13 @@ fun LoginScreen(
                     Text(
                         text = "Let's Start!",
                         color = Color.White,
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     Text(
                         text = "version",
                         color = Color.White,
-                        modifier = Modifier.padding(16.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
