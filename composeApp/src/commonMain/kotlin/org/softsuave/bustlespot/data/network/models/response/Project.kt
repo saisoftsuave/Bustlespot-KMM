@@ -3,7 +3,6 @@ package org.softsuave.bustlespot.data.network.models.response
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.softsuave.bustlespot.auth.signin.data.User
 
 @Serializable
 data class Project(
@@ -20,11 +19,11 @@ data class Project(
 ) : DisplayItem() {
     val users: List<ProjectUser>?
         get() = try {
-        Json.decodeFromString(usersJson) // Safely parse users JSON
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null // Return null if parsing fails
-    }
+            Json.decodeFromString(usersJson) // Safely parse users JSON
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null // Return null if parsing fails
+        }
 }
 
 open class DisplayItem {
@@ -33,8 +32,8 @@ open class DisplayItem {
 
 @Serializable
 data class ProjectUser(
-    val roleId: Int,
-    val userId: Int,
-    val fullName: String,
-    val profileImage: String? // Can be null
+    val roleId: Int? = null,
+    val userId: Int? = null,
+    val fullName: String? = null,
+    val profileImage: String? = null// Can be null
 )
