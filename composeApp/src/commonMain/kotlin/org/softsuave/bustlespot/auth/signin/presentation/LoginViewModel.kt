@@ -68,7 +68,13 @@ class LoginViewModel(
                                             newToken
                                         )
                                     } ?: println("Token not found")
+                                    result.data.apply {
+                                        sessionManager.userId = userId
+                                        sessionManager.userFirstName = firstName
+                                        sessionManager.userLastName = lastName
+                                    }
                                 }
+
                                 _uiEvent.value = UiEvent.Success(result.data)
                             }
 

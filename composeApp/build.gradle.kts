@@ -183,7 +183,8 @@ compose.desktop {
                 menu = true
                 menuGroup = "KMMDev"
                 upgradeUuid = "123e4567-e89b-12d3-a456-426614174010" // Unique ID for the installer
-                iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_windows.ico"))
+//                iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_windows.ico"))
+                iconFile.set(project.file("composeApp/src/commonMain/composeResources/drawable/logoRed.png"))
                 perUserInstall = false
                 shortcut = true
             }
@@ -239,7 +240,7 @@ compose.desktop {
             }
             // Linux configuration
             linux {
-                iconFile.set(project.file("src/commonMain/composeResources/files/app_icon_linux.png"))
+                iconFile.set(project.file("composeApp/src/commonMain/composeResources/drawable/logoRed.png"))
             }
         }
     }

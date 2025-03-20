@@ -82,7 +82,13 @@ fun LoginScreen(
     }
     coroutineScope.launch {
         sessionManager.flowAccessToken.collectLatest { token ->
-            sessionManager.setToken(token)
+            sessionManager.updateAccessToken(token)
+        }
+        sessionManager.flowFirstName.collectLatest { firstName ->
+            sessionManager.updateUserFirstName(firstName)
+        }
+        sessionManager.flowLastName.collectLatest { lastName ->
+            sessionManager.updateUserLastName(lastName)
         }
     }
     Scaffold(

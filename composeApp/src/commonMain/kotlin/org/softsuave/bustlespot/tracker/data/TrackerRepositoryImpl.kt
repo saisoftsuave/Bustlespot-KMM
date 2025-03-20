@@ -77,9 +77,9 @@ class TrackerRepositoryImpl(
                     bearerAuth(sessionManager.accessToken)
                 }
                 if (response.status == HttpStatusCode.OK) {
-                    val data: BaseResponse<GetAllTasks> = response.body()
-                    println(data)
-                    emit(Result.Success(data.data ?: GetAllTasks(emptyList())))
+                    val result: BaseResponse<GetAllTasks> = response.body()
+                    println(result)
+                    emit(Result.Success(result.data ?: GetAllTasks(emptyList())))
                 } else {
                     emit(Result.Error(message = "Failed to fetch Projects: ${response.status}"))
                 }

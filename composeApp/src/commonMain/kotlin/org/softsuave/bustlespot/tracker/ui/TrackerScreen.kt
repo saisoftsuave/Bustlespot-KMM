@@ -15,7 +15,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -248,40 +251,46 @@ fun TrackerScreen(
                 }
 
                 is UiEvent.Success -> {
-                    DropDownSelectionList(
-                        title = "Project",
-                        dropDownList = projectDropDownState.dropDownList,
-                        onItemClick = { selectedItem ->
-                            // true and true ->
-                            // true and false
-                            if (isTrackerRunning && selectedItem != selectedProject) {
-                                homeViewModel.handleTrackerDialogEvents(
-                                    TrackerDialogEvents.ShowProjectChangeDialog(
-                                        selectedItem as Project
+                    LazyColumn {
+                        item {
+                            DropDownSelectionList(
+                                title = "Project",
+                                dropDownList = projectDropDownState.dropDownList,
+                                onItemClick = { selectedItem ->
+                                    // true and true ->
+                                    // true and false
+                                    if (isTrackerRunning && selectedItem != selectedProject) {
+                                        homeViewModel.handleTrackerDialogEvents(
+                                            TrackerDialogEvents.ShowProjectChangeDialog(
+                                                selectedItem as Project
+                                            )
+                                        )
+                                    } else if (selectedItem != selectedProject) {
+                                        homeViewModel.handleDropDownEvents(
+                                            DropDownEvents.OnProjectSelection(selectedItem as Project)
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(0.85f).padding(vertical = 8.dp),
+                                error = projectDropDownState.errorMessage,
+                                onDropDownClick = {
+                                    homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectDropDownClick)
+                                },
+                                inputText = projectDropDownState.inputText,
+                                onSearchText = { searchText ->
+                                    homeViewModel.handleDropDownEvents(
+                                        DropDownEvents.OnProjectSearch(
+                                            searchText
+                                        )
                                     )
-                                )
-                            } else if (selectedItem != selectedProject) {
-                                homeViewModel.handleDropDownEvents(
-                                    DropDownEvents.OnProjectSelection(selectedItem as Project)
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(0.85f).padding(vertical = 8.dp),
-                        error = projectDropDownState.errorMessage,
-                        onDropDownClick = {
-                            homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectDropDownClick)
-                        },
-                        inputText = projectDropDownState.inputText,
-                        onSearchText = { searchText ->
-                            homeViewModel.handleDropDownEvents(
-                                DropDownEvents.OnProjectSearch(
-                                    searchText
-                                )
-                            )
-                        },
-                        onNoOptionClick = {
+                                },
+                                onNoOptionClick = {
 //                            if (selectedProject == null) {
-                            homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectSearch(""))
+                                    homeViewModel.handleDropDownEvents(
+                                        DropDownEvents.OnProjectSearch(
+                                            ""
+                                        )
+                                    )
 //                            } else {
 //                                homeViewModel.handleDropDownEvents(
 //                                    DropDownEvents.OnProjectSelection(
@@ -289,37 +298,38 @@ fun TrackerScreen(
 //                                    )
 //                                )
 //                            }
-                        },
-                        selectedProject = selectedProject,
-                        isSelected = selectedProject != null
-                    )
+                                },
+                                selectedProject = selectedProject,
+                                isSelected = selectedProject != null
+                            )
 
-
-                    DropDownSelectionList(
-                        title = "Task",
-                        dropDownList = taskDropDownState.dropDownList,
-                        onItemClick = { selectedItem ->
-                            if (isTrackerRunning && selectedItem != selectedTask) {
-                                homeViewModel.handleTrackerDialogEvents(
-                                    TrackerDialogEvents.ShowTaskChangeDialog(
-                                        selectedItem as TaskData
-                                    )
-                                )
-                            } else if (selectedItem != selectedTask) {
-                                homeViewModel.handleDropDownEvents(
-                                    DropDownEvents.OnTaskSelection(selectedItem as TaskData)
-                                )
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(0.85f).padding(vertical = 8.dp),
-                        error = taskDropDownState.errorMessage,
-                        isEnabled = taskDropDownState.dropDownList.isNotEmpty(),
-                        onDropDownClick = {
-                            homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskDropDownClick)
-                        },
-                        onNoOptionClick = {
+                        }
+                        item {
+                            DropDownSelectionList(
+                                title = "Task",
+                                dropDownList = taskDropDownState.dropDownList,
+                                onItemClick = { selectedItem ->
+                                    if (isTrackerRunning && selectedItem != selectedTask) {
+                                        homeViewModel.handleTrackerDialogEvents(
+                                            TrackerDialogEvents.ShowTaskChangeDialog(
+                                                selectedItem as TaskData
+                                            )
+                                        )
+                                    } else if (selectedItem != selectedTask) {
+                                        homeViewModel.handleDropDownEvents(
+                                            DropDownEvents.OnTaskSelection(selectedItem as TaskData)
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(0.85f).padding(vertical = 8.dp),
+                                error = taskDropDownState.errorMessage,
+                                isEnabled = taskDropDownState.dropDownList.isNotEmpty(),
+                                onDropDownClick = {
+                                    homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskDropDownClick)
+                                },
+                                onNoOptionClick = {
 //                            if (selectedTask == null) {
-                            homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskSearch(""))
+                                    homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskSearch(""))
 //                            } else {
 //                                homeViewModel.handleDropDownEvents(
 //                                    DropDownEvents.OnTaskSelection(
@@ -327,43 +337,49 @@ fun TrackerScreen(
 //                                    )
 //                                )
 //                            }
-                        },
-                        inputText = taskDropDownState.inputText,
-                        onSearchText = { searchText ->
-                            homeViewModel.handleDropDownEvents(
-                                DropDownEvents.OnTaskSearch(
-                                    searchText
-                                )
-                            )
-                        },
-                        selectedTask = selectedTask,
-                        isSelected = selectedTask != null
-                    )
-
-                    TimerSessionSection(
-                        trackerTimer = trackerTimer,
-                        homeViewModel = homeViewModel,
-                        idleTime = totalIdleTime,
-                        isTrackerRunning = isTrackerRunning,
-                        taskName = selectedTask?.name ?: "",
-                        organisationId = organisationId
-                    )
-
-                    ScreenShotSection(
-                        lastImageTakenTime = secondsToTimeForScreenshot(screenShotTakenTime),
-                        imageBitmap = screenShotState,
-                        lastTakenImage = selectedTask?.screenshots
-                    )
-                    SyncNowSection(
-                        onClickUserActivity = {
-                            openWebLink(USER_ACTIVITY)
-                        },
-                        onClickSyncNow = {
-                            homeViewModel.startPostingActivity(
-                                organisationId = organisationId.toInt()
+                                },
+                                inputText = taskDropDownState.inputText,
+                                onSearchText = { searchText ->
+                                    homeViewModel.handleDropDownEvents(
+                                        DropDownEvents.OnTaskSearch(
+                                            searchText
+                                        )
+                                    )
+                                },
+                                selectedTask = selectedTask,
+                                isSelected = selectedTask != null
                             )
                         }
-                    )
+                        item {
+                            TimerSessionSection(
+                                trackerTimer = trackerTimer,
+                                homeViewModel = homeViewModel,
+                                idleTime = totalIdleTime,
+                                isTrackerRunning = isTrackerRunning,
+                                taskName = selectedTask?.name ?: "",
+                                organisationId = organisationId
+                            )
+                        }
+                        item {
+                            ScreenShotSection(
+                                lastImageTakenTime = secondsToTimeForScreenshot(screenShotTakenTime),
+                                imageBitmap = screenShotState,
+                                lastTakenImage = selectedTask?.screenshots
+                            )
+                        }
+                        item {
+                            SyncNowSection(
+                                onClickUserActivity = {
+                                    openWebLink(USER_ACTIVITY)
+                                },
+                                onClickSyncNow = {
+                                    homeViewModel.startPostingActivity(
+                                        organisationId = organisationId.toInt()
+                                    )
+                                }
+                            )
+                        }
+                    }
                 }
             }
 

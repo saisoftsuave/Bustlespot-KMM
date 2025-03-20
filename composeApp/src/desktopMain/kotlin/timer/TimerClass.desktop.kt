@@ -26,6 +26,7 @@ import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 actual class TrackerModule actual constructor(private val viewModelScope: CoroutineScope) {
     actual var trackerTime: MutableStateFlow<Int> = MutableStateFlow(0)
@@ -36,7 +37,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var keyboradKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
-    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
+    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(60)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -58,8 +59,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private var trackerTimerTask: TimerTask? = null
     private var idleTimerTask: TimerTask? = null
     private var trackerIndex = 0
-    private val screenShotFrequency = 1
-    private val screenshotLimit = 1
+    private val screenShotFrequency = 1 // n of screenshot in a slot
+    private val screenshotLimit = 10 //in mints
     private var idealStartTime: Instant = Instant.DISTANT_PAST
     private val postActivityInterval: Int = 600 //in second
 
@@ -73,7 +74,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun stopTimer() {
         Log.d("stopTimer")
         isTrackerRunning.value = false
-        idealStartTime = Clock.System.now()
+        idealStartTime = Clock.System.now() - customeTimeForIdleTime.value.seconds
         globalEventListener.unregisterListeners()
     }
 
@@ -272,7 +273,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 //        base64Converter()
         val activity = ActivityData(
             startTime = startTime.toString(),
-            endTime = Clock.System.now().toString(),
+            endTime = getEndTime() ,
             mouseActivity = mouseKeyEvents.value,
             keyboardActivity = keyboradKeyEvents.value,
             totalActivity = (mouseKeyEvents.value + keyboradKeyEvents.value) % 100,
@@ -283,6 +284,14 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         startTime = Clock.System.now()
         canCallApi.value = false
         return activity
+    }
+
+    private fun getEndTime():String{
+        // check and send the correct end time
+        if(idealTime.value > customeTimeForIdleTime.value){
+            return (Clock.System.now() - customeTimeForIdleTime.value.seconds).toString()
+        }
+        return Clock.System.now().toString()
     }
 
     actual fun getUntrackedActivityData(): ActivityData {
@@ -296,7 +305,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             billable = "",
             notes = "",
             unTrackedTime = idealTime.value.toLong(),
-            uri = currentImageUri.value
+            uri = null //no photo for untracked activity
         )
         startTime = Clock.System.now()
         mouseKeyEvents.value = 0

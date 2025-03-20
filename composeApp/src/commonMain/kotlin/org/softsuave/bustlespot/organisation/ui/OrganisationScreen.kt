@@ -68,6 +68,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.navigation.Home
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
@@ -94,7 +95,7 @@ fun OrganisationScreen(
 
     coroutineScope.launch {
         sessionManager.flowAccessToken.collectLatest { token ->
-            sessionManager.setToken(token)
+            sessionManager.accessToken = token
         }
     }
     Scaffold(
@@ -108,7 +109,8 @@ fun OrganisationScreen(
                 onNavigationBackClick = {},
                 isNavigationEnabled = false,
                 isAppBarIconEnabled = true,
-                iconUserName = "Test 1",
+                iconUserName = sessionManager.userFirstName +" "+sessionManager.userLastName,
+//                iconUserName =  "",
                 isLogOutEnabled = true,
                 onLogOutClick = {
                     organisationViewModel.showLogOutDialog()
@@ -401,7 +403,7 @@ fun BustleSpotAppBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     AppBarIcon(
-                        username = iconUserName
+                        username = iconUserName.ifBlank { "Test 1" }
                     )
                 }
             }
@@ -422,7 +424,8 @@ fun AppBarIcon(
     modifier: Modifier = Modifier,
     username: String,
 ) {
-    val showWord = username.split(" ").map { it[0].uppercase() }.joinToString("")
+    Log.d("username, ${username.trim().split(" ").map { it.trim().uppercase().first().toString() }}")
+    val showWord = username.trim().split(" ").take(2).joinToString("") { it.trim().uppercase().first().toString() }
     Box(
         modifier = modifier.size(40.dp).border(
             width = 1.dp,
@@ -435,7 +438,7 @@ fun AppBarIcon(
             text = showWord,
             color = Color.Red,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Visible,
             fontSize = 20.sp,
             fontWeight = FontWeight.Light
         )

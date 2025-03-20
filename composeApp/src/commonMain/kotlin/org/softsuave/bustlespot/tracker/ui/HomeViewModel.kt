@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.softsuave.bustlespot.Log
+import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.timeStringToSeconds
@@ -24,6 +25,7 @@ import org.softsuave.bustlespot.tracker.data.model.PostActivityRequest
 import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
 
 class HomeViewModel(
+    private val sessionManager: SessionManager,
     private val trackerRepository: TrackerRepository,
     private val networkMonitor : NetworkMonitor
 ) : ViewModel(){
@@ -178,17 +180,21 @@ class HomeViewModel(
                     }
 
                     is Result.Success -> {
-                        _mainProjectList.value = result.data.projectLists ?: emptyList()
+                        val filteredList = result.data.projectLists?.filter { project ->
+                            project.users?.any { it.userId == sessionManager.userId } == true
+                        } ?: emptyList()
+
+                        _mainProjectList.value = filteredList
                         _projectDropDownState.value = _projectDropDownState.value.copy(
-                            dropDownList = result.data.projectLists ?: emptyList(),
+                            dropDownList =  filteredList,
                             errorMessage = if (result.data.projectLists.isNullOrEmpty()) "No projects to select" else ""
                         )
                         trackerScreenData.listOfProject?.addAll(
-                            result.data.projectLists ?: emptyList()
+                            filteredList
                         )
                         _uiEvent.value = UiEvent.Success(trackerScreenData)
                         fetchAllTasksForProjects(
-                            projects = result.data.projectLists ?: emptyList(),
+                            projects = filteredList,
                             organisationId
                         )
                     }
@@ -197,13 +203,12 @@ class HomeViewModel(
         }
     }
 
-    private fun fetchAllTasksForProjects(projects: List<Project>, organisationId: String) {
-        viewModelScope.launch {
-            projects.forEach { project ->
-                trackerRepository.getAllTask(
-                    GetTasksRequest(projectId = project.projectId.toString(), organisationId)
-                ).collect { result ->
 
+      fun fetchTasksForProject(projectId: Int, organisationId: String) {
+        viewModelScope.launch {
+                trackerRepository.getAllTask(
+                    GetTasksRequest(projectId = projectId.toString(), organisationId)
+                ).collect { result ->
                     when (result) {
                         is Result.Error -> {
                             _taskDropDownState.value = _taskDropDownState.value.copy(
@@ -216,7 +221,36 @@ class HomeViewModel(
                         }
 
                         is Result.Success -> {
-                            val taskList = result.data.taskDetails
+                            val taskList = result.data.taskDetails ?: emptyList()
+                            _mainTaskList.value = _mainTaskList.value.plus(taskList)
+                            trackerScreenData.listOfTask?.addAll(taskList)
+                        }
+                }
+            }
+        }
+    }
+
+
+    private fun fetchAllTasksForProjects(projects: List<Project>, organisationId: String) {
+        viewModelScope.launch {
+            projects.forEach { project ->
+                trackerRepository.getAllTask(
+                    GetTasksRequest(projectId = project.projectId.toString(), organisationId)
+                ).collect { result ->
+                    when (result) {
+                        is Result.Error -> {
+                            Log.d("Error at projects ${result.message} project :${project}")
+                            _taskDropDownState.value = _taskDropDownState.value.copy(
+                                errorMessage = result.message ?: "Failed to fetch tasks"
+                            )
+                        }
+
+                        is Result.Loading -> {
+                            Log.d("Loading at projects")
+                        }
+
+                        is Result.Success -> {
+                            val taskList = result.data.taskDetails ?: emptyList()
                             _mainTaskList.value = _mainTaskList.value.plus(taskList)
                             trackerScreenData.listOfTask?.addAll(taskList)
                         }

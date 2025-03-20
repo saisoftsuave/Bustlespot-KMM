@@ -3,57 +3,83 @@ package org.softsuave.bustlespot
 import com.example.Database
 import com.russhwolf.settings.ObservableSettings
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
+import org.koin.core.KoinApplication.Companion.init
 
-
-class SessionManager(private val settings: ObservableSettings ,
-    private val db : Database
+class SessionManager(
+    private val settings: ObservableSettings,
+    private val db: Database
 ) {
     var isLoggedIn = MutableStateFlow(false)
         private set
 
     val flowAccessToken: Flow<String> = callbackFlow {
-        val listener = settings.addStringListener(
-            key = "access_token",
-            defaultValue = "",
-            callback = { token ->
-                trySend(token)
-            }
-        )
+        val listener = settings.addStringListener("access_token", "", ::trySend)
+        awaitClose { listener.deactivate() }
+    }
 
-        awaitClose {
-            listener.deactivate()
+    val flowFirstName: Flow<String> = callbackFlow {
+        val listener = settings.addStringListener("first_name", "", ::trySend)
+        awaitClose { listener.deactivate() }
+    }
+
+    val flowLastName: Flow<String> = callbackFlow {
+        val listener = settings.addStringListener("last_name", "", ::trySend)
+        awaitClose { listener.deactivate() }
+    }
+
+    val flowUserId: Flow<Int> = callbackFlow {
+        val listener = settings.addIntListener("user_id", 0, ::trySend)
+        awaitClose { listener.deactivate() }
+    }
+
+    var accessToken: String
+        get() = settings.getString("access_token", "")
+        set(value) {
+            settings.putString("access_token", value)
         }
-    }
-    var accessToken = settings.getString("access_token", "")
 
-    fun setToken(token: String) {
-        accessToken = token
-    }
+    var userId: Int
+        get() = settings.getInt("user_id", 0)
+        set(value) {
+            settings.putInt("user_id", value)
+        }
+    var userFirstName: String
+        get() = settings.getString("first_name", "")
+        set(value) {
+            settings.putString("first_name", value)
+        }
+
+
+    var userLastName: String
+        get() = settings.getString("last_name", "")
+        set(value) {
+            settings.putString("last_name", value)
+        }
 
     fun updateAccessToken(token: String): Boolean {
         isLoggedIn.value = true
-        settings.putString("access_token", token)
-        println("Updated access token. isLoggedIn = $isLoggedIn")
+        accessToken = token
+        println("Updated access token. isLoggedIn = ${isLoggedIn.value}")
         return true
+    }
+
+    fun updateUserFirstName(firstName: String) {
+        userFirstName = firstName
+    }
+
+    fun updateUserLastName(lastName: String) {
+        userLastName = lastName
     }
 
     suspend fun clearSession() {
         isLoggedIn.value = false
         settings.remove("access_token")
         db.databaseQueries.deleteAllOrganisations()
-//        resetRealm(realmDb,realmDb.configuration as RealmConfiguration)
-        Log.d("Session cleared. isLoggedIn = $isLoggedIn")
+        println("Session cleared. isLoggedIn = ${isLoggedIn.value}")
     }
-//    suspend fun resetRealm(realm: Realm, config: RealmConfiguration) {
-//        realm.close()   // Close Realm instance
-//        Realm.deleteRealm(config)  // Delete Realm database
-//        println("Realm database deleted!")
-//    }
     init {
         isLoggedIn = MutableStateFlow(settings.getString("access_token", "").isNotEmpty())
     }
 }
+
