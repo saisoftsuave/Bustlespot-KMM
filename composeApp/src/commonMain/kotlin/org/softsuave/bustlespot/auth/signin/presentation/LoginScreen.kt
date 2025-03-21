@@ -67,6 +67,7 @@ import org.softsuave.bustlespot.MainViewModel
 import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.navigation.Home
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
+import org.softsuave.bustlespot.auth.utils.PrimaryButton
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.browser.WebLinks.FORGOT_PASSWORD
 import org.softsuave.bustlespot.browser.WebLinks.SIGN_UP
@@ -88,6 +89,7 @@ fun LoginScreen(
     var passwordVisibility by remember {
         mutableStateOf(false)
     }
+    var isLoading by mutableStateOf(false)
     coroutineScope.launch {
         sessionManager.flowAccessToken.collectLatest { token ->
             sessionManager.updateAccessToken(token)
@@ -261,36 +263,14 @@ fun LoginScreen(
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }
-                        Button(
+                        PrimaryButton(
+                            buttonText = "Login",
                             onClick = {
                                 loginViewModel.onEvent(LoginEvent.SubmitLogin)
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .padding(top = 8.dp)
-                                .focusable(enabled = true)
-                                .then(
-                                    if (emailState.value.isValid && passwordState.value.isValid) {
-                                        Modifier.pointerHoverIcon(PointerIcon.Hand)
-                                    } else {
-                                        Modifier
-                                    }
-
-                                ),
-                            shape = RoundedCornerShape(20.dp),
-                            colors = ButtonDefaults.buttonColors().copy(
-                                containerColor = BustleSpotRed,
-                                contentColor = Color.White
-                            ),
                             enabled = emailState.value.isValid && passwordState.value.isValid,
-                            interactionSource = MutableInteractionSource()
-                        ) {
-                            Text(
-                                text = "Login",
-                                modifier = Modifier.padding(8.dp)
-                            )
-                        }
+                            isLoading = isLoading
+                        )
 
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -344,10 +324,12 @@ fun LoginScreen(
                     rememberCoroutineScope().launch {
                         snackbarHostState.showSnackbar((uiEvent as UiEvent.Failure).error)
                     }
+                    isLoading = false
                 }
 
                 UiEvent.Loading -> {
-                    LoadingScreen()
+                    // LoadingScreen()
+                    isLoading = true
                 }
 
                 is UiEvent.Success -> {
@@ -355,6 +337,7 @@ fun LoginScreen(
                         snackbarHostState.showSnackbar("Login Successful.")
                         navController.navigate(Home.Organisation.route)
                     }
+                    isLoading = false
                 }
 
                 null -> {

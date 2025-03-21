@@ -1,5 +1,9 @@
 package org.softsuave.bustlespot.auth.utils
 
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+
 fun secondsToTime(seconds: Int): String {
     val hours = seconds / 3600
     val minutes = (seconds % 3600) / 60
@@ -43,4 +47,11 @@ fun String.timeStringToSeconds(): Int {
     val minutes = parts[1].toInt()
     val seconds = parts[2].toInt()
     return hours * 3600 + minutes * 60 + seconds
+}
+
+fun formatEpochToTime(epochSeconds: Long): String {
+    val instant = Instant.fromEpochSeconds(epochSeconds)
+    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    println(localDateTime.toString().substring(11,16))
+    return localDateTime.toString().substring(11, 16)
 }

@@ -75,6 +75,7 @@ import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
+import org.softsuave.bustlespot.auth.utils.formatEpochToTime
 import org.softsuave.bustlespot.auth.utils.secondsToTime
 import org.softsuave.bustlespot.auth.utils.secondsToTimeForScreenshot
 import org.softsuave.bustlespot.auth.utils.secondsToTimeFormat
@@ -118,6 +119,7 @@ fun TrackerScreen(
 
     // UI event (loading, failure, etc.) from the view model.
     val uiEvent by homeViewModel.uiEvent.collectAsState()
+    val lastSyncTime by homeViewModel.lastSyncTime.collectAsState()
 
 
     val totalIdleTime by homeViewModel.totalIdleTime.collectAsState()
@@ -378,7 +380,8 @@ fun TrackerScreen(
                                     homeViewModel.startPostingActivity(
                                         organisationId = organisationId.toInt()
                                     )
-                                }
+                                },
+                                lastSyncTime = formatEpochToTime(lastSyncTime)
                             )
                         }
                     }

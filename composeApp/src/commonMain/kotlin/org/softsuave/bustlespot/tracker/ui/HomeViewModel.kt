@@ -3,12 +3,11 @@ package org.softsuave.bustlespot.tracker.ui
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.utils.Result
@@ -39,6 +38,7 @@ class HomeViewModel(
     val customeTimeForIdleTime: StateFlow<Int> = trackerModule.customeTimeForIdleTime
     val screenShotState: StateFlow<ImageBitmap?> = trackerModule.screenShotState
     var canCallApi: MutableStateFlow<Boolean> = trackerModule.canCallApi
+    var lastSyncTime: MutableStateFlow<Long> = MutableStateFlow(0)
 //    val isNetworkAvailable: Flow<Boolean> = networkMonitor.isConnected
 
     fun startTrackerTimer() = trackerModule.startTimer()
@@ -280,6 +280,7 @@ class HomeViewModel(
 
                     is Result.Success -> {
                         val taskList = result.data
+                        lastSyncTime.value = Clock.System.now().epochSeconds
                         Log.d(taskList.toString())
                     }
                 }
