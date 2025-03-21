@@ -22,7 +22,10 @@ import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 import kotlin.random.Random
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 actual class TrackerModule actual constructor(private val viewModelScope: CoroutineScope) {
     actual var trackerTime: MutableStateFlow<Int> = MutableStateFlow(0)
@@ -267,12 +270,14 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun getActivityData(): ActivityData {
 //        base64Converter()
+        val endTime = getEndTime()
+        val intervalInSeconds = startTime.epochSeconds.seconds.inWholeSeconds - endTime.epochSeconds.seconds.inWholeSeconds
         val activity = ActivityData(
             startTime = startTime.toString(),
-            endTime = getEndTime() ,
+            endTime = endTime.toString(),
             mouseActivity = mouseKeyEvents.value,
             keyboardActivity = keyboradKeyEvents.value,
-            totalActivity = (mouseKeyEvents.value + keyboradKeyEvents.value) % 100,
+            totalActivity = ((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toInt()) * 100,
             billable = "",
             notes = "",
             uri = currentImageUri.value
@@ -282,12 +287,12 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         return activity
     }
 
-    private fun getEndTime():String{
+    private fun getEndTime():Instant{
         // check and send the correct end time
         if(idealTime.value > customeTimeForIdleTime.value){
-            return (Clock.System.now() - customeTimeForIdleTime.value.seconds).toString()
+            return (Clock.System.now() - customeTimeForIdleTime.value.seconds)
         }
-        return Clock.System.now().toString()
+        return Clock.System.now()
     }
 
     actual fun getUntrackedActivityData(): ActivityData {
