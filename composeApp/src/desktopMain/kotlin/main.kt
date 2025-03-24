@@ -10,13 +10,11 @@ import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import bustlespot.composeapp.generated.resources.Res
-import bustlespot.composeapp.generated.resources.loginBustleIcon
-import bustlespot.composeapp.generated.resources.logoWhite
+import bustlespot.composeapp.generated.resources.logoRed
 import com.github.kwhat.jnativehook.GlobalScreen
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
 import org.jetbrains.compose.resources.painterResource
-import org.softsuave.bustlespot.App
 import org.softsuave.bustlespot.di.initKoin
 import java.awt.Desktop
 import java.awt.Frame
@@ -51,7 +49,7 @@ fun main() = application {
         state = rememberWindowState(size = DpSize(width = 460.dp, height = 780.dp)),
         onCloseRequest = ::exitApplication,
         resizable = false,
-        icon = painterResource(Res.drawable.loginBustleIcon),
+        icon = painterResource(Res.drawable.logoRed),
     ) {
         App(
             onFocusReceived = {
