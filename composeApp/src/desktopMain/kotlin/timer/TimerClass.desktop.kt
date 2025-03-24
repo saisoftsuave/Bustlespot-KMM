@@ -270,14 +270,15 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun getActivityData(): ActivityData {
 //        base64Converter()
         val endTime = getEndTime()
-        val intervalInSeconds =
-            startTime.epochSeconds.seconds.inWholeSeconds - endTime.epochSeconds.seconds.inWholeSeconds
+        val intervalInSeconds = endTime.epochSeconds.seconds.inWholeSeconds - startTime.epochSeconds.seconds.inWholeSeconds
+        println(intervalInSeconds)
+        println((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toFloat())
         val activity = ActivityData(
             startTime = startTime.toString(),
             endTime = endTime.toString(),
             mouseActivity = mouseKeyEvents.value,
             keyboardActivity = keyboradKeyEvents.value,
-            totalActivity = ((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toInt()) * 100,
+            totalActivity = (((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toFloat()) * 100).toInt(),
             billable = "",
             notes = "",
             uri = currentImageUri.value
