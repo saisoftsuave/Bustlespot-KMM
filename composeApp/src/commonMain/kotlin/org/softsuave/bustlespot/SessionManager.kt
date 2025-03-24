@@ -1,7 +1,9 @@
 package org.softsuave.bustlespot
 
+import Bustlespot.composeApp.APP_VERSION
 import com.example.Database
 import com.russhwolf.settings.ObservableSettings
+import com.russhwolf.settings.contains
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import org.koin.core.KoinApplication.Companion.init
@@ -72,14 +74,33 @@ class SessionManager(
         userLastName = lastName
     }
 
-    suspend fun clearSession() {
+    fun clearSession() {
         isLoggedIn.value = false
         settings.remove("access_token")
         db.databaseQueries.deleteAllOrganisations()
         println("Session cleared. isLoggedIn = ${isLoggedIn.value}")
     }
+
     init {
+        SettingsHelper(settings).clearIfFirstRun()
         isLoggedIn = MutableStateFlow(settings.getString("access_token", "").isNotEmpty())
     }
 }
 
+class SettingsHelper(private val settings: ObservableSettings) {
+    private val appVersionKey = "app_version"
+
+    fun clearIfFirstRun() {
+        val currentVersion = APP_VERSION
+        val isFirstRun = !settings.contains(appVersionKey) || settings.getString(
+            appVersionKey,
+            ""
+        ) != currentVersion
+        if (isFirstRun) {
+            // Clear all existing settings
+            settings.clear()
+            // Mark first run as completed
+            settings.putString(appVersionKey, currentVersion)
+        }
+    }
+}

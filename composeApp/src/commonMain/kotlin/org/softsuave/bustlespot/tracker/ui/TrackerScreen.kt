@@ -1,5 +1,10 @@
 package org.softsuave.bustlespot.tracker.ui
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -7,18 +12,23 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -47,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.layout.ContentScale
@@ -61,8 +72,6 @@ import androidx.navigation.NavHostController
 import bustlespot.composeapp.generated.resources.Res
 import bustlespot.composeapp.generated.resources.ic_drop_down
 import bustlespot.composeapp.generated.resources.ic_drop_up
-import bustlespot.composeapp.generated.resources.ic_pause_circle
-import bustlespot.composeapp.generated.resources.ic_play_arrow
 import bustlespot.composeapp.generated.resources.screen
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
@@ -652,6 +661,14 @@ fun DropDownSelectionList(
     }
 }
 
+//requestPermission {
+//    if (isTrackerRunning) {
+//        homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
+//        homeViewModel.startPostingActivity(organisationId.toInt())
+//    } else {
+//        homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
+//    }
+//}
 
 @Composable
 fun TimerSessionSection(
@@ -663,6 +680,7 @@ fun TimerSessionSection(
     isTrackerRunning: Boolean,
     organisationId: String
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Column(
         modifier = modifier.fillMaxWidth(0.85f),
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -696,8 +714,8 @@ fun TimerSessionSection(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                IconButton(
-                    onClick = {
+                if (isTrackerRunning) {
+                    StopButton(onClick = {
                         requestPermission {
                             if (isTrackerRunning) {
                                 homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
@@ -706,16 +724,31 @@ fun TimerSessionSection(
                                 homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
                             }
                         }
-                    }, modifier = Modifier.pointerHoverIcon(PointerIcon.Hand)
-                ) {
+                    })
+                } else {
                     Icon(
-                        painter = painterResource(
-                            if (isTrackerRunning) Res.drawable.ic_pause_circle else Res.drawable.ic_play_arrow
-                        ),
-                        contentDescription = if (isTrackerRunning) "Pause" else "Play",
-                        modifier = Modifier.size(24.dp),
+                        imageVector = Icons.Rounded.PlayArrow,
+                        contentDescription = "Play",
+                        tint = BustleSpotRed,
+                        modifier = Modifier
+                            .size(32.dp).pointerHoverIcon(PointerIcon.Hand)
+                            .clickable(
+                                role = Role.Button,
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) {
+                                requestPermission {
+                                    if (isTrackerRunning) {
+                                        homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
+                                        homeViewModel.startPostingActivity(organisationId.toInt())
+                                    } else {
+                                        homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
+                                    }
+                                }
+                            }
                     )
                 }
+                Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     text = secondsToTime(trackerTimer),
                     color = Color.Black,
@@ -740,6 +773,69 @@ fun TimerSessionSection(
                 color = Color.Black,
             )
         }
+    }
+}
+
+@Composable
+private fun StopButton(onClick: () -> Unit) {
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clickable(
+                role = Role.Button,
+                interactionSource = interactionSource,
+                indication = null
+            ) { onClick() }
+            .background(BustleSpotRed, CircleShape).pointerHoverIcon(PointerIcon.Hand)
+
+    ) {
+        val infiniteTransition = rememberInfiniteTransition(label = "")
+        val scale by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 4f,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes {
+                    durationMillis = 2500
+                    0f at 0
+                    4f at 2500
+                },
+                repeatMode = RepeatMode.Restart
+            ),
+            label = ""
+        )
+        val alpha by infiniteTransition.animateFloat(
+            initialValue = 1f,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(
+                animation = keyframes {
+                    durationMillis = 2500
+                    1f at 0
+                    0f at 2500
+                },
+                repeatMode = RepeatMode.Restart
+            ),
+            label = ""
+        )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(16.dp)
+                .graphicsLayer {
+                    this.scaleX = scale
+                    this.scaleY = scale
+                    this.alpha = alpha
+                }
+                .background(BustleSpotRed, CircleShape)
+        )
+
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .align(Alignment.Center)
+                .background(Color.White, RoundedCornerShape(2.dp))
+        )
     }
 }
 

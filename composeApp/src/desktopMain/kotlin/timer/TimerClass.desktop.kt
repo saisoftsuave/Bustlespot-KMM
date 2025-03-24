@@ -22,10 +22,7 @@ import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 import kotlin.random.Random
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 actual class TrackerModule actual constructor(private val viewModelScope: CoroutineScope) {
     actual var trackerTime: MutableStateFlow<Int> = MutableStateFlow(0)
@@ -140,7 +137,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     }
                 }
             }
-            timer.schedule(idleTimerTask, 1000, 1000)
+            timer.scheduleAtFixedRate(idleTimerTask, 1000, 1000)
         }
         if (!isTaskScheduled.getAndSet(true)) {
             trackerTimerTask = object : TimerTask() {
@@ -176,7 +173,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     }
                 }
             }
-            timer.schedule(trackerTimerTask, 1000, 1000)
+            timer.scheduleAtFixedRate(trackerTimerTask, 1000, 1000)
         }
     }
 
@@ -195,21 +192,23 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     fun takeScreenShot() {
         screenShot.value = org.softsuave.bustlespot.screenshot.takeScreenShot() ?: return
-        val bufferedImage: BufferedImage =  screenShot.value?.toAwtImage() ?: return
+        val bufferedImage: BufferedImage = screenShot.value?.toAwtImage() ?: return
 
         val file = File(System.getProperty("java.io.tmpdir"), "sampleFile.png")
 
         ByteArrayOutputStream().use { byteArrayOutputStream ->
             ImageIO.write(bufferedImage, "png", file)
             ImageIO.write(bufferedImage, "png", byteArrayOutputStream)
-            currentImageUri.value = Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray())
+            currentImageUri.value =
+                Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray())
         }
         sendLocalNotification(
-          "Bustle-spot Reminder",
-           "Captured screenshot",
+            "Bustle-spot Reminder",
+            "Captured screenshot",
             imageFile = file.absolutePath
         )
     }
+
     actual fun startScreenshotTask() {
         if (screenshotRepeatingTask == null) {
             screenshotRepeatingTask = object : TimerTask() {
@@ -222,7 +221,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                                 takeScreenShot()
                             }
                         }
-                        timer.schedule(screenshotOneShotTask, randomDelay)
+                        timer.scheduleAtFixedRate(screenshotOneShotTask, 0, randomDelay)
                     }
                 }
             }
@@ -271,7 +270,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun getActivityData(): ActivityData {
 //        base64Converter()
         val endTime = getEndTime()
-        val intervalInSeconds = startTime.epochSeconds.seconds.inWholeSeconds - endTime.epochSeconds.seconds.inWholeSeconds
+        val intervalInSeconds =
+            startTime.epochSeconds.seconds.inWholeSeconds - endTime.epochSeconds.seconds.inWholeSeconds
         val activity = ActivityData(
             startTime = startTime.toString(),
             endTime = endTime.toString(),
@@ -287,9 +287,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         return activity
     }
 
-    private fun getEndTime():Instant{
+    private fun getEndTime(): Instant {
         // check and send the correct end time
-        if(idealTime.value > customeTimeForIdleTime.value){
+        if (idealTime.value > customeTimeForIdleTime.value) {
             return (Clock.System.now() - customeTimeForIdleTime.value.seconds)
         }
         return Clock.System.now()

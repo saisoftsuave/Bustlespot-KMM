@@ -49,6 +49,9 @@ kotlin {
 
     jvm("desktop")
 
+    //build config
+    version = "1.0.2"
+
     sourceSets {
         val desktopMain by getting
         commonMain.dependencies {
@@ -132,6 +135,14 @@ sqldelight {
             packageName.set("com.example")
         }
     }
+}
+
+buildConfig{
+    useKotlinOutput {
+        topLevelConstants = true
+    }
+    buildConfigField("String", "APP_NAME", "\"${project.name}\"")
+    buildConfigField("String", "APP_VERSION", "\"${project.version}\"")
 }
 android {
     namespace = "org.softsuave.bustlespot"
