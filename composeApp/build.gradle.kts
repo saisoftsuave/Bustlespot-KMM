@@ -49,7 +49,7 @@ kotlin {
 
     jvm("desktop")
 
-    //build config
+    //build config app version
     version = "1.0.2"
 
     sourceSets {
