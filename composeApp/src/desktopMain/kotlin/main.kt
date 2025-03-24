@@ -48,7 +48,7 @@ fun main() = application {
     Window(
         title = "Bustlespot",
         decoration = WindowDecoration.SystemDefault,
-        state = rememberWindowState(size = DpSize(width = 420.dp, height = 800.dp)),
+        state = rememberWindowState(size = DpSize(width = 460.dp, height = 780.dp)),
         onCloseRequest = ::exitApplication,
         resizable = false,
         icon = painterResource(Res.drawable.loginBustleIcon),

@@ -1,5 +1,6 @@
 package org.softsuave.bustlespot.tracker.ui
 
+import Bustlespot.composeApp.APP_VERSION
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -64,6 +65,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -401,6 +403,13 @@ fun TrackerScreen(
                     }
                 }
             }
+            Text(
+                text = "v$APP_VERSION",
+                color = Color.Black,
+                style = MaterialTheme.typography.labelMedium,
+                textAlign = TextAlign.End,
+                modifier = Modifier.align(Alignment.End).padding(end = 5.dp, bottom = 5.dp)
+            )
 
 
             /*
@@ -868,7 +877,7 @@ fun ScreenShotSection(
         }
         imageBitmap?.let { bitmap ->
             Image(
-                modifier = Modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally)
+                modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
                     .aspectRatio(1.8f),
                 bitmap = bitmap,
                 contentDescription = "Screenshot"
@@ -878,7 +887,7 @@ fun ScreenShotSection(
             contentDescription = null,
             contentScale = ContentScale.Crop,
             imageLoader = ImageLoader(LocalPlatformContext.current),
-            modifier = Modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally)
+            modifier = Modifier.padding(top = 8.dp).align(Alignment.CenterHorizontally)
                 .aspectRatio(1.8f)
         )
     }

@@ -1,5 +1,6 @@
 package org.softsuave.bustlespot.auth.signin.presentation
 
+import Bustlespot.composeApp.APP_VERSION
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -311,10 +312,10 @@ fun LoginScreen(
                         style = MaterialTheme.typography.headlineSmall,
                     )
                     Text(
-                        text = "version",
+                        text = APP_VERSION,
                         color = Color.White,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             }
