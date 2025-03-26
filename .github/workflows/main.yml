@@ -31,6 +31,10 @@ jobs:
 
       - name: Build Android Debug APK
         run: ./gradlew assembleDebug
+        with:
+          name: bustlespot_android_debug
+          path: /Users/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/outputs/apk/debug/composeApp-debug.apk
+
 
       - name: Run Android Unit Tests
         run: ./gradlew testDebugUnitTest
