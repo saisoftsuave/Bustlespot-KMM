@@ -284,6 +284,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             uri = currentImageUri.value
         )
         startTime = Clock.System.now()
+        mouseKeyEvents.value = 0
+        keyboradKeyEvents.value = 0
         canCallApi.value = false
         return activity
     }
