@@ -162,8 +162,8 @@ class HomeViewModel(
     private val _totalIdleTime: MutableStateFlow<Int> = MutableStateFlow(0)
     val totalIdleTime: StateFlow<Int> = _totalIdleTime.asStateFlow()
 
-    // actual is 7200
-    val idealTimeThreshold: Int = 7200
+    // actual is 7200ms -- 120 mins
+    private val idealTimeThreshold: Int = 7200
 
     fun getAllProjects(organisationId: String) {
         viewModelScope.launch {
