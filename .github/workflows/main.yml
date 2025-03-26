@@ -78,8 +78,8 @@ jobs:
       - name: Upload DMG Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bustlespot_macos_build
-          path: build/distributions
+          name: bustlespot_macos
+          path: /Users/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/compose/binaries/main/dmg/Bustlespot-KMM-1.0.0.dmg
 
   msi-build:
     name: Package MSI
@@ -103,8 +103,8 @@ jobs:
       - name: Upload MSI Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bustlespot_windows_build
-          path: build/distributions
+          name: bustlespot_windows
+          path: D:\a\Bustlespot-KMM\Bustlespot-KMM\composeApp\build\compose\binaries\main\msi\Bustlespot-KMM-1.0.0.msi
 
   deb-build:
     name: Package DEB
@@ -128,6 +128,6 @@ jobs:
       - name: Upload DEB Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bustlespot_linux_build
-          path: build/distributions
+          name: bustlespot_linux
+          path: /home/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/compose/binaries/main/deb/bustlespot-kmm_1.0.0-1.0.0_amd64.deb
 
