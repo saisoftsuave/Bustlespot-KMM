@@ -82,7 +82,7 @@ jobs:
         # Ensure assembleDMG task creates a DMG file (e.g., build/distributions/MyApp.dmg)
 
       - name: Upload DMG Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: app-dmg
           path: build/distributions/MyApp.dmg
