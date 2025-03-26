@@ -36,7 +36,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bustlespot_android_debug
-          path: /Users/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/outputs/apk/debug/composeApp-debug.apk
+          path: /home/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/outputs/apk/debug/composeApp-debug.apk
+
+      - name: Download Android Debug APK Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: bustlespot_android_debug
+          path: downloaded_artifacts
 
 
       - name: Run Android Unit Tests
@@ -66,6 +72,12 @@ jobs:
           name: bustlespot_android_debug
           path: /Users/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/outputs/apk/debug/composeApp-debug.apk
 
+      - name: Download Android Debug APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bustlespot_android_debug
+          path: downloaded_android_debug_artifacts
+
       - name: Run iOS Unit Tests
         run: ./gradlew iosX64Test
 
@@ -94,6 +106,12 @@ jobs:
           name: bustlespot_macos
           path: /Users/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/compose/binaries/main/dmg/Bustlespot-KMM-1.0.0.dmg
 
+      - name: Download DMG Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bustlespot_macos
+          path: downloaded_macos_artifacts
+
   msi-build:
     name: Package MSI
     runs-on: windows-latest
@@ -118,6 +136,12 @@ jobs:
         with:
           name: bustlespot_windows
           path: D:\a\Bustlespot-KMM\Bustlespot-KMM\composeApp\build\compose\binaries\main\msi\Bustlespot-KMM-1.0.0.msi
+
+      - name: Download MSI Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bustlespot_windows
+          path: downloaded_windows_artifacts
 
   deb-build:
     name: Package DEB
@@ -144,3 +168,8 @@ jobs:
           name: bustlespot_linux
           path: /home/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/compose/binaries/main/deb/bustlespot-kmm_1.0.0-1.0.0_amd64.deb
 
+      - name: Download DEB Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bustlespot_linux
+          path: downloaded_linux_artifacts
