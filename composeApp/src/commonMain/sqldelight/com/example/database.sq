@@ -1,1 +1,36 @@
+CREATE TABLE Organisation (
+    organisationId INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    imageUrl TEXT NOT NULL,
+    roleId INTEGER NOT NULL,
+    enableScreenshot INTEGER NOT NULL,
+    description TEXT NOT NULL,
+    role TEXT NOT NULL,
+    otherRoleIds TEXT NOT NULL -- Store as a JSON string or comma-separated values
+);
 
+-- Insert a new organisation
+insertOrganisation:
+INSERT OR REPLACE INTO Organisation (organisationId, name, imageUrl, roleId, enableScreenshot, description, role, otherRoleIds)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Get all organisations
+selectAllOrganisations:
+SELECT * FROM Organisation;
+
+-- Get organisation by ID
+selectOrganisationById:
+SELECT * FROM Organisation WHERE organisationId = ?;
+
+-- Update an organisation
+updateOrganisation:
+UPDATE Organisation
+SET name = ?, imageUrl = ?, roleId = ?, enableScreenshot = ?, description = ?, role = ?, otherRoleIds = ?
+WHERE organisationId = ?;
+
+-- Delete an organisation
+deleteOrganisationById:
+DELETE FROM Organisation WHERE organisationId = ?;
+
+deleteAllOrganisations:
+DELETE FROM Organisation;
