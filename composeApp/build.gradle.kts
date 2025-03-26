@@ -141,8 +141,10 @@ buildConfig{
     useKotlinOutput {
         topLevelConstants = true
     }
-    buildConfigField("String", "APP_NAME", "\"${project.name}\"")
-    buildConfigField("String", "APP_VERSION", "\"${project.version}\"")
+    forClass("BuildConfig"){
+        buildConfigField("String", "APP_NAME", "\"${project.name}\"")
+        buildConfigField("String", "APP_VERSION", "\"${project.version}\"")
+    }
 }
 android {
     namespace = "org.softsuave.bustlespot"
@@ -161,6 +163,10 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                file("proguard-rules.pro")
+            )
         }
     }
     compileOptions {
