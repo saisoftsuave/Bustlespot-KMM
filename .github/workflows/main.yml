@@ -82,7 +82,7 @@ jobs:
         # Ensure assembleDMG task creates a DMG file (e.g., build/distributions/MyApp.dmg)
 
       - name: Upload DMG Artifact
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: app-dmg
           path: build/distributions/MyApp.dmg
@@ -107,7 +107,7 @@ jobs:
         # Ensure assembleMSI task creates an MSI file (e.g., build/distributions/MyApp.msi)
 
       - name: Upload MSI Artifact
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: app-msi
           path: build/distributions/MyApp.msi
@@ -132,7 +132,7 @@ jobs:
         # Ensure assembleDEB task creates a DEB file (e.g., build/distributions/MyApp.deb)
 
       - name: Upload DEB Artifact
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4
         with:
           name: app-deb
           path: build/distributions/MyApp.deb
