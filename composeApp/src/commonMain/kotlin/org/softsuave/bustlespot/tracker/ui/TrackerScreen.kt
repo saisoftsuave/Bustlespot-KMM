@@ -100,8 +100,7 @@ import org.softsuave.bustlespot.utils.BustleSpotRed
 import org.softsuave.bustlespot.utils.handleBackPress
 import org.softsuave.bustlespot.utils.requestPermission
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun TrackerScreen(
@@ -146,7 +145,7 @@ fun TrackerScreen(
         if (idleTime > customeTimeForIdleTime && !homeViewModel.trackerDialogState.value.isDialogShown) {
             onFocusReceived.invoke()
             homeViewModel.handleTrackerDialogEvents(trackerDialogEvents = TrackerDialogEvents.ShowIdleTimeDialog) {
-                if (idleTime.toDuration(DurationUnit.MINUTES) < 120.minutes) {
+                if (idleTime.seconds.inWholeMinutes.minutes < 120.minutes) {
                     homeViewModel.startPostingUntrackedActivity(
                         organisationId = organisationId.toInt()
                     )
