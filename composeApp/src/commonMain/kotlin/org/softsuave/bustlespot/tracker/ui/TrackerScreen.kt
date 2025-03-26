@@ -159,6 +159,7 @@ fun TrackerScreen(
             homeViewModel.stopTrackerTimer()
             homeViewModel.updateTrackerTimer()
         }
+
     }
 
     DisposableEffect(Unit) {
