@@ -50,7 +50,7 @@ kotlin {
     jvm("desktop")
 
     //build config app version
-    version = "1.0.0"
+    version = "1.0.1"
 
     sourceSets {
         val desktopMain by getting
