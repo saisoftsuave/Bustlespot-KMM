@@ -30,7 +30,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build Android Debug APK
-        run: ./gradlew assembleDebug --info
+        run: ./gradlew assembleDebug
 
       - name: Run Android Unit Tests
         run: ./gradlew testDebugUnitTest
@@ -52,6 +52,12 @@ jobs:
 
       - name: Build iOS Framework
         run: ./gradlew linkDebugFrameworkIosSimulator
+
+      - name: Upload DMG Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bustlespot_android_debug
+          path: /Users/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/outputs/apk/debug/composeApp-debug.apk
 
       - name: Run iOS Unit Tests
         run: ./gradlew iosX64Test
