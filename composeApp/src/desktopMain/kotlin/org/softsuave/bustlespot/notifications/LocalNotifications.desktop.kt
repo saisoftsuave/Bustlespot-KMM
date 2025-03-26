@@ -9,11 +9,11 @@ actual fun sendLocalNotification(
     notificationBody: String,
     imageFile: String?
 ) {
-    val notifier = NotifierManager.getLocalNotifier()
-    notifier.notify {
-        id = Random.nextInt(0, Int.MAX_VALUE)
-        title = notificationTitle
-        body = notificationBody
-        image = imageFile?.let { NotificationImage.File(it) }
-    }
+//    val notifier = NotifierManager.getLocalNotifier()
+//    notifier.notify {
+//        id = Random.nextInt(0, Int.MAX_VALUE)
+//        title = notificationTitle
+//        body = notificationBody
+//        image = imageFile?.let { NotificationImage.File(it) }
+//    }
 }
