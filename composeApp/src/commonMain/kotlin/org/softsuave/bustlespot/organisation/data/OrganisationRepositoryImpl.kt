@@ -64,22 +64,22 @@ class OrganisationRepositoryImpl(
     // ✅ Get all organisations from SQLDelight
     private fun getLocalOrganisations(): List<Organisation> {
         Log.d("data is fetching")
-     return db.databaseQueries.selectAllOrganisations().executeAsList().map { it.toDomain() }
+     return db.organisationDatabaseQueries.selectAllOrganisations().executeAsList().map { it.toDomain() }
     }
 
     // ✅ Save organisations to SQLDelight
     private fun saveOrganisationsToLocal(data: GetAllOrganisations) {
 
-        db.databaseQueries.transaction {
+        db.organisationDatabaseQueries.transaction {
             // Clear old data to prevent duplicates
 //            Log.d("Organisations saved to local DB")
             Log.d("${getLocalOrganisations()} orgs in db")
-            db.databaseQueries.deleteAllOrganisations()
+            db.organisationDatabaseQueries.deleteAllOrganisations()
             Log.d("removed all data")
             Log.d("${getLocalOrganisations()} orgs in db")
             // Insert fresh data
             data.listOfOrganisations.forEach { org ->
-                db.databaseQueries.insertOrganisation(
+                db.organisationDatabaseQueries.insertOrganisation(
                     organisationId = org.organisationId.toLong(),
                     name = org.name,
                     imageUrl = org.imageUrl,
