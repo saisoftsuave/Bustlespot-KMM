@@ -187,6 +187,13 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "org.softsuave.bustlespot.MainKt"
+        buildTypes.release.proguard {
+//            optimize.set(false)
+            isEnabled = false
+//            obfuscate.set(false)
+//            version.set("7.5.0")
+//            configurationFiles.from(project.file("compose-desktop.pro"))
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
