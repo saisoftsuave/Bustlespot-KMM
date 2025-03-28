@@ -18,5 +18,9 @@ interface TrackerRepository {
 
     fun getAllActivities(taskId : String) :  Flow<Result<GetAllActivities>>
 
+    suspend fun checkLocalDbAndPostFailedActivity()
+
     suspend fun checkLocalDbAndPostActivity()
+
+    fun storePostUserActivity(postActivityRequest: PostActivityRequest):Boolean
 }

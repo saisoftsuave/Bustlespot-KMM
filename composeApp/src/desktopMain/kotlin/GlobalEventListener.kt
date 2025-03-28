@@ -23,7 +23,14 @@ class GlobalEventListener : NativeKeyListener, NativeMouseListener, NativeMouseM
             return
         }
     }
-
+    fun resetClickCount(){
+        keyCount = 0
+        mouseCount = 0
+        mouseMotionCount = 0
+        fKeyCount.value = 0
+        fMouseCount.value = 0
+        fMouseMotionCount.value = 0
+    }
     fun registerListeners() {
         if (!GlobalScreen.isNativeHookRegistered()) {
             registerEventTracking()

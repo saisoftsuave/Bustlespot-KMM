@@ -65,6 +65,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private val screenshotLimit = 1
     private var idealStartTime: Instant = Instant.DISTANT_PAST
     private val postActivityInterval: Int = 600 //in second
+    private val storeActivityInterval: Int = 60 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -183,6 +184,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                         val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
                         if (timeDifference >= postActivityInterval) {
                             canCallApi.value = true
+                        }
+                        if (timeDifference >= storeActivityInterval) {
+                            canStoreApiCall.value = true
                         }
                         Log.d("$timeDifference and ${canCallApi.value}")
                         trackerTime.value++
@@ -348,5 +352,6 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    actual var canStoreApiCall: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 }

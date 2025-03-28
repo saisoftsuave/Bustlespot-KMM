@@ -59,6 +59,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private val screenshotLimit = 10 //in mints
     private var idealStartTime: Instant = Instant.DISTANT_PAST
     private val postActivityInterval: Int = 600 //in second
+    private val storeActivityInterval: Int = 60 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -147,6 +148,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                         val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
                         if (timeDifference >= postActivityInterval) {
                             canCallApi.value = true
+                        }
+                        if (timeDifference >= storeActivityInterval) {
+                            canStoreApiCall.value = true
                         }
                         Log.d("$timeDifference and ${canCallApi.value}")
                         trackerTime.value++
@@ -283,9 +287,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             notes = "",
             uri = currentImageUri.value
         )
-        startTime = Clock.System.now()
-        mouseKeyEvents.value = 0
-        keyboradKeyEvents.value = 0
+        startTime = endTime
+        globalEventListener.resetClickCount()
         canCallApi.value = false
         return activity
     }
@@ -312,8 +315,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             uri = null //no photo for untracked activity
         )
         startTime = Clock.System.now()
-        mouseKeyEvents.value = 0
-        keyboradKeyEvents.value = 0
+        globalEventListener.resetClickCount()
         return activity
     }
 
@@ -333,5 +335,6 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
 
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    actual var canStoreApiCall: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 }

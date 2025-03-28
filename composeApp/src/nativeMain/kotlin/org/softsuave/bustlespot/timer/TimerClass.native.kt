@@ -308,5 +308,6 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    actual var canStoreApiCall: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
 }

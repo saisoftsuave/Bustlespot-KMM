@@ -21,6 +21,7 @@ expect class TrackerModule(
     var startTime : Instant
 
     var canCallApi : MutableStateFlow<Boolean>
+    var canStoreApiCall : MutableStateFlow<Boolean>
     var mouseKeyEvents: MutableStateFlow<Int>
     var keyboradKeyEvents: MutableStateFlow<Int>
     var mouseMotionCount: MutableStateFlow<Int>

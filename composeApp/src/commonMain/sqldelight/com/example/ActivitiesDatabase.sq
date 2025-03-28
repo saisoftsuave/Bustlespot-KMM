@@ -11,6 +11,7 @@ CREATE TABLE ActivityData (
     organisationId INTEGER,
     uri TEXT,
     unTrackedTime INTEGER,
+    isFailed INTEGER DEFAULT 0,
     PRIMARY KEY (taskId, projectId)
 );
 
@@ -18,13 +19,16 @@ CREATE TABLE ActivityData (
 insertActivity:
 INSERT OR REPLACE INTO  ActivityData (
     taskId, projectId, startTime, endTime, mouseActivity, keyboardActivity, totalActivity,
-    billable, notes, organisationId, uri, unTrackedTime
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    billable, notes, organisationId, uri, unTrackedTime,isFailed
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
 
 getAllActivities:
 -- Select All Activities
-SELECT * FROM ActivityData;
+SELECT * FROM ActivityData WHERE isFailed = 0;
 
+getAllFailedActivities:
+-- Select All Activities
+SELECT * FROM ActivityData WHERE isFailed = 1;
 getActivityBYId:
 -- Select Activity by Task & Project ID
 SELECT * FROM ActivityData WHERE taskId = ? AND projectId = ?;
@@ -33,6 +37,12 @@ deleteActivityById:
 -- Delete Activity by Task & Project ID
 DELETE FROM ActivityData WHERE taskId = ? AND projectId = ?;
 
+
+
 deleteAllActivities:
 -- Delete All Activities
-DELETE FROM ActivityData;
+DELETE FROM ActivityData WHERE isFailed = 0;
+
+deleteAllFailedActivities:
+-- Delete All Activities
+DELETE FROM ActivityData WHERE isFailed = 1;

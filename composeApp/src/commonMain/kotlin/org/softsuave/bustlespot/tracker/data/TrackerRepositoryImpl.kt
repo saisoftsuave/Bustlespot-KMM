@@ -35,7 +35,7 @@ import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
 class TrackerRepositoryImpl(
     private val client: HttpClient,
     private val sessionManager: SessionManager,
-    private val db : Database,
+    private val db: Database,
 ) : TrackerRepository {
 
     override fun getAllProjects(organisationId: String): Flow<Result<GetAllProjects>> {
@@ -100,9 +100,10 @@ class TrackerRepositoryImpl(
                 }
                 if (response.status == HttpStatusCode.OK) {
                     val data: ActivityDataResponse = response.body()
+                    db.activitiesDatabaseQueries.deleteAllActivities()
                     emit(Result.Success(data))
                 } else {
-                    Log.d("postActivity --> failed")
+                    Log.d("postActivity --> failed ${response.status}")
                     saveFailedPostUserActivity(postActivityRequest)
                     emit(Result.Error(message = "Failed post activity: ${response.status}"))
                 }
@@ -133,7 +134,7 @@ class TrackerRepositoryImpl(
             }
         }
     }
-    
+
     private fun saveFailedPostUserActivity(postActivityRequest: PostActivityRequest) {
         postActivityRequest.activityData.forEach { activityData ->
             db.transaction {
@@ -149,26 +150,85 @@ class TrackerRepositoryImpl(
                     notes = activityData.notes,
                     organisationId = activityData.orgId?.toLong(),
                     uri = activityData.uri,
-                    unTrackedTime = activityData.unTrackedTime
+                    unTrackedTime = activityData.unTrackedTime,
+                    isFailed = 1
                 )
             }
         }
         Log.d("call saved to db")
     }
 
-   override suspend fun checkLocalDbAndPostActivity(){
-       Log.d("post local failed call is started")
-        val localData = db.activitiesDatabaseQueries.getAllActivities().executeAsList().map { it.toDomain() }
-        if(localData.isNotEmpty()){
+    override suspend fun checkLocalDbAndPostFailedActivity() {
+        Log.d("post local failed call is started")
+        val localData = db.activitiesDatabaseQueries.getAllFailedActivities().executeAsList()
+            .map { it.toDomain() }
+        if (localData.isNotEmpty()) {
             val postActivityRequest = PostActivityRequest(localData.toMutableList())
-            postUserActivity(postActivityRequest).collect{ result ->
-                when(result){
-                    is Result.Error ->  {
+            postUserActivity(postActivityRequest).collect { result ->
+                when (result) {
+                    is Result.Error -> {
                         Log.d("failed to post from local db")
                     }
+
                     is Result.Loading -> {
 
                     }
+
+                    is Result.Success -> {
+                        Log.d("Success to post failed call from local db")
+                        db.activitiesDatabaseQueries.deleteAllFailedActivities()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun storePostUserActivity(postActivityRequest: PostActivityRequest): Boolean {
+        try {
+            postActivityRequest.activityData.forEach { activityData ->
+                db.transaction {
+                    db.activitiesDatabaseQueries.insertActivity(
+                        taskId = activityData.taskId?.toLong(),
+                        projectId = activityData.projectId?.toLong(),
+                        startTime = activityData.startTime,
+                        endTime = activityData.endTime,
+                        mouseActivity = activityData.mouseActivity?.toLong(),
+                        keyboardActivity = activityData.keyboardActivity?.toLong(),
+                        totalActivity = activityData.totalActivity?.toLong(),
+                        billable = activityData.billable,
+                        notes = activityData.notes,
+                        organisationId = activityData.orgId?.toLong(),
+                        uri = activityData.uri,
+                        unTrackedTime = activityData.unTrackedTime,
+                        isFailed = 0
+                    )
+                }
+            }
+            Log.d("success to save to db")
+            return true
+        } catch (e: Exception) {
+            Log.e("failed to save to db ${e.message}", e.suppressedExceptions.first())
+            return false
+        }
+    }
+
+    override suspend fun checkLocalDbAndPostActivity() {
+        Log.d("post local call is started")
+        val localData = db.activitiesDatabaseQueries.getAllActivities().executeAsList()
+            .map { it.toDomain() }
+        if (localData.isNotEmpty()) {
+            Log.d("local data is not empty size:- ${localData.size}")
+            val postActivityRequest = PostActivityRequest(localData.toMutableList())
+            postUserActivity(postActivityRequest).collect { result ->
+                when (result) {
+                    is Result.Error -> {
+                        Log.d("failed to post from local db")
+                    }
+
+                    is Result.Loading -> {
+
+                    }
+
                     is Result.Success -> {
                         Log.d("Success to post from local db")
                         db.activitiesDatabaseQueries.deleteAllActivities()

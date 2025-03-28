@@ -196,6 +196,16 @@ fun TrackerScreen(
             Log.d("call restored")
         }
     }
+    LaunchedEffect(homeViewModel.canStoreApiCall.value) {
+        Log.d("isChanged ${homeViewModel.canStoreApiCall.value}")
+        if (homeViewModel.canStoreApiCall.value) {
+            homeViewModel.storePostActivity(
+                organisationId = organisationId.toInt()
+            )
+        } else {
+            Log.d("call restored canStoreApiCall ${homeViewModel.canStoreApiCall.value}")
+        }
+    }
     // code for lunching the tracker not started dialog
     /*LaunchedEffect(Unit) {
         var dialogShown = false

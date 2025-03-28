@@ -39,6 +39,7 @@ class HomeViewModel(
     val customeTimeForIdleTime: StateFlow<Int> = trackerModule.customeTimeForIdleTime
     val screenShotState: StateFlow<ImageBitmap?> = trackerModule.screenShotState
     var canCallApi: MutableStateFlow<Boolean> = trackerModule.canCallApi
+    var canStoreApiCall: MutableStateFlow<Boolean> = trackerModule.canStoreApiCall
     var lastSyncTime: MutableStateFlow<Long> = MutableStateFlow(0)
 //    val isNetworkAvailable: Flow<Boolean> = networkMonitor.isConnected
 
@@ -93,6 +94,20 @@ class HomeViewModel(
             Log.d("$request----reguest")
             postUserActivity(request)
         } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun storePostActivity(
+        organisationId: Int
+    ){
+        try {
+            val request = constructPostActivityRequest(
+                organisationId,
+                activityDataOfModule = trackerModule.getActivityData()
+            )
+            canStoreApiCall.value = !trackerRepository.storePostUserActivity(request)
+        }catch (e:Exception){
             e.printStackTrace()
         }
     }
@@ -293,9 +308,10 @@ class HomeViewModel(
         viewModelScope.launch {
             networkMonitor.isConnected.collect{ isNetworkAvailable ->
                 if(isNetworkAvailable){
-                    trackerRepository.checkLocalDbAndPostActivity()
+                    trackerRepository.checkLocalDbAndPostFailedActivity()
                 }
             }
+            trackerRepository.checkLocalDbAndPostActivity()
         }
     }
     fun handleDropDownEvents(dropDownEvents: DropDownEvents) {
