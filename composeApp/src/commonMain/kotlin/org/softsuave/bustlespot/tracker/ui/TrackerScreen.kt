@@ -79,6 +79,9 @@ import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -158,7 +161,10 @@ fun TrackerScreen(
             homeViewModel.stopTrackerTimer()
             homeViewModel.updateTrackerTimer()
         }
-
+        val now = Clock.System.now().toLocalDateTime(TimeZone.of("Asia/Kolkata"))
+        if (now.hour in 19 until 20 && now.minute in 0 until 1) {
+            navController.navigateUp()
+        }
     }
 
     DisposableEffect(Unit) {
