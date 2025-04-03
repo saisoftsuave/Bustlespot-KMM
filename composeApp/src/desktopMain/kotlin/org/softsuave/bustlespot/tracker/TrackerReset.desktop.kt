@@ -13,13 +13,6 @@ import java.util.Timer
 
 @OptIn(DelicateCoroutinesApi::class)
 actual fun scheduleWork(performTask: () -> Unit) {
-    val timer = Timer()
-
-
-//    timer.schedule(timerTask {
-//        Log.i("called task")
-//      performTask()
-//    }, delay)
     GlobalScope.launch(Dispatchers.IO) {
         val toDelay = getMillisUntilNextRun()
         delay(toDelay)

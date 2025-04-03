@@ -67,7 +67,6 @@ class MainActivity : ComponentActivity() {
       //  mediaProjectionHelper = MediaProjectionHelper(this)
         ComponentActivityReference.setActivity(this)
         checkAndRequestNotificationPermission()
-
     }
 
     private fun requestScreenCapturePermission() {

@@ -99,6 +99,8 @@ kotlin {
         }
 
         androidMain.dependencies {
+            // Kotlin + coroutines
+            implementation(libs.androidx.work.runtime.ktx)
             implementation(compose.uiTooling)
             implementation(libs.androidx.activityCompose)
             implementation(libs.kotlinx.coroutines.android)
@@ -154,7 +156,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 26
         targetSdk = 35
 
         applicationId = "org.softsuave.bustlespot.androidApp"
@@ -182,7 +184,8 @@ android {
 }
 
 dependencies {
-//    implementation(libs.androidx.startup.runtime)
+
+    //    implementation(libs.androidx.startup.runtime)
 //    implementation(libs.androidx.room.common)
     debugImplementation(compose.uiTooling)
 }
