@@ -30,7 +30,110 @@
 -keep class platform.Foundation.** { *; }
 -keep class platform.UIKit.** { *; }
 -keep class platform.CoreGraphics.** { *; }
+# Keep serializable classes
+-keep @kotlinx.serialization.Serializable class ** { *; }
 
+# Keep generated serializers
+-keepclassmembers class **$$serializer {
+    *;
+}
+### your config ....
+
+# Keep `Companion` object fields of serializable classes.
+# This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.
+-if @kotlinx.serialization.Serializable class **
+-keepclassmembers class <1> {
+   static <1>$Companion Companion;
+}
+
+# Keep `serializer()` on companion objects (both default and named) of serializable classes.
+-if @kotlinx.serialization.Serializable class ** {
+   static **$* *;
+}
+-keepclassmembers class <2>$<3> {
+   kotlinx.serialization.KSerializer serializer(...);
+}
+
+# Keep `INSTANCE.serializer()` of serializable objects.
+-if @kotlinx.serialization.Serializable class ** {
+   public static ** INSTANCE;
+}
+-keepclassmembers class <1> {
+   public static <1> INSTANCE;
+   kotlinx.serialization.KSerializer serializer(...);
+}
+
+# @Serializable and @Polymorphic are used at runtime for polymorphic serialization.
+-keepattributes RuntimeVisibleAnnotations,AnnotationDefault
+
+# Keep serialization infrastructure
+-keep class kotlinx.serialization.** { *; }
+-keep class kotlinx.serialization.json.** { *; }
+-keepclassmembers class kotlinx.serialization.json.** { *; }
+# Keep ALL classes in request/response packages
+-keep class org.softsuave.bustlespot.data.network.models.request.** { *; }
+-keep class org.softsuave.bustlespot.data.network.models.response.** { *; }
+# Core Coil 3.x classes
+-keep class coil3.** { *; }
+-keep class coil3.compose.** { *; }
+-keep class coil3.request.** { *; }
+
+# ImageLoader and builders
+-keep class coil3.ImageLoader { *; }
+-keep class coil3.ImageLoader$Builder { *; }
+
+
+# Request builders and crossfade
+-keep class coil3.request.ImageRequest { *; }
+-keep class coil3.request.ImageRequest$Builder { *; }
+
+
+# Decoders and components
+-keep class coil3.decode.** { *; }
+-keep class coil3.component.** { *; }
+
+# Service loader configuration
+-keep class coil3.ComponentRegistry { *; }
+-keep class coil3.ComponentRegistry$** { *; }
+
+# If using network layers
+-keep class coil3.network.** { *; }
+-keep class coil3.fetch.** { *; }
+
+# Keep Coil's internal dependencies
+-keep class coil3.util.** { *; }
+-keep class coil3.annotation.** { *; }
+
+# Keep generated serializers for these packages
+-keep class org.softsuave.bustlespot.data.network.models.request.**$$serializer { *; }
+-keep class org.softsuave.bustlespot.data.network.models.response.**$$serializer { *; }
+
+# Keep class members (prevents property removal/obfuscation)
+-keepclassmembers class org.softsuave.bustlespot.data.network.models.request.** {
+    *;
+}
+-keepclassmembers class org.softsuave.bustlespot.data.network.models.response.** {
+    *;
+}
+
+
+# Keep auth signin data classes
+-keep class org.softsuave.bustlespot.auth.signin.data.** { *; }
+
+# Keep generated serializers for these classes
+-keep class org.softsuave.bustlespot.auth.signin.data.**$$serializer { *; }
+
+# Preserve class members (fields/methods)
+-keepclassmembers class org.softsuave.bustlespot.auth.signin.data.** {
+    *;
+}
+
+# Prevent field/method name obfuscation
+-keepnames class org.softsuave.bustlespot.auth.signin.data.** { *; }
+
+# Prevent property name mangling
+-keepnames class org.softsuave.bustlespot.data.network.models.request.** { *; }
+-keepnames class org.softsuave.bustlespot.data.network.models.response.** { *; }
 # ----------------------------------------- Basic ------------------------------------------------ #
 -keepattributes *Annotation*
 
@@ -89,7 +192,7 @@
 -dontwarn kotlinx.atomicfu.**
 -dontwarn io.netty.**
 -dontwarn com.typesafe.**
--dontwarn org.slf4j.**
+-keep class org.slf4j.**
 
 # Obfuscation breaks coroutines/ktor for some reason
 -dontobfuscate
@@ -109,6 +212,25 @@
 -keepclassmembers class com.github.panpf.sketch.sample.<1>$Companion {
     kotlinx.serialization.KSerializer serializer(...);
 }
+
+# Existing rules (partial list from your query)
+-keep class org.koin.** { *; }
+-keep class com.yourpackage.** { *; }
+-keep class com.example.Database { *; }
+-keep class org.softsuave.bustlespot.SessionManager { *; }
+-keep class com.squareup.sqldelight.** { *; }
+-keep class androidx.compose.** { *; }
+-dontwarn androidx.compose.**
+-keep class kotlinx.coroutines.** { *; }
+-dontwarn kotlinx.coroutines.**
+
+# New rules for SQLite JDBC
+-keep class org.sqlite.** { *; }
+-keep interface org.sqlite.** { *; }
+#-keepresources org/sqlite/native/**
+
+# Optional: For jnativehook (if needed)
+-keep class com.github.kwhat.jnativehook.** { *; }
 
 # Add project specific ProGuard rules here.
 # By default, the flags in this file are appended to flags specified

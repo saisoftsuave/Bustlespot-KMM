@@ -307,7 +307,13 @@ fun OrganizationItem(
                     contentDescription = "",
                     imageLoader = ImageLoader(context = platformContext),
                     modifier = Modifier,
-                    placeholder = painterResource(resource = Res.drawable.compose_multiplatform)
+                    placeholder = painterResource(resource = Res.drawable.compose_multiplatform),
+                    onLoading = {
+
+                    },
+                    onError = { error->
+                        Log.d("image error ${error.result}")
+                    }
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
