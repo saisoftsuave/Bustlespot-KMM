@@ -55,6 +55,7 @@ kotlin {
     sourceSets {
         val desktopMain by getting
         commonMain.dependencies {
+            implementation(libs.slf4j.nop)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
@@ -133,15 +134,17 @@ sqldelight {
     databases {
         create("Database") {
             packageName.set("com.example")
+            dialect("app.cash.sqldelight:sqlite-3-24-dialect:2.0.2")
         }
     }
 }
 
 buildConfig{
+    packageName = "org.softsuave.bustlespot"
     useKotlinOutput {
         topLevelConstants = true
     }
-    forClass("BuildConfig"){
+    forClass("BuildConfigKt"){
         buildConfigField("String", "APP_NAME", "\"${project.name}\"")
         buildConfigField("String", "APP_VERSION", "\"${project.version}\"")
     }
@@ -162,7 +165,7 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 file("proguard-rules.pro")
@@ -188,12 +191,15 @@ compose.desktop {
     application {
         mainClass = "org.softsuave.bustlespot.MainKt"
         buildTypes.release.proguard {
-//            optimize.set(false)
-            isEnabled = false
-//            obfuscate.set(false)
+            optimize.set(false)
+            isEnabled = true
+            obfuscate.set(false)
 //            version.set("7.5.0")
-//            configurationFiles.from(project.file("compose-desktop.pro"))
+            configurationFiles.from(project.file("compose-desktop.pro"))
         }
+        jvmArgs(
+            "-Djava.util.logging.config.file=logging.properties" // Custom logging config
+        )
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)

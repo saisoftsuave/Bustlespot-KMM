@@ -1,4 +1,4 @@
-CREATE TABLE ActivityData (
+CREATE TABLE IF NOT EXISTS ActivityData (
     taskId INTEGER,
     projectId INTEGER,
     startTime TEXT,

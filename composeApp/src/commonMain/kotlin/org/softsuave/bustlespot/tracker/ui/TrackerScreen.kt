@@ -1,6 +1,5 @@
 package org.softsuave.bustlespot.tracker.ui
 
-import Bustlespot.composeApp.APP_VERSION
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -79,12 +78,10 @@ import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.imageResource
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.softsuave.bustlespot.APP_VERSION
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
@@ -99,6 +96,7 @@ import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
 import org.softsuave.bustlespot.organisation.ui.BustleSpotAppBar
+import org.softsuave.bustlespot.tracker.scheduleWork
 import org.softsuave.bustlespot.utils.BustleSpotRed
 import org.softsuave.bustlespot.utils.handleBackPress
 import org.softsuave.bustlespot.utils.requestPermission
@@ -161,10 +159,10 @@ fun TrackerScreen(
             homeViewModel.stopTrackerTimer()
             homeViewModel.updateTrackerTimer()
         }
-        val now = Clock.System.now().toLocalDateTime(TimeZone.of("Asia/Kolkata"))
-        if (now.hour in 19 until 20 && now.minute in 0 until 1) {
-            navController.navigateUp()
-        }
+//        val now = Clock.System.now().toLocalDateTime(TimeZone.of("Asia/Kolkata"))
+//        if (now.hour in 19 until 20 && now.minute in 0 until 1) {
+//            navController.navigateUp()
+//        }
     }
 
     DisposableEffect(Unit) {
@@ -191,6 +189,17 @@ fun TrackerScreen(
     )
     LaunchedEffect(key1 = Unit) {
         homeViewModel.checkAndPostActivities()
+        scheduleWork(
+            performTask = {
+                if (isTrackerRunning) {
+                    homeViewModel.startPostingActivity(
+                        organisationId = organisationId.toInt()
+                    )
+                }
+                navController.popBackStack()
+                Log.i("call receiveid")
+            }
+        )
     }
     LaunchedEffect(homeViewModel.canCallApi.value) {
         Log.d("isChanged ${homeViewModel.canCallApi.value}")

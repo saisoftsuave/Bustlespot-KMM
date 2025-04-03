@@ -1,6 +1,5 @@
 package org.softsuave.bustlespot
 
-import Bustlespot.composeApp.APP_VERSION
 import com.example.Database
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.contains

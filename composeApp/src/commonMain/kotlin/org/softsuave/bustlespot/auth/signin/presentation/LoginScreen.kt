@@ -1,6 +1,5 @@
 package org.softsuave.bustlespot.auth.signin.presentation
 
-import Bustlespot.composeApp.APP_VERSION
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -64,6 +63,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.softsuave.bustlespot.APP_VERSION
 import org.softsuave.bustlespot.MainViewModel
 import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.navigation.Home

@@ -274,7 +274,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun getActivityData(): ActivityData {
 //        base64Converter()
         val endTime = getEndTime()
-        val intervalInSeconds = endTime.epochSeconds.seconds.inWholeSeconds - startTime.epochSeconds.seconds.inWholeSeconds
+        val intervalInSeconds =
+            endTime.epochSeconds.seconds.inWholeSeconds - startTime.epochSeconds.seconds.inWholeSeconds
         println(intervalInSeconds)
         println((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toFloat())
         val activity = ActivityData(
@@ -336,5 +337,4 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
     actual var canStoreApiCall: MutableStateFlow<Boolean> = MutableStateFlow(false)
-
 }
