@@ -41,5 +41,35 @@ The API expects a JSON payload with the following structure:
 ```
 
 ## Response Parameters
+If the credentials are valid, the API will return a 200 OK response with a JSON object containing the employee's basic information and an authentication token.
 
-- **userId** (
+- **userId** (Integer):
+  The unique identifier of the employee in the system.
+- **firstName**	(String):
+  The employee’s first name.
+- **lastName**	(String):
+  The employee’s last name.
+- **email**	 (String):
+  The employee’s registered email address.
+- **token**	 (String):
+  A JWT token used for authenticating further API requests.
+## Sample Response
+
+```json
+{
+  "userId": 101,
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@example.com",
+  "token": "eyJhbGciOiJIUzI1NiIsInR..."
+}
+```
+
+# Error Handling
+
+-**401** (Unauthorized) :
+  If the email or password is incorrect.
+-**400** (Bad Request)
+  If required fields are missing or invalid.
+-**500** (Internal Server Error)
+  If something goes wrong on the server side
