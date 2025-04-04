@@ -73,3 +73,95 @@ If the credentials are valid, the API will return a 200 OK response with a JSON 
   If required fields are missing or invalid.
 - **500** (Internal Server Error) :
   If something goes wrong on the server side
+
+
+# User Organization API Documentation
+
+## Endpoint Details
+
+- **Base URL:** `https:/bustlespot-api.gamzinn.com`
+- **Route:** `/api/organisation/getUserOrganization`
+- **Method:** `GET`
+- **Content-Type:** `application/json`
+
+## Request Parameters
+
+This endpoint does not require any request body or parameters.
+
+## Response Parameters
+
+If the request is successful, the API will return a `200 OK` response with a JSON object containing the user's organization details.
+
+- **status** (String):  
+  Indicates the status of the request. Expected value: `"success"`.
+
+- **data** (Object):  
+  Contains the list of organizations the user is associated with.
+
+  - **organisationList** (Array of Objects):  
+    A list of organizations where the user is a member. Each object includes:
+
+    - **name** (String):  
+      The name of the organization.
+
+    - **organisationId** (Integer):  
+      A unique identifier for the organization.
+
+    - **image** (String):  
+      URL of the organization's logo or image.
+
+    - **roleId** (Integer):  
+      The role ID assigned to the user within the organization.
+
+    - **enableScreenshot** (Integer):  
+      A flag (1 or 0) indicating whether screenshot functionality is enabled for this organization.
+
+    - **description** (String):  
+      A brief description of the organization.
+
+    - **role** (String):  
+      The role of the user in the organization (e.g., `"Super Admin"`).
+
+    - **otherRoleIds** (Array of Integers):  
+      Additional role IDs assigned to the user in the organization.
+
+## Sample Response
+
+
+```json
+{
+    "status": "success",
+    "data": {
+        "organisationList": [
+            {
+                "name": "ExampleOrg",
+                "organisationId": 123,
+                "image": "https://example.com/images/org123.png",
+                "roleId": 2,
+                "enableScreenshot": 0,
+                "description": "Example organization description",
+                "role": "Admin",
+                "otherRoleIds": [3, 4]
+            },
+            {
+                "name": "TestOrg",
+                "organisationId": 456,
+                "image": "https://example.com/images/org456.png",
+                "roleId": 3,
+                "enableScreenshot": 1,
+                "description": "Test organization for demo purposes",
+                "role": "User",
+                "otherRoleIds": []
+            }
+        ]
+    },
+    "message": "User organisation list"
+}
+```
+# Error Handling
+- **401** (Unauthorized) :
+  If the user is not authenticated or does not have permission to access the organization details.
+- **400** (Bad Request) :
+  If required fields are missing or invalid.
+- **500** (Internal Server Error) :
+  If an unexpected server-side issue occurs.
