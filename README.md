@@ -67,9 +67,9 @@ If the credentials are valid, the API will return a 200 OK response with a JSON 
 
 # Error Handling
 
--**401** (Unauthorized) :
+- **401** (Unauthorized) :
   If the email or password is incorrect.
--**400** (Bad Request)
+- **400** (Bad Request) :
   If required fields are missing or invalid.
--**500** (Internal Server Error)
+- **500** (Internal Server Error) :
   If something goes wrong on the server side
