@@ -17,7 +17,7 @@ Learn more about [Kotlin Multi-platform](https://www.jetbrains.com/help/kotlin-m
 
 ## Endpoint Details
 
-- **Base URL:** `https:/bustlespot-api.gamzinn.com`
+- **Base URL:** `https://bustlespot-api.gamzinn.com`
 - **Route:** `/api/auth/signin`
 - **Method:** `POST`
 - **Content-Type:** `application/json`
@@ -78,8 +78,7 @@ If the credentials are valid, the API will return a 200 OK response with a JSON 
 # User Organization API Documentation
 
 ## Endpoint Details
-
-- **Base URL:** `https:/bustlespot-api.gamzinn.com`
+- **Base URL:** `https://bustlespot-api.gamzinn.com`
 - **Route:** `/api/organisation/getUserOrganization`
 - **Method:** `GET`
 - **Content-Type:** `application/json`
