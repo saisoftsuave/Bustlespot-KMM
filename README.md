@@ -12,3 +12,34 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop.
 
 
 Learn more about [Kotlin Multi-platform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+
+# Employee Login API Documentation
+
+## Endpoint Details
+
+- **Base URL:** `https:/bustlespot-api.gamzinn.com`
+- **Route:** `/api/auth/signin`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+
+## Request Parameters
+
+The API expects a JSON payload with the following structure:
+
+- **email** (string, required):  
+  The registered email address of the employee attempting to log in. This field must contain a valid email format.
+
+- **password** (string, required):  
+  The password corresponding to the provided email address. It should meet the security requirements defined by the system (e.g., minimum length, complexity).
+
+**Example Request Body:**
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "securePassword123"
+}
+```
+
+## Response Parameters
+
+- **userId** (
