@@ -164,3 +164,83 @@ If the request is successful, the API will return a `200 OK` response with a JSO
   If required fields are missing or invalid.
 - **500** (Internal Server Error) :
   If an unexpected server-side issue occurs.
+
+
+# Employee Organization Projects API Documentation
+
+### **Endpoint Details**
+- **Base URL:** `https://bustlespot-api.gamzinn.com`
+- **Route:** `/api/organisation/getUserOrganization`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+- **Authorization:** Bearer Token
+
+### **Request Parameters**
+The API expects a JSON payload with the following structure:
+
+- **organisationId** (number, required):  
+  The unique identifier of the organization for which the project list is to be retrieved.
+
+#### **Example Request Body:**
+```json
+{
+    "organisationId": 123
+}
+```
+
+---
+
+### **Response Parameters**
+If the request is successful, the API returns a 200 OK response with the project details for the specified organization.
+
+#### **Response Structure:**
+```json
+{
+  "status": "success",
+  "data": {
+    "projectLists": [
+      {
+        "projectId": 101,
+        "name": "Project Alpha",
+        "status": 0,
+        "startDate": "2023-01-01T10:00:00.000Z",
+        "users": "[{\"userId\": 201, \"fullName\": \"John Doe\", \"profileImage\": null}, {\"userId\": 202, \"fullName\": \"Jane Smith\", \"profileImage\": null}]"
+      },
+      {
+        "projectId": 102,
+        "name": "Project Beta",
+        "status": 0,
+        "startDate": "2024-02-15T09:30:00.000Z",
+        "users": "[{\"userId\": 301, \"fullName\": \"Alice Brown\", \"profileImage\": \"https://example.com/profiles/301.jpg\"}, {\"userId\": 302, \"fullName\": \"Bob White\", \"profileImage\": \"https://example.com/profiles/302.jpg\"}]"
+      }
+    ]
+  },
+  "message": "User organization project list retrieved successfully."
+}
+```
+
+### **Notes:**
+- The **status** field indicates whether the request was successful.
+- The **data** field contains a list of projects associated with the organization.
+- Each project includes its `projectId`, `name`, `status`, `startDate`, and a `users` array containing details of assigned users.
+- The **message** field provides additional information about the request outcome.
+
+---
+**Example Usage:**  
+Use a tool like Postman or cURL to send a request:
+```sh
+curl -X POST "https://bustlespot-api.gamzinn.com/api/organisation/getUserOrganization" \
+-H "Authorization: Bearer <token>" \
+-H "Content-Type: application/json" \
+-d '{ "organisationId": 123 }'
+```
+
+### **Error Handling**
+| Status Code | Meaning | Description |
+|------------|---------|-------------|
+| **401** | Unauthorized | Invalid or missing authentication token. |
+| **400** | Bad Request | organisationId is missing or invalid. |
+| **500** | Internal Server Error | An unexpected server error occurred. |
+
+
+
