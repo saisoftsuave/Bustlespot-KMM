@@ -242,10 +242,10 @@ curl -X POST "https://bustlespot-api.gamzinn.com/api/organisation/getUserOrganiz
 | **400** | Bad Request | organisationId is missing or invalid. |
 | **500** | Internal Server Error | An unexpected server error occurred. |
 
-## Project Tasks API Documentation
+
+# Task Details API Documentation
 
 ### **Endpoint Details**
-- **Base URL:** `https://bustlespot-api.gamzinn.com`
 - **Route:** `/api/task/getTaskByProjectId`
 - **Method:** `POST`
 - **Content-Type:** `application/json`
@@ -262,48 +262,96 @@ The API expects a JSON payload with the following structure:
 #### **Example Request Body:**
 ```json
 {
-    "projectId": 815,
-    "organisationId": 1312
+  "projectId": 815,
+  "organisationId": 1312
 }
 ```
 
+### Request Parameters:
+- `projectId` (number): ID of the project for which tasks are requested.
+- `organisationId` (number): ID of the organization.
+
 ---
 
-### **Response Schema**
-If successful, the response will adhere to the following schema:
-
+## Sample Response
 ```json
 {
-  "taskId": 1001,
-  "taskName": "Design Login UI",
-  "taskDescription": "Create a responsive login screen",
-  "assignedTo": "John Doe",
-  "dueDate": "2024-12-31T23:59:59Z"
+  "status": "success",
+  "data": {
+    "taskDetails": [
+      {
+        "taskId": 1663,
+        "name": "Introduction",
+        "projectId": 803,
+        "projectName": "AI-ML",
+        "organisationId": 698,
+        "time": null,
+        "startTime": null,
+        "endTime": null,
+        "screenshots": "",
+        "notes": "",
+        "unTrackedTime": null,
+        "lastScreenShotTime": "00:00:00",
+        "totalTime": 0
+      },
+      {
+        "taskId": 1670,
+        "name": "Interview",
+        "projectId": 803,
+        "projectName": "AI-ML",
+        "organisationId": 698,
+        "time": null,
+        "startTime": null,
+        "endTime": null,
+        "screenshots": "",
+        "notes": "",
+        "unTrackedTime": null,
+        "lastScreenShotTime": "00:00:00",
+        "totalTime": 0
+      },
+      {
+        "taskId": 1684,
+        "name": "AI Database Query Generator",
+        "projectId": 803,
+        "projectName": "AI-ML",
+        "organisationId": 698,
+        "time": null,
+        "startTime": null,
+        "endTime": null,
+        "screenshots": "",
+        "notes": "",
+        "unTrackedTime": null,
+        "lastScreenShotTime": "00:00:00",
+        "totalTime": 0
+      }
+    ]
+  },
+  "message": "Success"
 }
 ```
 
-### **Response Fields**
-- **taskId** (number): Unique identifier for the task.
-- **taskName** (string): Name/title of the task.
-- **taskDescription** (string): Detailed description of the task.
-- **assignedTo** (string): Full name of the user to whom the task is assigned.
-- **dueDate** (date-time): ISO formatted due date for the task.
-
-### **Error Handling**
-| Status Code | Meaning | Description |
-|------------|---------|-------------|
-| **401** | Unauthorized | Authentication token missing or invalid. |
-| **400** | Bad Request | One or more required fields are missing or invalid. |
-| **500** | Internal Server Error | Server encountered an unexpected condition. |
+### Response Fields:
+- `taskId` (number): Unique ID of the task.
+- `name` (string): Name of the task.
+- `projectId` (number): ID of the associated project.
+- `projectName` (string): Name of the associated project.
+- `organisationId` (number): Organization to which the task belongs.
+- `time`, `startTime`, `endTime` (datetime/null): Timing information for the task.
+- `screenshots` (string): Screenshot data or URI.
+- `notes` (string): Additional notes.
+- `unTrackedTime` (number/null): Time not tracked.
+- `lastScreenShotTime` (string): Time of the last screenshot.
+- `totalTime` (number): Total time spent on the task.
 
 ---
-**Example Usage:**
-```sh
-curl -X POST "https://bustlespot-api.gamzinn.com/api/task/getTaskByProjectId" \
--H "Authorization: Bearer <token>" \
--H "Content-Type: application/json" \
--d '{ "projectId": 815, "organisationId": 1312 }'
-```
+
+### Status Codes:
+- **200 OK**: Request successful, task data returned.
+- **401 Unauthorized**: Missing or invalid token.
+- **400 Bad Request**: Invalid input data.
+- **500 Internal Server Error**: Something went wrong on the server.
+
+
  
 # Endpoint: Add Activity List
 
