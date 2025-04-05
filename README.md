@@ -242,5 +242,147 @@ curl -X POST "https://bustlespot-api.gamzinn.com/api/organisation/getUserOrganiz
 | **400** | Bad Request | organisationId is missing or invalid. |
 | **500** | Internal Server Error | An unexpected server error occurred. |
 
+## Project Tasks API Documentation
+
+### **Endpoint Details**
+- **Base URL:** `https://bustlespot-api.gamzinn.com`
+- **Route:** `/api/task/getTaskByProjectId`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+- **Authorization:** Bearer Token
+
+### **Request Parameters**
+The API expects a JSON payload with the following structure:
+
+- **projectId** (number, required):  
+  The ID of the project for which the tasks are to be retrieved.
+- **organisationId** (number, required):  
+  The ID of the organization to which the project belongs.
+
+#### **Example Request Body:**
+```json
+{
+    "projectId": 815,
+    "organisationId": 1312
+}
+```
+
+---
+
+### **Response Schema**
+If successful, the response will adhere to the following schema:
+
+```json
+{
+  "taskId": 1001,
+  "taskName": "Design Login UI",
+  "taskDescription": "Create a responsive login screen",
+  "assignedTo": "John Doe",
+  "dueDate": "2024-12-31T23:59:59Z"
+}
+```
+
+### **Response Fields**
+- **taskId** (number): Unique identifier for the task.
+- **taskName** (string): Name/title of the task.
+- **taskDescription** (string): Detailed description of the task.
+- **assignedTo** (string): Full name of the user to whom the task is assigned.
+- **dueDate** (date-time): ISO formatted due date for the task.
+
+### **Error Handling**
+| Status Code | Meaning | Description |
+|------------|---------|-------------|
+| **401** | Unauthorized | Authentication token missing or invalid. |
+| **400** | Bad Request | One or more required fields are missing or invalid. |
+| **500** | Internal Server Error | Server encountered an unexpected condition. |
+
+---
+**Example Usage:**
+```sh
+curl -X POST "https://bustlespot-api.gamzinn.com/api/task/getTaskByProjectId" \
+-H "Authorization: Bearer <token>" \
+-H "Content-Type: application/json" \
+-d '{ "projectId": 815, "organisationId": 1312 }'
+```
+ 
+# Endpoint: Add Activity List
+
+- **URL:** `https://bustlespot-api.gamzinn.com/api/activity/addActivityList`
+- **Method:** `POST`
+- **Authorization:** Bearer Token
+- **Content-Type:** `application/json`
+
+### Request Body
+
+**activityData** (array): An array of activity objects, each containing:
+
+| Field             | Type     | Description                                      |
+|------------------|----------|--------------------------------------------------|
+| taskId           | number   | The ID of the task.                             |
+| projectId        | number   | The ID of the project.                          |
+| startTime        | string   | Start time of the activity (ISO 8601 format).   |
+| endTime          | string   | End time of the activity (ISO 8601 format).     |
+| mouseActivity    | number   | Percentage of mouse activity.                   |
+| keyboardActivity | number   | Percentage of keyboard activity.                |
+| totalActivity    | number   | Total activity percentage.                      |
+| notes            | string   | Additional notes for the activity.              |
+| organisationId   | number   | The ID of the organization.                     |
+| uri              | string   | URI for additional details or screenshots.      |
+| unTrackedTime    | number   | Untracked time during the activity.             |
+
+#### Example Request Body
+```json
+{
+  "activityData": [
+    {
+      "taskId": 1705,
+      "projectId": 815,
+      "startTime": "2025-03-03T11:34:00Z",
+      "endTime": "2025-03-03T11:54:00Z",
+      "mouseActivity": 50,
+      "keyboardActivity": 50,
+      "totalActivity": 100,
+      "notes": "Worked on API integration",
+      "organisationId": 1312,
+      "uri": "https://example.com/screenshot1.png",
+      "unTrackedTime": 0
+    }
+  ]
+}
+```
+
+### Response
+
+```json
+{
+  "status": "success",
+  "data": {
+    "success": true,
+    "activities": {
+      "fieldCount": 0,
+      "affectedRows": 1,
+      "insertId": 2283680,
+      "serverStatus": 2,
+      "warningCount": 0,
+      "message": "",
+      "protocol41": true,
+      "changedRows": 0
+    }
+  },
+  "message": "Success"
+}
+```
+
+### Response Description
+
+- **status:** Indicates the status of the request (e.g., "success").
+- **data.success:** Boolean indicating if the activity was added.
+- **data.activities:** Contains database insertion metadata (e.g., `affectedRows`, `insertId`).
+- **message:** Descriptive success or error message.
+
+---
+
+
+
 
 
