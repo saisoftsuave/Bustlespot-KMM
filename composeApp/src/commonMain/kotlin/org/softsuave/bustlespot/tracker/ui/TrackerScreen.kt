@@ -9,7 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -704,14 +703,6 @@ fun DropDownSelectionList(
     }
 }
 
-//requestPermission {
-//    if (isTrackerRunning) {
-//        homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
-//        homeViewModel.startPostingActivity(organisationId.toInt())
-//    } else {
-//        homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
-//    }
-//}
 
 @Composable
 fun TimerSessionSection(

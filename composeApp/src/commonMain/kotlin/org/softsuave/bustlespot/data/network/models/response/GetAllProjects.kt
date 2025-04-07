@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetAllProjects(
     @SerialName("projectLists")
-    val projectLists: List<Project>?
+    val projectLists: List<Project>? = emptyList()
 )
