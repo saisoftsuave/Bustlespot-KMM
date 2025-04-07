@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
@@ -64,7 +65,6 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.koinInject
@@ -308,12 +308,7 @@ fun OrganizationItem(
                     imageLoader = ImageLoader(context = platformContext),
                     modifier = Modifier,
                     placeholder = painterResource(resource = Res.drawable.compose_multiplatform),
-                    onLoading = {
-
-                    },
-                    onError = { error->
-                        Log.d("image error ${error.result}")
-                    }
+                    error = painterResource(resource = Res.drawable.compose_multiplatform)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))

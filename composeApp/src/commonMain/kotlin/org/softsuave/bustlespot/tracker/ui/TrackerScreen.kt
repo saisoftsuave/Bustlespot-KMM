@@ -9,8 +9,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -345,7 +345,10 @@ fun TrackerScreen(
 //                            }
                                 },
                                 selectedProject = selectedProject,
-                                isSelected = selectedProject != null
+                                isSelected = selectedProject != null,
+                                onDissmissClick = {
+                                    homeViewModel.handleDropDownEvents(DropDownEvents.OnProjectDismiss)
+                                }
                             )
 
                         }
@@ -392,7 +395,10 @@ fun TrackerScreen(
                                     )
                                 },
                                 selectedTask = selectedTask,
-                                isSelected = selectedTask != null
+                                isSelected = selectedTask != null,
+                                onDissmissClick = {
+                                    homeViewModel.handleDropDownEvents(DropDownEvents.OnTaskDismiss)
+                                }
                             )
                         }
                         item {
@@ -521,7 +527,8 @@ fun DropDownSelectionList(
     error: String? = null,
     selectedProject: Project? = null,
     selectedTask: TaskData? = null,
-    isSelected: Boolean = false
+    isSelected: Boolean = false,
+    onDissmissClick:() -> Unit = {}
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     // We also track whether we've already notified the parent for this open.
@@ -534,7 +541,7 @@ fun DropDownSelectionList(
     val mutableInteractionSource = remember { MutableInteractionSource() }
     val density = LocalDensity.current
 
-    val isFocused = mutableInteractionSource.collectIsFocusedAsState()
+    val isFocused = mutableInteractionSource.collectIsPressedAsState()
     LaunchedEffect(isFocused.value) {
         Log.d("isFocused ${isFocused.value}")
         if (isFocused.value) {
@@ -607,7 +614,7 @@ fun DropDownSelectionList(
                 ) {
                     Icon(
                         painter = painterResource(
-                            if (isMenuExpanded) Res.drawable.ic_drop_up else Res.drawable.ic_drop_down
+                            if (isMenuExpanded && hasNotifiedOnOpen && isEnabled) Res.drawable.ic_drop_up else Res.drawable.ic_drop_down
                         ), contentDescription = "Toggle Dropdown"
                     )
                 }
@@ -635,6 +642,7 @@ fun DropDownSelectionList(
             onDismissRequest = {
                 isMenuExpanded = true
                 hasNotifiedOnOpen = false
+                onDissmissClick()
                 println("dismiss called")
             },
             modifier = Modifier.fillMaxWidth(0.85f).heightIn(max = maxHeight),
@@ -695,14 +703,6 @@ fun DropDownSelectionList(
     }
 }
 
-//requestPermission {
-//    if (isTrackerRunning) {
-//        homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
-//        homeViewModel.startPostingActivity(organisationId.toInt())
-//    } else {
-//        homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
-//    }
-//}
 
 @Composable
 fun TimerSessionSection(

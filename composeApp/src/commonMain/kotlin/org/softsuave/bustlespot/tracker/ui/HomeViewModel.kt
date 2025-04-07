@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.softsuave.bustlespot.Log
@@ -27,8 +27,8 @@ import org.softsuave.bustlespot.tracker.ui.model.GetTasksRequest
 class HomeViewModel(
     private val sessionManager: SessionManager,
     private val trackerRepository: TrackerRepository,
-    private val networkMonitor : NetworkMonitor
-) : ViewModel(){
+    private val networkMonitor: NetworkMonitor
+) : ViewModel() {
 
 
     private val trackerModule = TrackerModule(viewModelScope)
@@ -100,14 +100,14 @@ class HomeViewModel(
 
     fun storePostActivity(
         organisationId: Int
-    ){
+    ) {
         try {
             val request = constructPostActivityRequest(
                 organisationId,
                 activityDataOfModule = trackerModule.getActivityData()
             )
             canStoreApiCall.value = !trackerRepository.storePostUserActivity(request)
-        }catch (e:Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -128,7 +128,6 @@ class HomeViewModel(
     }
 
 
-
     fun stopTrackerTimer() = trackerModule.stopTimer()
     fun resetTrackerTimer() = trackerModule.resetTimer()
     fun resumeTrackerTimer() = trackerModule.resumeTracker()
@@ -146,7 +145,7 @@ class HomeViewModel(
     fun stopIdleTimer() = trackerModule.stopIdleTimer()
 
 
-//    private val _taskList = kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
+    //    private val _taskList = kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
     private val _mainTaskList =
         kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
     private val _mainProjectList =
@@ -202,13 +201,13 @@ class HomeViewModel(
 
                         _mainProjectList.value = filteredList
                         _projectDropDownState.value = _projectDropDownState.value.copy(
-                            dropDownList =  filteredList,
+                            dropDownList = filteredList,
                             errorMessage = if (result.data.projectLists.isNullOrEmpty()) "No projects to select" else ""
                         )
                         trackerScreenData.listOfProject?.addAll(
                             filteredList
                         )
-                        _uiEvent.value = UiEvent.Success(trackerScreenData)
+                        _uiEvent.update { UiEvent.Success(trackerScreenData) }
                         fetchAllTasksForProjects(
                             projects = filteredList,
                             organisationId
@@ -220,27 +219,27 @@ class HomeViewModel(
     }
 
 
-      fun fetchTasksForProject(projectId: Int, organisationId: String) {
+    fun fetchTasksForProject(projectId: Int, organisationId: String) {
         viewModelScope.launch {
-                trackerRepository.getAllTask(
-                    GetTasksRequest(projectId = projectId.toString(), organisationId)
-                ).collect { result ->
-                    when (result) {
-                        is Result.Error -> {
-                            _taskDropDownState.value = _taskDropDownState.value.copy(
-                                errorMessage = result.message ?: "Failed to fetch tasks"
-                            )
-                        }
+            trackerRepository.getAllTask(
+                GetTasksRequest(projectId = projectId.toString(), organisationId)
+            ).collect { result ->
+                when (result) {
+                    is Result.Error -> {
+                        _taskDropDownState.value = _taskDropDownState.value.copy(
+                            errorMessage = result.message ?: "Failed to fetch tasks"
+                        )
+                    }
 
-                        is Result.Loading -> {
-                            Log.d("Loading at projects")
-                        }
+                    is Result.Loading -> {
+                        Log.d("Loading at projects")
+                    }
 
-                        is Result.Success -> {
-                            val taskList = result.data.taskDetails ?: emptyList()
-                            _mainTaskList.value = _mainTaskList.value.plus(taskList)
-                            trackerScreenData.listOfTask?.addAll(taskList)
-                        }
+                    is Result.Success -> {
+                        val taskList = result.data.taskDetails ?: emptyList()
+                        _mainTaskList.value = _mainTaskList.value.plus(taskList)
+                        trackerScreenData.listOfTask?.addAll(taskList)
+                    }
                 }
             }
         }
@@ -304,26 +303,27 @@ class HomeViewModel(
         }
     }
 
-    fun checkAndPostActivities(){
+    fun checkAndPostActivities() {
         viewModelScope.launch {
-            networkMonitor.isConnected.collect{ isNetworkAvailable ->
-                if(isNetworkAvailable){
+            networkMonitor.isConnected.collect { isNetworkAvailable ->
+                if (isNetworkAvailable) {
                     trackerRepository.checkLocalDbAndPostFailedActivity()
                 }
             }
             trackerRepository.checkLocalDbAndPostActivity()
         }
     }
+
     fun handleDropDownEvents(dropDownEvents: DropDownEvents) {
         when (dropDownEvents) {
             is DropDownEvents.OnProjectSearch -> {
                 _projectDropDownState.value = _projectDropDownState.value.copy(
                     inputText = dropDownEvents.inputText
                 )
-                if (dropDownEvents.inputText.isEmpty()) {
+                if (dropDownEvents.inputText.isEmpty() && !isTrackerRunning.value) {
                     _selectedProject.value = null
                     _taskDropDownState.value =
-                        _taskDropDownState.value.copy(dropDownList = emptyList())
+                        _taskDropDownState.value.copy(dropDownList = emptyList(), inputText = "")
                 }
             }
 
@@ -344,19 +344,19 @@ class HomeViewModel(
                 _selectedTask.value = null
             }
 
+
+
             is DropDownEvents.OnTaskSearch -> {
                 if (dropDownEvents.inputText.isNotEmpty()) {
                     _taskDropDownState.value = _taskDropDownState.value.copy(
                         inputText = dropDownEvents.inputText
                     )
                 }
-                if (dropDownEvents.inputText.isEmpty()) {
-                    if (!isTrackerRunning.value) {
-                        _selectedTask.value = null
-                        _taskDropDownState.value = _taskDropDownState.value.copy(
-                            inputText = dropDownEvents.inputText
-                        )
-                    }
+                if (dropDownEvents.inputText.isEmpty() && !isTrackerRunning.value) {
+                    _selectedTask.value = null
+                    _taskDropDownState.value = _taskDropDownState.value.copy(
+                        inputText = ""
+                    )
                 }
                 if (_selectedProject.value == null) {
                     _projectDropDownState.value = _projectDropDownState.value.copy(
@@ -396,7 +396,20 @@ class HomeViewModel(
                 }
             }
 
-
+            is DropDownEvents.OnProjectDismiss -> {
+                if (selectedProject.value != null){
+                    _projectDropDownState.value = _projectDropDownState.value.copy(
+                        inputText = selectedProject.value?.name ?: "",
+                    )
+                }
+            }
+            is DropDownEvents.OnTaskDismiss -> {
+                if (selectedTask.value!=null){
+                    _taskDropDownState.value = _taskDropDownState.value.copy(
+                        inputText = selectedTask.value?.name ?: "",
+                    )
+                }
+            }
         }
     }
 
@@ -528,7 +541,6 @@ class HomeViewModel(
     }
 
 
-
     fun handleTrackerTimerEvents(timerEvents: TimerEvents) {
         when (timerEvents) {
             TimerEvents.FetchTime -> TODO()
@@ -589,6 +601,8 @@ sealed class DropDownEvents {
     data class OnTaskSelection(val selectedTask: TaskData) : DropDownEvents()
     data object OnProjectDropDownClick : DropDownEvents()
     data object OnTaskDropDownClick : DropDownEvents()
+    data object OnProjectDismiss : DropDownEvents()
+    data object OnTaskDismiss : DropDownEvents()
 }
 
 data class DropDownState(
