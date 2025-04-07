@@ -235,7 +235,7 @@ fun LoginScreen(
                             supportingText = {
                                 if (passwordState.value.error.isNotEmpty()) {
                                     Text(
-                                        text = passwordState.value.error,
+                                        text = "Please enter valid password",
                                         fontFamily = androidx.compose.material3.MaterialTheme.typography.bodyMedium.fontFamily,
                                         fontWeight = FontWeight.Light,
                                         fontSize = 12.sp,
