@@ -130,6 +130,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             }
         }
         startTime = Clock.System.now()
+        storeStartTime = Clock.System.now()
         if (!isIdleTaskScheduled.getAndSet(true)) {
             idleTimerTask = object : TimerTask() {
                 override fun run() {
@@ -146,10 +147,12 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     if (isTrackerRunning.value) {
                         val currentTime = Clock.System.now()
                         val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
+                        val storeTimeDifference =
+                            currentTime.epochSeconds - storeStartTime.epochSeconds
                         if (timeDifference >= postActivityInterval) {
                             canCallApi.value = true
                         }
-                        if (timeDifference >= storeActivityInterval) {
+                        if (storeTimeDifference >= storeActivityInterval) {
                             canStoreApiCall.value = true
                         }
                         Log.d("$timeDifference and ${canCallApi.value}")
@@ -270,6 +273,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual var startTime: Instant = Instant.DISTANT_FUTURE
+    actual var storeStartTime: Instant = Instant.DISTANT_FUTURE
 
     actual fun getActivityData(): ActivityData {
 //        base64Converter()
@@ -291,6 +295,27 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         startTime = endTime
         globalEventListener.resetClickCount()
         canCallApi.value = false
+        return activity
+    }
+
+    actual fun getStoreActivityData(): ActivityData {
+//        base64Converter()
+        val endTime = getEndTime()
+        val intervalInSeconds =
+            endTime.epochSeconds.seconds.inWholeSeconds - storeStartTime.epochSeconds.seconds.inWholeSeconds
+        println(intervalInSeconds)
+        println((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toFloat())
+        val activity = ActivityData(
+            startTime = storeStartTime.toString(),
+            endTime = endTime.toString(),
+            mouseActivity = mouseKeyEvents.value,
+            keyboardActivity = keyboradKeyEvents.value,
+            totalActivity = (((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toFloat()) * 100).toInt(),
+            billable = "",
+            notes = "",
+            uri = currentImageUri.value
+        )
+        storeStartTime = endTime
         return activity
     }
 

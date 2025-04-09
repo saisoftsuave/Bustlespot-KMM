@@ -39,6 +39,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -47,7 +48,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.text.font.FontWeight
@@ -101,6 +101,9 @@ fun OrganisationScreen(
             sessionManager.accessToken = token
         }
     }
+    LaunchedEffect(key1 = Unit) {
+        organisationViewModel.checkAndPostActivities()
+    }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -112,7 +115,7 @@ fun OrganisationScreen(
                 onNavigationBackClick = {},
                 isNavigationEnabled = false,
                 isAppBarIconEnabled = true,
-                iconUserName = sessionManager.userFirstName +" "+sessionManager.userLastName,
+                iconUserName = sessionManager.userFirstName + " " + sessionManager.userLastName,
 //                iconUserName =  "",
                 isLogOutEnabled = true,
                 onLogOutClick = {
@@ -432,8 +435,13 @@ fun AppBarIcon(
     modifier: Modifier = Modifier,
     username: String,
 ) {
-    Log.d("username, ${username.trim().split(" ").map { it.trim().uppercase().first().toString() }}")
-    val showWord = username.trim().split(" ").take(2).joinToString("") { it.trim().uppercase().first().toString() }
+    Log.d(
+        "username, ${
+            username.trim().split(" ").map { it.trim().uppercase().first().toString() }
+        }"
+    )
+    val showWord = username.trim().split(" ").take(2)
+        .joinToString("") { it.trim().uppercase().first().toString() }
     Box(
         modifier = modifier.size(40.dp).border(
             width = 1.dp,

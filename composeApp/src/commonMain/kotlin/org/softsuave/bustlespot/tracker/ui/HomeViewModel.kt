@@ -3,6 +3,7 @@ package org.softsuave.bustlespot.tracker.ui
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -104,7 +105,7 @@ class HomeViewModel(
         try {
             val request = constructPostActivityRequest(
                 organisationId,
-                activityDataOfModule = trackerModule.getActivityData()
+                activityDataOfModule = trackerModule.getStoreActivityData()
             )
             canStoreApiCall.value = !trackerRepository.storePostUserActivity(request)
         } catch (e: Exception) {
@@ -304,13 +305,13 @@ class HomeViewModel(
     }
 
     fun checkAndPostActivities() {
-        viewModelScope.launch {
+        viewModelScope.launch(SupervisorJob()) {
+//            trackerRepository.checkLocalDbAndPostActivity()
             networkMonitor.isConnected.collect { isNetworkAvailable ->
                 if (isNetworkAvailable) {
                     trackerRepository.checkLocalDbAndPostFailedActivity()
                 }
             }
-            trackerRepository.checkLocalDbAndPostActivity()
         }
     }
 
@@ -343,7 +344,6 @@ class HomeViewModel(
                 )
                 _selectedTask.value = null
             }
-
 
 
             is DropDownEvents.OnTaskSearch -> {
@@ -397,14 +397,15 @@ class HomeViewModel(
             }
 
             is DropDownEvents.OnProjectDismiss -> {
-                if (selectedProject.value != null){
+                if (selectedProject.value != null) {
                     _projectDropDownState.value = _projectDropDownState.value.copy(
                         inputText = selectedProject.value?.name ?: "",
                     )
                 }
             }
+
             is DropDownEvents.OnTaskDismiss -> {
-                if (selectedTask.value!=null){
+                if (selectedTask.value != null) {
                     _taskDropDownState.value = _taskDropDownState.value.copy(
                         inputText = selectedTask.value?.name ?: "",
                     )
