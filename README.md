@@ -229,7 +229,7 @@ If the request is successful, the API returns a 200 OK response with the project
 **Example Usage:**  
 Use a tool like Postman or cURL to send a request:
 ```sh
-curl -X POST "https://bustlespot-api.gamzinn.com/api/organisation/getUserOrganization" \
+curl -X POST "baseurl/api/organisation/getUserOrganization" \
 -H "Authorization: Bearer <token>" \
 -H "Content-Type: application/json" \
 -d '{ "organisationId": 123 }'
@@ -355,7 +355,7 @@ The API expects a JSON payload with the following structure:
  
 # Endpoint: Add Activity List
 
-- **URL:** `https://bustlespot-api.gamzinn.com/api/activity/addActivityList`
+- **URL:** `baseurl/api/activity/addActivityList`
 - **Method:** `POST`
 - **Authorization:** Bearer Token
 - **Content-Type:** `application/json`
