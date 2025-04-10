@@ -50,7 +50,7 @@ kotlin {
     jvm("desktop")
 
     //build config app version
-    version = "1.0.4"
+    version = "1.0.0"
 
     sourceSets {
         val desktopMain by getting
@@ -207,7 +207,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Bustlespot-KMM"
+            packageName = "Bustlespot"
             packageVersion = "1.0.0"
             vendor = "Soft Suave Technologies"
             modules("java.sql")
