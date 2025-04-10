@@ -98,7 +98,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bustlespot_macos
-          path: /Users/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/compose/binaries/main-release/dmg/Bustlespot-1.0.0.dmg
+          path: /Users/runner/work/Bustlespot-KMM/Bustlespot-KMM/composeApp/build/compose/binaries/main-release/dmg/Bustlespot-*.*.*.dmg
 
       - name: Download DMG Artifact
         uses: actions/download-artifact@v4
@@ -129,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bustlespot_windows
-          path: D:\a\Bustlespot-KMM\Bustlespot-KMM\composeApp\build\compose\binaries\main-release\msi\Bustlespot-*.*.*.msi
+          path: D:\a\Bustlespot-KMM\Bustlespot-KMM\composeApp\build\compose\binaries\main-release\msi\Bustlespot-*.*.*-1_amd64.msi
 
       - name: Download MSI Artifact
         uses: actions/download-artifact@v4
