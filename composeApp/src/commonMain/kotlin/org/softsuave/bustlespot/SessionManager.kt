@@ -77,6 +77,7 @@ class SessionManager(
         isLoggedIn.value = false
         settings.remove("access_token")
         db.organisationDatabaseQueries.deleteAllOrganisations()
+        db.activitiesDatabaseQueries.deleteAllActivities()
         println("Session cleared. isLoggedIn = ${isLoggedIn.value}")
     }
 

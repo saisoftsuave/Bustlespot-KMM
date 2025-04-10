@@ -166,6 +166,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             }
         }
         startTime = Clock.System.now()
+        storeStartTime = Clock.System.now()
         if (!isIdleTaskScheduled.getAndSet(true)) {
             idleTimerTask = object : TimerTask() {
                 override fun run() {
@@ -182,10 +183,11 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     if (isTrackerRunning.value) {
                         val currentTime = Clock.System.now()
                         val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
+                        val storeTimeDifference = currentTime.epochSeconds - storeStartTime.epochSeconds
                         if (timeDifference >= postActivityInterval) {
                             canCallApi.value = true
                         }
-                        if (timeDifference >= storeActivityInterval) {
+                        if (storeTimeDifference >= storeActivityInterval) {
                             canStoreApiCall.value = true
                         }
                         Log.d("$timeDifference and ${canCallApi.value}")
@@ -353,5 +355,23 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual var canCallApi: MutableStateFlow<Boolean> = MutableStateFlow(false)
     actual var canStoreApiCall: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    actual var storeStartTime: Instant
+        get() = Instant.DISTANT_PAST
+        set(value) {}
+
+    actual fun getStoreActivityData(): ActivityData {
+        val activity = ActivityData(
+            startTime = storeStartTime.toString(),
+            endTime = Clock.System.now().toString(),
+            mouseActivity = mouseKeyEvents.value,
+            keyboardActivity = keyboradKeyEvents.value,
+            totalActivity = (mouseKeyEvents.value + keyboradKeyEvents.value) % 100,
+            billable = "",
+            notes = "",
+            uri = currentImageUri.value
+        )
+        storeStartTime = Clock.System.now()
+        return activity
+    }
 
 }

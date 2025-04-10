@@ -50,7 +50,7 @@ kotlin {
     jvm("desktop")
 
     //build config app version
-    version = "1.0.3"
+    version = "1.0.4"
 
     sourceSets {
         val desktopMain by getting
@@ -137,6 +137,7 @@ sqldelight {
         create("Database") {
             packageName.set("com.example")
             dialect("app.cash.sqldelight:sqlite-3-24-dialect:2.0.2")
+            verifyMigrations = true
         }
     }
 }

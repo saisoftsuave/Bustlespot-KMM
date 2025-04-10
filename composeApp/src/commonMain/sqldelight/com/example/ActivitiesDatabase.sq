@@ -1,4 +1,5 @@
 CREATE TABLE IF NOT EXISTS ActivityData (
+    activityId INTEGER PRIMARY KEY AUTOINCREMENT DEFAULT 1,
     taskId INTEGER,
     projectId INTEGER,
     startTime TEXT,
@@ -11,16 +12,16 @@ CREATE TABLE IF NOT EXISTS ActivityData (
     organisationId INTEGER,
     uri TEXT,
     unTrackedTime INTEGER,
-    isFailed INTEGER DEFAULT 0,
-    PRIMARY KEY (taskId, projectId)
+    isFailed INTEGER DEFAULT 0
 );
+
 
 -- Insert or Replace Activity Data
 insertActivity:
 INSERT OR REPLACE INTO  ActivityData (
-    taskId, projectId, startTime, endTime, mouseActivity, keyboardActivity, totalActivity,
+     taskId, projectId, startTime, endTime, mouseActivity, keyboardActivity, totalActivity,
     billable, notes, organisationId, uri, unTrackedTime,isFailed
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
+) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?);
 
 getAllActivities:
 -- Select All Activities

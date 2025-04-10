@@ -118,7 +118,10 @@ fun provideHttpClient(settings: ObservableSettings, sessionManager: SessionManag
 }
 
 fun provideSqlDelightDatabase(): Database {
-    return Database.invoke(createDriver())
+    val driver = createDriver()
+    // add migrate if needed
+//    migrateDB(driver)
+    return Database.invoke(driver)
 }
 
 

@@ -207,34 +207,40 @@ class TrackerRepositoryImpl(
             Log.d("success to save to db")
             return true
         } catch (e: Exception) {
-            Log.e("failed to save to db ${e.message}", e.suppressedExceptions.first())
+            Log.e("failed to save to db ${e.message}")
             return false
         }
     }
 
     override suspend fun checkLocalDbAndPostActivity() {
         Log.d("post local call is started")
-        val localData = db.activitiesDatabaseQueries.getAllActivities().executeAsList()
-            .map { it.toDomain() }
-        if (localData.isNotEmpty()) {
-            Log.d("local data is not empty size:- ${localData.size}")
-            val postActivityRequest = PostActivityRequest(localData.toMutableList())
-            postUserActivity(postActivityRequest).collect { result ->
-                when (result) {
-                    is Result.Error -> {
-                        Log.d("failed to post from local db")
-                    }
+        try {
+            val localData = db.activitiesDatabaseQueries.getAllActivities().executeAsList()
+                .map { it.toDomain() }
+            if (localData.isNotEmpty()) {
+                Log.d("local data is not empty size:- ${localData.size}")
+                Log.d("local data is not empty size:- ${localData.toMutableList()}")
+                val postActivityRequest = PostActivityRequest(localData.toMutableList())
+                postUserActivity(postActivityRequest).collect { result ->
+                    when (result) {
+                        is Result.Error -> {
+                            Log.d("failed to post from local db")
+                        }
 
-                    is Result.Loading -> {
+                        is Result.Loading -> {
 
-                    }
+                        }
 
-                    is Result.Success -> {
-                        Log.d("Success to post from local db")
-                        db.activitiesDatabaseQueries.deleteAllActivities()
+                        is Result.Success -> {
+                            Log.d("Success to post from local db")
+                            db.activitiesDatabaseQueries.deleteAllActivities()
+                        }
                     }
                 }
             }
+        }catch (e:Exception){
+            Log.d("error in post local ${e.message}")
         }
+
     }
 }
