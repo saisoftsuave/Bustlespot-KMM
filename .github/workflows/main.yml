@@ -97,7 +97,7 @@ jobs:
           java-version: '17'
 
       - name: Build DMG Package
-        run: ./gradlew packageDMG
+        run: ./gradlew packageReleaseDMG
         # Ensure assembleDMG task creates a DMG file (e.g., build/distributions/MyApp.dmg)
 
       - name: Upload DMG Artifact
@@ -128,7 +128,7 @@ jobs:
           java-version: '17'
 
       - name: Build MSI Package
-        run: .\gradlew packageMSI
+        run: .\gradlew packageReleaseMSI
         # Ensure assembleMSI task creates an MSI file (e.g., build/distributions/MyApp.msi)
 
       - name: Upload MSI Artifact
@@ -159,7 +159,7 @@ jobs:
           java-version: '17'
 
       - name: Build DEB Package
-        run: ./gradlew packageDEB
+        run: ./gradlew packageReleaseDEB
         # Ensure assembleDEB task creates a DEB file (e.g., build/distributions/MyApp.deb)
 
       - name: Upload DEB Artifact
