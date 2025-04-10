@@ -274,9 +274,7 @@ compose.desktop {
             // Linux configuration
             linux {
                 appCategory = "Productivity"
-                appRelease = "1.0.0"
                 debMaintainer = "Softsuave"
-                debPackageVersion = "1.0.0"
                 rpmLicenseType = "MIT"
                 shortcut = true
             }
