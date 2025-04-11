@@ -14,7 +14,7 @@ interface TrackerRepository {
 
     fun getAllTask(getTasksRequest: GetTasksRequest) : Flow<Result<GetAllTasks>>
 
-    fun postUserActivity(postActivityRequest: PostActivityRequest): Flow<Result<ActivityDataResponse>>
+    fun postUserActivity(postActivityRequest: PostActivityRequest,isRetryCalls:Boolean = false): Flow<Result<ActivityDataResponse>>
 
     fun getAllActivities(taskId : String) :  Flow<Result<GetAllActivities>>
 

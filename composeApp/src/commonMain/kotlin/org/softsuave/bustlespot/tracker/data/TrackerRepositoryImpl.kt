@@ -89,7 +89,10 @@ class TrackerRepositoryImpl(
         }
     }
 
-    override fun postUserActivity(postActivityRequest: PostActivityRequest): Flow<Result<ActivityDataResponse>> {
+    override fun postUserActivity(
+        postActivityRequest: PostActivityRequest,
+        isRetryCalls: Boolean
+    ): Flow<Result<ActivityDataResponse>> {
         return flow {
             try {
                 emit(Result.Loading)
@@ -104,12 +107,14 @@ class TrackerRepositoryImpl(
                     emit(Result.Success(data))
                 } else {
                     Log.d("postActivity --> failed ${response.status}")
-                    saveFailedPostUserActivity(postActivityRequest)
+                    if (!isRetryCalls) saveFailedPostUserActivity(postActivityRequest)
+                    db.activitiesDatabaseQueries.deleteAllActivities()
                     emit(Result.Error(message = "Failed post activity: ${response.status}"))
                 }
             } catch (e: Exception) {
                 Log.d("postActivity --> failed")
-                saveFailedPostUserActivity(postActivityRequest)
+                if (!isRetryCalls) saveFailedPostUserActivity(postActivityRequest)
+                db.activitiesDatabaseQueries.deleteAllActivities()
                 emit(Result.Error(e.message ?: "Unknown error"))
             }
         }
@@ -164,7 +169,7 @@ class TrackerRepositoryImpl(
             .map { it.toDomain() }
         if (localData.isNotEmpty()) {
             val postActivityRequest = PostActivityRequest(localData.toMutableList())
-            postUserActivity(postActivityRequest).collect { result ->
+            postUserActivity(postActivityRequest, true).collect { result ->
                 when (result) {
                     is Result.Error -> {
                         Log.d("failed to post from local db")
@@ -221,7 +226,7 @@ class TrackerRepositoryImpl(
                 Log.d("local data is not empty size:- ${localData.size}")
                 Log.d("local data is not empty size:- ${localData.toMutableList()}")
                 val postActivityRequest = PostActivityRequest(localData.toMutableList())
-                postUserActivity(postActivityRequest).collect { result ->
+                postUserActivity(postActivityRequest, true).collect { result ->
                     when (result) {
                         is Result.Error -> {
                             Log.d("failed to post from local db")
@@ -238,7 +243,7 @@ class TrackerRepositoryImpl(
                     }
                 }
             }
-        }catch (e:Exception){
+        } catch (e: Exception) {
             Log.d("error in post local ${e.message}")
         }
 
