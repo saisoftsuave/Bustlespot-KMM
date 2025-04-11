@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PostActivityRequest(
-    @SerialName("activityData") var activityData: MutableList<ActivityData> = arrayListOf()
+    @SerialName("activityData") var activityData: MutableList<ActivityData> = mutableListOf()
 )
 
 
