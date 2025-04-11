@@ -129,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bustlespot_windows
-          path: D:\a\Bustlespot-KMM\Bustlespot-KMM\composeApp\build\compose\binaries\main-release\msi\Bustlespot-*.*.*-1_amd64.msi
+          path: D:\a\Bustlespot-KMM\Bustlespot-KMM\composeApp\build\compose\binaries\main-release\msi\Bustlespot-*.*.*.msi
 
       - name: Download MSI Artifact
         uses: actions/download-artifact@v4
