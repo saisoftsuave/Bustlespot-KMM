@@ -3,13 +3,7 @@ name: Build and Package KMM Project
 on:
   push:
     branches:
-      - main
-      - develop
       - master
-  pull_request:
-    branches:
-      - main
-      - develop
 
 jobs:
   android-build:
