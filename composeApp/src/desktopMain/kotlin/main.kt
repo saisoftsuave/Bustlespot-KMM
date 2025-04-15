@@ -14,75 +14,97 @@ import bustlespot.composeapp.generated.resources.logoRed
 import com.github.kwhat.jnativehook.GlobalScreen
 import com.mmk.kmpnotifier.notification.NotifierManager
 import com.mmk.kmpnotifier.notification.configuration.NotificationPlatformConfiguration
+import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import org.jetbrains.compose.resources.painterResource
 import org.softsuave.bustlespot.di.initKoin
 import java.awt.Desktop
+import java.awt.Dialog
+import java.awt.FlowLayout
 import java.awt.Frame
+import java.awt.Label
+import java.awt.Button
 import javax.swing.SwingUtilities
 
 @OptIn(ExperimentalComposeUiApi::class)
-fun main() = application {
-    // Cleanup when the app closes
-    Runtime.getRuntime().addShutdownHook(Thread {
-        try {
-            GlobalScreen.unregisterNativeHook()
-        } catch (e: Exception) {
-            e.printStackTrace()
+fun main() {
+
+    Thread.setDefaultUncaughtExceptionHandler { _, e ->
+        Dialog(Frame(), e.message ?: "Error").apply {
+            layout = FlowLayout()
+            val label = Label(e.message)
+            add(label)
+            val button = Button("OK").apply {
+                addActionListener { dispose() }
+            }
+            add(button)
+            setSize(300,300)
+            isVisible = true
         }
-        // clean up logic
-    })
+    }
 
-    // Initialize Notifier for push notifications
-    NotifierManager.initialize(
-        NotificationPlatformConfiguration.Desktop(
-            showPushNotification = true
+
+    application {
+        // Cleanup when the app closes
+        Runtime.getRuntime().addShutdownHook(Thread {
+            try {
+                GlobalScreen.unregisterNativeHook()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            // clean up logic
+        })
+
+        // Initialize Notifier for push notifications
+        NotifierManager.initialize(
+            NotificationPlatformConfiguration.Desktop(
+                showPushNotification = true
+            )
         )
-    )
 
-    // Initialize Koin for dependency injection
-    initKoin()
+        // Initialize Koin for dependency injection
+        initKoin()
 
 
-    Window(
-        title = "Bustlespot",
-        decoration = WindowDecoration.SystemDefault,
-        state = rememberWindowState(size = DpSize(width = 460.dp, height = 780.dp)),
-        onCloseRequest = ::exitApplication,
-        resizable = false,
-        icon = painterResource(Res.drawable.logoRed),
-    ) {
-        App(
-            onFocusReceived = {
-                val desktop = Desktop.getDesktop()
-                if (desktop.isSupported(Desktop.Action.APP_EVENT_FOREGROUND)) {
-                    desktop.requestForeground(true)
-                    window.toFront()
-                    window.requestFocus()
-                } else {
-                    if (window.state == Frame.ICONIFIED) {
-                        window.extendedState = Frame.NORMAL
-                    }
-                    SwingUtilities.invokeLater {
-                        window.isAlwaysOnTop = true
+        Window(
+            title = "Bustlespot",
+            decoration = WindowDecoration.SystemDefault,
+            state = rememberWindowState(size = DpSize(width = 460.dp, height = 780.dp)),
+            onCloseRequest = ::exitApplication,
+            resizable = false,
+            icon = painterResource(Res.drawable.logoRed),
+        ) {
+            App(
+                onFocusReceived = {
+                    val desktop = Desktop.getDesktop()
+                    if (desktop.isSupported(Desktop.Action.APP_EVENT_FOREGROUND)) {
+                        desktop.requestForeground(true)
                         window.toFront()
                         window.requestFocus()
-                        window.isAlwaysOnTop = false
+                    } else {
+                        if (window.state == Frame.ICONIFIED) {
+                            window.extendedState = Frame.NORMAL
+                        }
+                        SwingUtilities.invokeLater {
+                            window.isAlwaysOnTop = true
+                            window.toFront()
+                            window.requestFocus()
+                            window.isAlwaysOnTop = false
+                        }
                     }
+                },
+                onMinimizeClick = {
+                    window.let {
+                        it.isMinimized = false
+                        SwingUtilities.invokeLater { it.isMinimized = true }
+                    }
+                },
+                onCloseClick = {
+                    exitApplication()
                 }
-            },
-            onMinimizeClick = {
-                window.let {
-                    it.isMinimized = false
-                    SwingUtilities.invokeLater { it.isMinimized = true }
-                }
-            },
-            onCloseClick = {
-                exitApplication()
-            }
-        )
+            )
+        }
     }
 }
-
 @Preview
 @Composable
 fun AppPreview() {
