@@ -93,7 +93,7 @@ fun LoginScreen(
     var isLoading by mutableStateOf(false)
     coroutineScope.launch {
         sessionManager.flowAccessToken.collectLatest { token ->
-            sessionManager.updateAccessToken(token)
+            // sessionManager.updateAccessToken(token)
         }
         sessionManager.flowFirstName.collectLatest { firstName ->
             sessionManager.updateUserFirstName(firstName)

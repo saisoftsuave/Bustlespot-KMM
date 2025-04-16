@@ -28,6 +28,7 @@ import org.softsuave.bustlespot.tracker.di.trackerDiModule
 import org.koin.dsl.module
 import org.softsuave.bustlespot.data.local.createDriver
 import com.example.Database
+import io.ktor.http.HttpStatusCode
 import org.softsuave.bustlespot.network.NetworkMonitor
 import org.softsuave.bustlespot.network.NetworkMonitorProvider
 
@@ -89,28 +90,28 @@ fun provideHttpClient(settings: ObservableSettings, sessionManager: SessionManag
 //                        )
 //                    }
 
-                    refreshTokens {
-                        try {
-                            val response: HttpResponse = client.get("$BASEURL/auth/refresh-token") {
-                                bearerAuth(sessionManager.accessToken)
-                            }
-
-                            if (response.status.isSuccess()) {
-                                val newAccessToken =
-                                    response.body<AccessTokenResponse>().access_token
-                                settings.putString("access_token", newAccessToken)
-                                sessionManager.updateAccessToken(newAccessToken)
-
-                                return@refreshTokens BearerTokens(
-                                    newAccessToken,
-                                    sessionManager.accessToken
-                                )
-                            }
-                        } catch (e: Exception) {
-                            println("Token refresh failed: ${e.message}")
-                        }
-                        return@refreshTokens null
-                    }
+//                    refreshTokens {
+//                        try {
+//                            val response: HttpResponse = client.get("$BASEURL/auth/refresh-token") {
+//                                bearerAuth(sessionManager.accessToken)
+//                            }
+//
+//                            if (response.status == HttpStatusCode.OK) {
+//                                val newAccessToken =
+//                                    response.body<AccessTokenResponse>().access_token
+//                                settings.putString("access_token", newAccessToken)
+//                                sessionManager.updateAccessToken(newAccessToken)
+//
+//                                return@refreshTokens BearerTokens(
+//                                    newAccessToken,
+//                                    sessionManager.accessToken
+//                                )
+//                            }
+//                        } catch (e: Exception) {
+//                            println("Token refresh failed: ${e.message}")
+//                        }
+//                        return@refreshTokens null
+//                    }
                 }
             }
         }
@@ -125,7 +126,7 @@ fun provideSqlDelightDatabase(): Database {
 }
 
 
-fun provideNetworkMonitorInstance() : NetworkMonitor {
+fun provideNetworkMonitorInstance(): NetworkMonitor {
     return NetworkMonitorProvider.getInstance()
 }
 

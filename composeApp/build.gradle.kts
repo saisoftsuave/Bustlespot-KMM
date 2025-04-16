@@ -206,11 +206,15 @@ compose.desktop {
         )
 
         nativeDistributions {
+            includeAllModules = true
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+
+            includeAllModules = true
             packageName = "Bustlespot"
             packageVersion = "1.0.0"
             vendor = "Soft Suave Technologies"
             modules("java.sql")
+            modules("jdk.accessibility")
 
             windows {
 //                targetFormats(TargetFormat.Exe) Exe if needed

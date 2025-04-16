@@ -115,7 +115,7 @@ fun OrganisationScreen(
                 onNavigationBackClick = {},
                 isNavigationEnabled = false,
                 isAppBarIconEnabled = true,
-                iconUserName = sessionManager.userFirstName + " " + sessionManager.userLastName,
+                iconUserName = sessionManager.userFirstName.trim() + " " + sessionManager.userLastName.trim(),
 //                iconUserName =  "",
                 isLogOutEnabled = true,
                 onLogOutClick = {
@@ -420,13 +420,13 @@ fun BustleSpotAppBar(
             }
         },
         colors =
-        TopAppBarColors(
-            containerColor = Color.White,
-            navigationIconContentColor = BustleSpotRed,
-            titleContentColor = BustleSpotRed,
-            scrolledContainerColor = Color.Unspecified,
-            actionIconContentColor = Color.Unspecified
-        )
+            TopAppBarColors(
+                containerColor = Color.White,
+                navigationIconContentColor = BustleSpotRed,
+                titleContentColor = BustleSpotRed,
+                scrolledContainerColor = Color.Unspecified,
+                actionIconContentColor = Color.Unspecified
+            )
     )
 }
 
@@ -435,13 +435,19 @@ fun AppBarIcon(
     modifier: Modifier = Modifier,
     username: String,
 ) {
-    Log.d(
-        "username, ${
-            username.trim().split(" ").map { it.trim().uppercase().first().toString() }
-        }"
-    )
-    val showWord = username.trim().split(" ").take(2)
-        .joinToString("") { it.trim().uppercase().first().toString() }
+    var showWord ="Test 1"
+    try {
+        Log.d(
+            "username, ${
+                username.trim().split(" ").map { it.trim().uppercase().first().toString() }
+            }"
+        )
+        showWord = username.trim().split(" ").take(2)
+            .joinToString("") { it.trim().uppercase().first().toString() }
+    }catch (e:Exception){
+        e.printStackTrace()
+    }
+
     Box(
         modifier = modifier.size(40.dp).border(
             width = 1.dp,
