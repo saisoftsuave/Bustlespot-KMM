@@ -9,7 +9,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import androidx.compose.ui.window.singleWindowApplication
 import bustlespot.composeapp.generated.resources.Res
 import bustlespot.composeapp.generated.resources.logoRed
 import com.github.kwhat.jnativehook.GlobalScreen
@@ -38,7 +37,7 @@ fun main() {
                 addActionListener { dispose() }
             }
             add(button)
-            setSize(300, 300)
+            setSize(300,300)
             isVisible = true
         }
     }
@@ -66,10 +65,11 @@ fun main() {
         initKoin()
 
 
-        singleWindowApplication(
+        Window(
             title = "Bustlespot",
             decoration = WindowDecoration.SystemDefault,
             state = rememberWindowState(size = DpSize(width = 460.dp, height = 780.dp)),
+            onCloseRequest = ::exitApplication,
             resizable = false,
             icon = painterResource(Res.drawable.logoRed),
         ) {
@@ -105,7 +105,6 @@ fun main() {
         }
     }
 }
-
 @Preview
 @Composable
 fun AppPreview() {

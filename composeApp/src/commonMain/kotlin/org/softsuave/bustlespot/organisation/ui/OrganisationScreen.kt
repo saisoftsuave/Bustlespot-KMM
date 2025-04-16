@@ -115,7 +115,7 @@ fun OrganisationScreen(
                 onNavigationBackClick = {},
                 isNavigationEnabled = false,
                 isAppBarIconEnabled = true,
-                iconUserName = sessionManager.userFirstName + " " + sessionManager.userLastName,
+                iconUserName = sessionManager.userFirstName.trim() + " " + sessionManager.userLastName.trim(),
 //                iconUserName =  "",
                 isLogOutEnabled = true,
                 onLogOutClick = {
@@ -420,13 +420,13 @@ fun BustleSpotAppBar(
             }
         },
         colors =
-        TopAppBarColors(
-            containerColor = Color.White,
-            navigationIconContentColor = BustleSpotRed,
-            titleContentColor = BustleSpotRed,
-            scrolledContainerColor = Color.Unspecified,
-            actionIconContentColor = Color.Unspecified
-        )
+            TopAppBarColors(
+                containerColor = Color.White,
+                navigationIconContentColor = BustleSpotRed,
+                titleContentColor = BustleSpotRed,
+                scrolledContainerColor = Color.Unspecified,
+                actionIconContentColor = Color.Unspecified
+            )
     )
 }
 
