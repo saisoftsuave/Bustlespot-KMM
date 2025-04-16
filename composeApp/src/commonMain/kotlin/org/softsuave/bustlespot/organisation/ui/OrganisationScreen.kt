@@ -435,13 +435,19 @@ fun AppBarIcon(
     modifier: Modifier = Modifier,
     username: String,
 ) {
-    Log.d(
-        "username, ${
-            username.trim().split(" ").map { it.trim().uppercase().first().toString() }
-        }"
-    )
-    val showWord = username.trim().split(" ").take(2)
-        .joinToString("") { it.trim().uppercase().first().toString() }
+    var showWord ="Test 1"
+    try {
+        Log.d(
+            "username, ${
+                username.trim().split(" ").map { it.trim().uppercase().first().toString() }
+            }"
+        )
+        showWord = username.trim().split(" ").take(2)
+            .joinToString("") { it.trim().uppercase().first().toString() }
+    }catch (e:Exception){
+        e.printStackTrace()
+    }
+
     Box(
         modifier = modifier.size(40.dp).border(
             width = 1.dp,
