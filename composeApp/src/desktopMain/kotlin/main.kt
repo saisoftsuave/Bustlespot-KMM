@@ -91,12 +91,14 @@ fun main() {
                 onFocusReceived = {
                     val desktop = Desktop.getDesktop()
                     if (desktop.isSupported(Desktop.Action.APP_EVENT_FOREGROUND)) {
+                        // works for Mac OS
                         desktop.requestForeground(true)
                         window.toFront()
                         window.requestFocus()
                     } else {
+                        //works for Windows
                         if (window.state == Frame.ICONIFIED) {
-                            window.extendedState = Frame.NORMAL
+                            window.state = Frame.NORMAL
                         }
                         SwingUtilities.invokeLater {
                             window.isAlwaysOnTop = true
