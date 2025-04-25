@@ -42,8 +42,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -63,6 +65,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
@@ -74,6 +77,7 @@ import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.navigation.Home
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
+import org.softsuave.bustlespot.auth.utils.LoadingDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.data.network.models.response.Organisation
@@ -93,7 +97,8 @@ fun OrganisationScreen(
     val coroutineScope = rememberCoroutineScope()
     val logOutEvent by organisationViewModel.logOutEvent.collectAsState()
     val sessionManager: SessionManager = koinInject()
-
+    val isSending by sessionManager.isSending.collectAsState()
+    var dialogTextState by remember { mutableStateOf("Detected data") }
     val showLogOutDialog by organisationViewModel.showLogOutDialog.collectAsState()
 
     coroutineScope.launch {
@@ -171,6 +176,13 @@ fun OrganisationScreen(
                     }
                 }
             )
+        }
+        if (isSending) {
+            LaunchedEffect(Unit) {
+                delay(800)
+                dialogTextState = "Syncing working/idle time"
+            }
+            LoadingDialog(dialogLoadingText = dialogTextState)
         }
         when (uiEvent) {
             is UiEvent.Success -> {
@@ -420,13 +432,13 @@ fun BustleSpotAppBar(
             }
         },
         colors =
-            TopAppBarColors(
-                containerColor = Color.White,
-                navigationIconContentColor = BustleSpotRed,
-                titleContentColor = BustleSpotRed,
-                scrolledContainerColor = Color.Unspecified,
-                actionIconContentColor = Color.Unspecified
-            )
+        TopAppBarColors(
+            containerColor = Color.White,
+            navigationIconContentColor = BustleSpotRed,
+            titleContentColor = BustleSpotRed,
+            scrolledContainerColor = Color.Unspecified,
+            actionIconContentColor = Color.Unspecified
+        )
     )
 }
 
@@ -435,7 +447,7 @@ fun AppBarIcon(
     modifier: Modifier = Modifier,
     username: String,
 ) {
-    var showWord ="Test 1"
+    var showWord = "Test 1"
     try {
         Log.d(
             "username, ${
@@ -444,7 +456,7 @@ fun AppBarIcon(
         )
         showWord = username.trim().split(" ").take(2)
             .joinToString("") { it.trim().uppercase().first().toString() }
-    }catch (e:Exception){
+    } catch (e: Exception) {
         e.printStackTrace()
     }
 
