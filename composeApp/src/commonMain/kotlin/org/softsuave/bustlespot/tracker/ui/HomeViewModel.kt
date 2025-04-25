@@ -86,6 +86,8 @@ class HomeViewModel(
 
     fun startPostingActivity(
         organisationId: Int,
+        showLoading: Boolean = false,
+        doActionOnSuccess: () -> Unit = {}
     ) {
         try {
             val request = constructPostActivityRequest(
@@ -93,7 +95,7 @@ class HomeViewModel(
                 activityDataOfModule = trackerModule.getActivityData()
             )
             Log.d("$request----reguest")
-            postUserActivity(request)
+            postUserActivity(request, showLoading, doActionOnSuccess)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -132,7 +134,7 @@ class HomeViewModel(
     fun stopTrackerTimer() = trackerModule.stopTimer()
     fun resetTrackerTimer() = trackerModule.resetTimer()
     fun resumeTrackerTimer() = trackerModule.resumeTracker()
-
+    fun updateStartTime() = trackerModule.updateStartTime()
 //    fun startScreenshotTask() = trackerModule.startScreenshotTask()
 //    fun pauseScreenshotTask() = trackerModule.pauseScreenshotTask()
 //    fun resumeScreenshotTask() = trackerModule.resumeScreenshotTask()
@@ -155,6 +157,10 @@ class HomeViewModel(
     private val _uiEvent =
         kotlinx.coroutines.flow.MutableStateFlow<UiEvent<TrackerScreenData>>(UiEvent.Loading)
     val uiEvent: StateFlow<UiEvent<TrackerScreenData>> get() = _uiEvent
+
+    private val _dialogEvent =
+        kotlinx.coroutines.flow.MutableStateFlow<Boolean>(false)
+    val dialogEvent: StateFlow<Boolean> get() = _dialogEvent
 
     private val trackerScreenData = TrackerScreenData(mutableListOf(), mutableListOf())
 
@@ -276,7 +282,10 @@ class HomeViewModel(
         }
     }
 
-    private fun postUserActivity(postActivityRequest: PostActivityRequest) {
+    private fun postUserActivity(
+        postActivityRequest: PostActivityRequest, showLoading: Boolean = false,
+        doActionOnSuccess: () -> Unit = {}
+    ) {
         viewModelScope.launch {
             trackerRepository.postUserActivity(
                 postActivityRequest
@@ -286,17 +295,19 @@ class HomeViewModel(
 //                        _taskDropDownState.value = _taskDropDownState.value.copy(
 //                            errorMessage = result.message ?: "Failed to post activity"
 //                        )
-
-                        Log.d("postUserActi")
+                        _dialogEvent.update { false }
                     }
 
                     is Result.Loading -> {
                         Log.d("posting activity")
+                        _dialogEvent.update { showLoading }
                     }
 
                     is Result.Success -> {
                         val taskList = result.data
                         lastSyncTime.value = Clock.System.now().epochSeconds
+                        _dialogEvent.update { false }
+                        doActionOnSuccess()
                         Log.d(taskList.toString())
                     }
                 }
@@ -465,6 +476,7 @@ class HomeViewModel(
                         )
                         resetIdleTimer()
                         resumeTrackerTimer()
+                        updateStartTime()
                     }
                 )
             }
