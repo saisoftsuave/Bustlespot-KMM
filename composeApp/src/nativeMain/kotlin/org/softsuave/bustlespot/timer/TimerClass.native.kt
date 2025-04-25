@@ -333,4 +333,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         return activity
     }
 
+    actual fun updateStartTime() {
+    }
+
 }
