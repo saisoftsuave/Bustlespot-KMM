@@ -14,6 +14,9 @@ class SessionManager(
     var isLoggedIn = MutableStateFlow(false)
         private set
 
+    var isSending = MutableStateFlow(false)
+        private set
+
     val flowAccessToken: Flow<String> = callbackFlow {
         val listener = settings.addStringListener("access_token", "", ::trySend)
         awaitClose { listener.deactivate() }
