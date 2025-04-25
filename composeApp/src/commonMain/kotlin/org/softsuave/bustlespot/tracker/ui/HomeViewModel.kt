@@ -480,8 +480,10 @@ class HomeViewModel(
                         _trackerDialogState.value = _trackerDialogState.value.copy(
                             isDialogShown = false
                         )
+                        updateSelectedTaskTime(trackerTime.value, idealTime.value)
                         resetTrackerTimer()
                         resetIdleTimer()
+                        handleNavAction()
                         handleDropDownEvents(DropDownEvents.OnProjectSelection(trackerDialogEvents.selectedProject))
                     },
                     onDismiss = {
@@ -503,8 +505,10 @@ class HomeViewModel(
                         _trackerDialogState.value = _trackerDialogState.value.copy(
                             isDialogShown = false
                         )
+                        updateSelectedTaskTime(trackerTime.value, idealTime.value)
                         resetTrackerTimer()
                         resetIdleTimer()
+                        handleNavAction()
                         handleDropDownEvents(DropDownEvents.OnTaskSelection(trackerDialogEvents.selectedTask))
                     },
                     onDismiss = {
@@ -558,6 +562,7 @@ class HomeViewModel(
             }
 
             TimerEvents.StopTimer -> {
+                updateSelectedTaskTime(trackerTime.value, idealTime.value)
                 stopTrackerTimer()
                 stopIdleTimer()
             }
@@ -568,6 +573,11 @@ class HomeViewModel(
                 resumeTrackerTimer()
             }
         }
+    }
+
+    fun updateSelectedTaskTime(trackingTime: Int, idleTime: Int) {
+        selectedTask.value?.time = trackingTime
+        selectedTask.value?.unTrackedTime = idleTime
     }
 
     private fun checkTaskAndProject(): Boolean {
