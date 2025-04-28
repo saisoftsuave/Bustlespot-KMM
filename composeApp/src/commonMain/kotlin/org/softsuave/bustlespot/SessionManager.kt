@@ -86,12 +86,12 @@ class SessionManager(
     }
 
     init {
-        SettingsHelper(settings).clearIfFirstRun()
+        SettingsHelper(settings,db).clearIfFirstRun()
         isLoggedIn = MutableStateFlow(settings.getString("access_token", "").isNotEmpty())
     }
 }
 
-class SettingsHelper(private val settings: ObservableSettings) {
+class SettingsHelper(private val settings: ObservableSettings,private val db:Database) {
     private val appVersionKey = "app_version"
 
     fun clearIfFirstRun() {
@@ -103,6 +103,9 @@ class SettingsHelper(private val settings: ObservableSettings) {
         if (isFirstRun) {
             // Clear all existing settings
             settings.clear()
+            db.organisationDatabaseQueries.deleteAllOrganisations()
+            db.activitiesDatabaseQueries.deleteAllActivities()
+            db.activitiesDatabaseQueries.deleteAllFailedActivities()
             // Mark first run as completed
             settings.putString(appVersionKey, currentVersion)
         }
