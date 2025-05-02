@@ -5,6 +5,8 @@ import com.github.kwhat.jnativehook.mouse.NativeMouseEvent
 import com.github.kwhat.jnativehook.mouse.NativeMouseListener
 import com.github.kwhat.jnativehook.mouse.NativeMouseMotionListener
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 class GlobalEventListener : NativeKeyListener, NativeMouseListener, NativeMouseMotionListener {
     private var keyCount = 0
@@ -14,6 +16,7 @@ class GlobalEventListener : NativeKeyListener, NativeMouseListener, NativeMouseM
     val fKeyCount = MutableStateFlow(0)
     val fMouseCount = MutableStateFlow(0)
     val fMouseMotionCount = MutableStateFlow(0)
+    var lastClickTime : Instant = Instant.DISTANT_PAST
 
     private fun registerEventTracking() {
         try {
@@ -65,18 +68,21 @@ class GlobalEventListener : NativeKeyListener, NativeMouseListener, NativeMouseM
     override fun nativeKeyPressed(e: NativeKeyEvent) {
         keyCount++
         fKeyCount.value = keyCount
+        lastClickTime = Clock.System.now()
         //println("Key pressed: ${NativeKeyEvent.getKeyText(e.keyCode)} | Total: $keyCount")
     }
 
     override fun nativeMouseClicked(e: NativeMouseEvent) {
         mouseCount++
         fMouseCount.value = mouseCount
+        lastClickTime = Clock.System.now()
        // println("Mouse clicked at (${e.x}, ${e.y}) | Total: ${fMouseCount.value}")
     }
 
     override fun nativeMouseMoved(e: NativeMouseEvent) {
         mouseMotionCount++
         fMouseMotionCount.value = mouseMotionCount
+        lastClickTime = Clock.System.now()
        // println("Mouse moved to (${e.x}, ${e.y}) | Total: ${fMouseMotionCount.value}")
         // Optional: Handle mouse movement if needed
     }
