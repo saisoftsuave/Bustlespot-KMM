@@ -154,7 +154,7 @@ fun TrackerScreen(
                     )
                 }
             }
-            homeViewModel.startPostingActivity(
+            homeViewModel.postUpdateActivity(
                 organisationId = organisationId.toInt()
             )
 //            showIdleDialog = true
