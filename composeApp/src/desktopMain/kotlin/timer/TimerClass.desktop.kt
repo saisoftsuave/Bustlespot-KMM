@@ -22,6 +22,7 @@ import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 import kotlin.random.Random
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 actual class TrackerModule actual constructor(private val viewModelScope: CoroutineScope) {
@@ -33,7 +34,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var keyboradKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
-    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
+    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(80)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -58,8 +59,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private val screenShotFrequency = 1 // n of screenshot in a slot
     private val screenshotLimit = 10 //in mints
     private var idealStartTime: Instant = Instant.DISTANT_PAST
-    private val postActivityInterval: Int = 600 //in second
-    private val storeActivityInterval: Int = 60 //in second
+    private val postActivityInterval: Int = 100 //in second
+    private val storeActivityInterval: Int = 15 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -278,9 +279,16 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var startTime: Instant = Instant.DISTANT_FUTURE
     actual var storeStartTime: Instant = Instant.DISTANT_FUTURE
 
+    actual fun getIdleTime(): Int {
+         val time = (idealStartTime.epochSeconds.seconds.inWholeSeconds - globalEventListener.lastClickTime.epochSeconds.seconds.inWholeSeconds).toInt()
+        println(time)
+        return if (time < customeTimeForIdleTime.value.seconds.inWholeSeconds && time > 0) time else 0
+    }
+
     actual fun getActivityData(): ActivityData {
 //        base64Converter()
         val endTime = getEndTime()
+//        val endTime = globalEventListener.lastClickTime
         val intervalInSeconds =
             endTime.epochSeconds.seconds.inWholeSeconds - startTime.epochSeconds.seconds.inWholeSeconds
         println(intervalInSeconds)
@@ -324,9 +332,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     private fun getEndTime(): Instant {
         // check and send the correct end time
-        if (idealTime.value > customeTimeForIdleTime.value) {
-            return (Clock.System.now() - customeTimeForIdleTime.value.seconds)
-        }
+//        if (idealTime.value > customeTimeForIdleTime.value) {
+//            return (Clock.System.now() - customeTimeForIdleTime.value.seconds)
+//        }
         return Clock.System.now()
     }
 

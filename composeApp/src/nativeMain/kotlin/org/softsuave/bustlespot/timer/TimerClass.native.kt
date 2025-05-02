@@ -15,6 +15,7 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlin.time.Duration.Companion.seconds
 
 actual class TrackerModule actual constructor(private val viewModelScope: CoroutineScope) {
     actual var trackerTime: MutableStateFlow<Int> = MutableStateFlow(0)
@@ -62,6 +63,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         trackerTime.value = 0
     }
 
+    actual fun getIdleTime(): Int {
+        return (startTime.epochSeconds.seconds.inWholeSeconds - idealStartTime.epochSeconds.seconds.inWholeSeconds).toInt()
+    }
     actual fun stopTimer() {
         Log.d("stopTimer")
         isTrackerRunning.value = false
