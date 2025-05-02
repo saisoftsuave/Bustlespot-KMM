@@ -34,7 +34,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var keyboradKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseKeyEvents: MutableStateFlow<Int> = MutableStateFlow(0)
     actual var mouseMotionCount: MutableStateFlow<Int> = MutableStateFlow(0)
-    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(80)
+    actual var customeTimeForIdleTime: MutableStateFlow<Int> = MutableStateFlow(480)
     actual var numberOfScreenshot: MutableStateFlow<Int> = MutableStateFlow(1)
     actual var isTrackerStarted: MutableStateFlow<Boolean> = MutableStateFlow(false)
 
@@ -59,8 +59,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     private val screenShotFrequency = 1 // n of screenshot in a slot
     private val screenshotLimit = 10 //in mints
     private var idealStartTime: Instant = Instant.DISTANT_PAST
-    private val postActivityInterval: Int = 100 //in second
-    private val storeActivityInterval: Int = 15 //in second
+    private val postActivityInterval: Int = 600 //in second
+    private val storeActivityInterval: Int = 60 //in second
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
@@ -272,7 +272,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun setLastScreenShotTime(time: Int) {
         screenShotTakenTime.value = time
     }
-    actual fun updateStartTime(){
+
+    actual fun updateStartTime() {
         startTime = Clock.System.now()
     }
 
@@ -280,8 +281,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual var storeStartTime: Instant = Instant.DISTANT_FUTURE
 
     actual fun getIdleTime(): Int {
-         val time = (idealStartTime.epochSeconds.seconds.inWholeSeconds - globalEventListener.lastClickTime.epochSeconds.seconds.inWholeSeconds).toInt()
-        println(time)
+        val time =
+            (startTime.epochSeconds.seconds.inWholeSeconds - globalEventListener.lastClickTime.epochSeconds.seconds.inWholeSeconds).toInt()
+        println("untracked time idle$time")
         return if (time < customeTimeForIdleTime.value.seconds.inWholeSeconds && time > 0) time else 0
     }
 
