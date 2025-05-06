@@ -157,6 +157,7 @@ fun TrackerScreen(
 
 //            showIdleDialog = true
             homeViewModel.stopTrackerTimer()
+            homeViewModel.updateSelectedTaskTime(trackerTimer, idleTime)
             homeViewModel.updateTrackerTimer()
             homeViewModel.postUpdateActivity(
                 organisationId = organisationId.toInt()
@@ -322,7 +323,13 @@ fun TrackerScreen(
                                         homeViewModel.handleTrackerDialogEvents(
                                             TrackerDialogEvents.ShowProjectChangeDialog(
                                                 selectedItem as Project
-                                            )
+                                            ), handleNavAction = {
+                                                if (isTrackerRunning) {
+                                                    homeViewModel.startPostingActivity(
+                                                        organisationId.toInt()
+                                                    )
+                                                }
+                                            }
                                         )
                                     } else if (selectedItem != selectedProject) {
                                         homeViewModel.handleDropDownEvents(
@@ -375,7 +382,13 @@ fun TrackerScreen(
                                         homeViewModel.handleTrackerDialogEvents(
                                             TrackerDialogEvents.ShowTaskChangeDialog(
                                                 selectedItem as TaskData
-                                            )
+                                            ), handleNavAction = {
+                                                if (isTrackerRunning) {
+                                                    homeViewModel.startPostingActivity(
+                                                        organisationId.toInt()
+                                                    )
+                                                }
+                                            }
                                         )
                                     } else if (selectedItem != selectedTask) {
                                         homeViewModel.handleDropDownEvents(
@@ -476,7 +489,8 @@ fun TrackerScreen(
                         }*/
 
             if (trackerDialogState.isDialogShown) {
-                CustomAlertDialog(title = trackerDialogState.title,
+                CustomAlertDialog(
+                    title = trackerDialogState.title,
                     text = trackerDialogState.text.replace(
                         "%s",
                         secondsToTime(homeViewModel.idealTime.value)
@@ -702,16 +716,17 @@ fun DropDownSelectionList(
                     }
                 }
             } else {
-                DropdownMenuItem(text = {
-                    Text(
-                        text = "No Options",
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color.Gray
-                    )
-                }, onClick = {
-                    isMenuExpanded = false
-                    onNoOptionClick()
-                }, modifier = Modifier.background(Color.White)
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "No Options",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Gray
+                        )
+                    }, onClick = {
+                        isMenuExpanded = false
+                        onNoOptionClick()
+                    }, modifier = Modifier.background(Color.White)
                 )
             }
         }
