@@ -84,6 +84,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.softsuave.bustlespot.APP_VERSION
 import org.softsuave.bustlespot.Log
 import org.softsuave.bustlespot.auth.utils.CustomAlertDialog
+import org.softsuave.bustlespot.auth.utils.LoadingDialog
 import org.softsuave.bustlespot.auth.utils.LoadingScreen
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.formatEpochToTime
@@ -133,6 +134,7 @@ fun TrackerScreen(
 
     // UI event (loading, failure, etc.) from the view model.
     val uiEvent by homeViewModel.uiEvent.collectAsState()
+    val dialogEvent by homeViewModel.dialogEvent.collectAsState()
     val lastSyncTime by homeViewModel.lastSyncTime.collectAsState()
 
 
@@ -172,15 +174,19 @@ fun TrackerScreen(
 
         }
     }
-
+// for mobile devices
     handleBackPress(
         onBack = {
             if (isTrackerRunning) {
                 homeViewModel.handleTrackerDialogEvents(
                     TrackerDialogEvents.ShowExitDialog,
                     handleNavAction = {
-                        homeViewModel.startPostingActivity(organisationId = organisationId.toInt())
-                        navController.navigateUp()
+                        homeViewModel.startPostingActivity(
+                            organisationId = organisationId.toInt(),
+                            showLoading = true
+                        ) {
+                            navController.navigateUp()
+                        }
                     })
             } else {
                 navController.navigateUp()
@@ -196,7 +202,7 @@ fun TrackerScreen(
                         organisationId = organisationId.toInt()
                     )
                 }
-                navController.popBackStack()
+                navController.navigateUp()
                 Log.i("call receiveid")
             }
         )
@@ -255,8 +261,12 @@ fun TrackerScreen(
                         homeViewModel.handleTrackerDialogEvents(
                             TrackerDialogEvents.ShowExitDialog,
                             handleNavAction = {
-                                homeViewModel.startPostingActivity(organisationId = organisationId.toInt())
-                                navController.navigateUp()
+                                homeViewModel.startPostingActivity(
+                                    organisationId = organisationId.toInt(),
+                                    showLoading = true
+                                ) {
+                                    navController.navigateUp()
+                                }
                             })
                     } else {
                         navController.navigateUp()
@@ -296,6 +306,9 @@ fun TrackerScreen(
                 }
 
                 is UiEvent.Success -> {
+                    if (dialogEvent) {
+                        LoadingDialog(dialogLoadingText = "Syncing working/idle time")
+                    }
                     LazyColumn {
                         item {
                             DropDownSelectionList(
@@ -434,6 +447,7 @@ fun TrackerScreen(
                     }
                 }
             }
+
             Text(
                 text = "v$APP_VERSION",
                 color = Color.Black,
@@ -528,7 +542,7 @@ fun DropDownSelectionList(
     selectedProject: Project? = null,
     selectedTask: TaskData? = null,
     isSelected: Boolean = false,
-    onDissmissClick:() -> Unit = {}
+    onDissmissClick: () -> Unit = {}
 ) {
     var isMenuExpanded by remember { mutableStateOf(false) }
     // We also track whether we've already notified the parent for this open.
@@ -753,7 +767,10 @@ fun TimerSessionSection(
                         requestPermission {
                             if (isTrackerRunning) {
                                 homeViewModel.handleTrackerTimerEvents(TimerEvents.StopTimer)
-                                homeViewModel.startPostingActivity(organisationId.toInt())
+                                homeViewModel.startPostingActivity(
+                                    organisationId.toInt(),
+                                    showLoading = true
+                                )
                             } else {
                                 homeViewModel.handleTrackerTimerEvents(TimerEvents.StartTimer)
                             }

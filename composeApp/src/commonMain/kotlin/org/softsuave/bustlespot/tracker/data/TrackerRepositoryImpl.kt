@@ -11,6 +11,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.util.reflect.TypeInfo
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.softsuave.bustlespot.Log
@@ -23,6 +24,7 @@ import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLPROJECTS
 import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLTASKS
 import org.softsuave.bustlespot.data.network.APIEndpoints.POSTACTIVITY
 import org.softsuave.bustlespot.data.network.BASEURL
+import kotlinx.coroutines.flow.update
 import org.softsuave.bustlespot.data.network.models.response.ErrorResponse
 import org.softsuave.bustlespot.data.network.models.response.GetAllActivities
 import org.softsuave.bustlespot.data.network.models.response.GetAllProjects
@@ -103,18 +105,25 @@ class TrackerRepositoryImpl(
                 }
                 if (response.status == HttpStatusCode.OK) {
                     val data: ActivityDataResponse = response.body()
-                    db.activitiesDatabaseQueries.deleteAllActivities()
+                    Log.d("---- activities are deleted on post success ----")
+                    if (!isRetryCalls) db.activitiesDatabaseQueries.deleteAllActivities()
                     emit(Result.Success(data))
                 } else {
                     Log.d("postActivity --> failed ${response.status}")
-                    if (!isRetryCalls) saveFailedPostUserActivity(postActivityRequest)
-                    db.activitiesDatabaseQueries.deleteAllActivities()
+                    if (!isRetryCalls) {
+                        saveFailedPostUserActivity(postActivityRequest)
+                        db.activitiesDatabaseQueries.deleteAllActivities()
+                    }
+                    Log.d("---- activities are deleted on post failure ----")
                     emit(Result.Error(message = "Failed post activity: ${response.status}"))
                 }
             } catch (e: Exception) {
                 Log.d("postActivity --> failed")
-                if (!isRetryCalls) saveFailedPostUserActivity(postActivityRequest)
-                db.activitiesDatabaseQueries.deleteAllActivities()
+                if (!isRetryCalls) {
+                    saveFailedPostUserActivity(postActivityRequest)
+                    db.activitiesDatabaseQueries.deleteAllActivities()
+                }
+                Log.d("---- activities are deleted on post failure ----")
                 emit(Result.Error(e.message ?: "Unknown error"))
             }
         }
@@ -172,14 +181,16 @@ class TrackerRepositoryImpl(
             postUserActivity(postActivityRequest, true).collect { result ->
                 when (result) {
                     is Result.Error -> {
+                        sessionManager.isSending.update { false }
                         Log.d("failed to post from local db")
                     }
 
                     is Result.Loading -> {
-
+                        sessionManager.isSending.update { true }
                     }
 
                     is Result.Success -> {
+                        sessionManager.isSending.update { false }
                         Log.d("Success to post failed call from local db")
                         db.activitiesDatabaseQueries.deleteAllFailedActivities()
                     }
@@ -230,13 +241,15 @@ class TrackerRepositoryImpl(
                     when (result) {
                         is Result.Error -> {
                             Log.d("failed to post from local db")
+                            sessionManager.isSending.update { false }
                         }
 
                         is Result.Loading -> {
-
+                            sessionManager.isSending.update { true }
                         }
 
                         is Result.Success -> {
+                            sessionManager.isSending.update { false }
                             Log.d("Success to post from local db")
                             db.activitiesDatabaseQueries.deleteAllActivities()
                         }

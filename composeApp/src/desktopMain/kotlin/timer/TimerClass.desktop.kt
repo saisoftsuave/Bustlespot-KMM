@@ -271,6 +271,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun setLastScreenShotTime(time: Int) {
         screenShotTakenTime.value = time
     }
+    actual fun updateStartTime(){
+        startTime = Clock.System.now()
+    }
 
     actual var startTime: Instant = Instant.DISTANT_FUTURE
     actual var storeStartTime: Instant = Instant.DISTANT_FUTURE

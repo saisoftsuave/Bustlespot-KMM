@@ -183,7 +183,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     if (isTrackerRunning.value) {
                         val currentTime = Clock.System.now()
                         val timeDifference = currentTime.epochSeconds - startTime.epochSeconds
-                        val storeTimeDifference = currentTime.epochSeconds - storeStartTime.epochSeconds
+                        val storeTimeDifference =
+                            currentTime.epochSeconds - storeStartTime.epochSeconds
                         if (timeDifference >= postActivityInterval) {
                             canCallApi.value = true
                         }
@@ -372,6 +373,9 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         )
         storeStartTime = Clock.System.now()
         return activity
+    }
+
+    actual fun updateStartTime() {
     }
 
 }
