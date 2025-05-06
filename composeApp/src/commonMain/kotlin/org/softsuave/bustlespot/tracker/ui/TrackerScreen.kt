@@ -154,12 +154,13 @@ fun TrackerScreen(
                     )
                 }
             }
-            homeViewModel.startPostingActivity(
-                organisationId = organisationId.toInt()
-            )
+
 //            showIdleDialog = true
             homeViewModel.stopTrackerTimer()
             homeViewModel.updateTrackerTimer()
+            homeViewModel.postUpdateActivity(
+                organisationId = organisationId.toInt()
+            )
         }
 //        val now = Clock.System.now().toLocalDateTime(TimeZone.of("Asia/Kolkata"))
 //        if (now.hour in 19 until 20 && now.minute in 0 until 1) {

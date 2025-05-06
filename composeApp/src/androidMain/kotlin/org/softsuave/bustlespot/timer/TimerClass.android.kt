@@ -29,6 +29,7 @@ import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 @RequiresApi(Build.VERSION_CODES.O)
 actual class TrackerModule actual constructor(private val viewModelScope: CoroutineScope) {
@@ -232,6 +233,10 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun startIdleTimerClock() {
         isIdealTimerRunning.value = true
+    }
+
+    actual fun getIdleTime(): Int {
+        return (startTime.epochSeconds.seconds.inWholeSeconds - idealStartTime.epochSeconds.seconds.inWholeSeconds).toInt()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

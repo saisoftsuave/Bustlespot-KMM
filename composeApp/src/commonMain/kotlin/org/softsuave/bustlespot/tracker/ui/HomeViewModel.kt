@@ -15,6 +15,7 @@ import org.softsuave.bustlespot.SessionManager
 import org.softsuave.bustlespot.auth.utils.Result
 import org.softsuave.bustlespot.auth.utils.UiEvent
 import org.softsuave.bustlespot.auth.utils.timeStringToSeconds
+import org.softsuave.bustlespot.data.network.models.request.UpdateActivityRequest
 import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
@@ -130,6 +131,20 @@ class HomeViewModel(
         }
     }
 
+    fun postUpdateActivity(
+        organisationId: Int
+    ) {
+        try {
+            val request = UpdateActivityRequest(
+                organisationId,
+                trackerModule.getIdleTime()
+            )
+            Log.d("$request----reguest")
+            postUpdateActivity(request)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
 
     fun stopTrackerTimer() = trackerModule.stopTimer()
     fun resetTrackerTimer() = trackerModule.resetTimer()
@@ -276,6 +291,26 @@ class HomeViewModel(
                             _mainTaskList.value = _mainTaskList.value.plus(taskList)
                             trackerScreenData.listOfTask?.addAll(taskList)
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun postUpdateActivity(updateActivityRequest: UpdateActivityRequest) {
+        viewModelScope.launch {
+            trackerRepository.updateActivity(updateActivityRequest).collect { result ->
+                when (result) {
+                    is Result.Error -> {
+                        Log.d("Error at updating activity ${result.message}")
+                    }
+
+                    is Result.Loading -> {
+
+                    }
+
+                    is Result.Success -> {
+                        Log.d("Success at updating activity")
                     }
                 }
             }

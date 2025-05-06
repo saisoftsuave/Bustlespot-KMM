@@ -25,6 +25,8 @@ import org.softsuave.bustlespot.data.network.APIEndpoints.GETALLTASKS
 import org.softsuave.bustlespot.data.network.APIEndpoints.POSTACTIVITY
 import org.softsuave.bustlespot.data.network.BASEURL
 import kotlinx.coroutines.flow.update
+import org.softsuave.bustlespot.data.network.APIEndpoints.UPDATEACTIVITY
+import org.softsuave.bustlespot.data.network.models.request.UpdateActivityRequest
 import org.softsuave.bustlespot.data.network.models.response.ErrorResponse
 import org.softsuave.bustlespot.data.network.models.response.GetAllActivities
 import org.softsuave.bustlespot.data.network.models.response.GetAllProjects
@@ -86,6 +88,32 @@ class TrackerRepositoryImpl(
                     emit(Result.Error(message = "Failed to fetch Projects: ${response.status}"))
                 }
             } catch (e: Exception) {
+                emit(Result.Error(e.message ?: "Unknown error"))
+            }
+        }
+    }
+
+    override fun updateActivity(updateActivityRequest: UpdateActivityRequest): Flow<Result<GetAllTasks>>{
+        return flow {
+            try {
+                emit(Result.Loading)
+                val response: HttpResponse = client.post("$BASEURL$UPDATEACTIVITY") {
+                    contentType(ContentType.Application.Json)
+                    setBody(
+                        updateActivityRequest
+                    )
+                    bearerAuth(sessionManager.accessToken)
+                }
+                if (response.status == HttpStatusCode.OK) {
+                    val result: BaseResponse<GetAllTasks> = response.body()
+                    println(result)
+                    emit(Result.Success(result.data ?: GetAllTasks(emptyList())))
+                } else {
+                    println("Failed to fetch Projects: ${response.status}")
+                    emit(Result.Error(message = "Failed to fetch Projects: ${response.status}"))
+                }
+            } catch (e: Exception) {
+                println(e.message ?: "Unknown error")
                 emit(Result.Error(e.message ?: "Unknown error"))
             }
         }

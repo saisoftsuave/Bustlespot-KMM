@@ -13,4 +13,6 @@ object APIEndpoints {
 
     const val POSTACTIVITY = "/api/activity/addActivityList"
     const val GETALLACTIVITIES = "/api/activity/get-all-activity"
+
+    const val UPDATEACTIVITY = "/api/activity/updateActivity"
 }
