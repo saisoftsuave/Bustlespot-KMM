@@ -6,7 +6,11 @@ import android.content.Intent
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.softsuave.bustlespot.Log
+import org.softsuave.bustlespot.accessability.GlobalAccessibilityEvents.lastClickTime
+import kotlin.time.Duration
 
 
 class TrackerAccessibilityService : AccessibilityService() {
@@ -15,16 +19,24 @@ class TrackerAccessibilityService : AccessibilityService() {
         event?.let {
             when (it.eventType) {
                 AccessibilityEvent.TYPE_VIEW_CLICKED -> {
-                    GlobalAccessibilityEvents.mouseCountFlow.value++
+                    if(GlobalAccessibilityEvents.isListening.value){
+                        GlobalAccessibilityEvents.mouseCountFlow.value++
+                        lastClickTime = Clock.System.now()
+                    }
                     Log.d("TrackerService Mouse Clicked: ${GlobalAccessibilityEvents.mouseCountFlow.value}")
                 }
-
                 AccessibilityEvent.TYPE_VIEW_SCROLLED -> {
-                    GlobalAccessibilityEvents.mouseMotionCountFlow.value++
+                    if(GlobalAccessibilityEvents.isListening.value){
+                        GlobalAccessibilityEvents.mouseMotionCountFlow.value++
+                        lastClickTime = Clock.System.now()
+                    }
                     Log.d("TrackerService Mouse Scrolled: ${GlobalAccessibilityEvents.mouseMotionCountFlow.value}")
                 }
                 else ->{
-                    GlobalAccessibilityEvents.mouseCountFlow.value++
+                    if(GlobalAccessibilityEvents.isListening.value){
+                        GlobalAccessibilityEvents.mouseCountFlow.value++
+                        lastClickTime = Clock.System.now()
+                    }
                     Log.d("TrackerService Mouse Clicked: ${GlobalAccessibilityEvents.mouseCountFlow.value}")
                 }
             }
@@ -63,4 +75,12 @@ object GlobalAccessibilityEvents {
     val keyCountFlow = MutableStateFlow(0)
     val mouseCountFlow = MutableStateFlow(0)
     val mouseMotionCountFlow = MutableStateFlow(0)
+    var lastClickTime : Instant = Instant.DISTANT_PAST
+    var isListening = MutableStateFlow(false)
+
+    fun resetClickCounts(){
+        keyCountFlow.value=0
+        mouseMotionCountFlow.value=0
+        mouseCountFlow.value=0
+    }
 }

@@ -70,6 +70,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun resetTimer() {
         isTrackerRunning.value = false
+        GlobalAccessibilityEvents.isListening.value = false
         //    globalEventListener.unregisterListeners()
         idealTime.value = 0
         Log.d("idle time rested")
@@ -84,7 +85,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             val serviceIntent = Intent(this, MediaProjectionService::class.java)
             stopService(serviceIntent)
         }
-
+        GlobalAccessibilityEvents.isListening.value = false
         //   globalEventListener.unregisterListeners()
     }
 
@@ -115,6 +116,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     actual fun startTimer() {
         isTrackerRunning.value = true
         isIdealTimerRunning.value = true
+        GlobalAccessibilityEvents.isListening.value = true
         //    globalEventListener.registerListeners()
 
         val serviceIntent = Intent(
@@ -228,6 +230,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
 
     actual fun stopIdleTimer() {
         isIdealTimerRunning.value = false
+        GlobalAccessibilityEvents.isListening.value = false
         // globalEventListener.unregisterListeners()
     }
 
@@ -236,7 +239,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual fun getIdleTime(): Int {
-        return (startTime.epochSeconds.seconds.inWholeSeconds - idealStartTime.epochSeconds.seconds.inWholeSeconds).toInt()
+        val time = (startTime.epochSeconds.seconds.inWholeSeconds - GlobalAccessibilityEvents.lastClickTime.epochSeconds.seconds.inWholeSeconds).toInt()
+        return if (time < customeTimeForIdleTime.value.seconds.inWholeSeconds && time > 0) time else 0
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -267,7 +271,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
                     }
                 }
             }
-            timer.scheduleAtFixedRate(screenshotRepeatingTask, 0, 60 * 1000)
+            timer.schedule(screenshotRepeatingTask, 0, 60 * 1000)
         }
     }
 
@@ -381,6 +385,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
     }
 
     actual fun updateStartTime() {
+        startTime = Clock.System.now()
     }
 
 }
