@@ -96,6 +96,8 @@ import org.softsuave.bustlespot.browser.openWebLink
 import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
+import org.softsuave.bustlespot.locationmodule.LocationViewModel
+import org.softsuave.bustlespot.locationmodule.sendLocalNotification
 import org.softsuave.bustlespot.organisation.ui.BustleSpotAppBar
 import org.softsuave.bustlespot.tracker.scheduleWork
 import org.softsuave.bustlespot.utils.BustleSpotRed
@@ -141,6 +143,12 @@ fun TrackerScreen(
     val totalIdleTime by homeViewModel.totalIdleTime.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val locationInfo by homeViewModel.locationInfo.collectAsState()
+
+
+    LaunchedEffect(locationInfo) {
+        sendLocalNotification(10, locationInfo)
+    }
 
 
     // Launch idle dialog effect.
@@ -476,7 +484,8 @@ fun TrackerScreen(
                         }*/
 
             if (trackerDialogState.isDialogShown) {
-                CustomAlertDialog(title = trackerDialogState.title,
+                CustomAlertDialog(
+                    title = trackerDialogState.title,
                     text = trackerDialogState.text.replace(
                         "%s",
                         secondsToTime(homeViewModel.idealTime.value)
@@ -702,16 +711,17 @@ fun DropDownSelectionList(
                     }
                 }
             } else {
-                DropdownMenuItem(text = {
-                    Text(
-                        text = "No Options",
-                        modifier = Modifier.fillMaxWidth(),
-                        color = Color.Gray
-                    )
-                }, onClick = {
-                    isMenuExpanded = false
-                    onNoOptionClick()
-                }, modifier = Modifier.background(Color.White)
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "No Options",
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.Gray
+                        )
+                    }, onClick = {
+                        isMenuExpanded = false
+                        onNoOptionClick()
+                    }, modifier = Modifier.background(Color.White)
                 )
             }
         }

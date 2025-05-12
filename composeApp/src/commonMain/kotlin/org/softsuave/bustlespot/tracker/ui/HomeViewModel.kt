@@ -1,5 +1,7 @@
 package org.softsuave.bustlespot.tracker.ui
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,6 +21,7 @@ import org.softsuave.bustlespot.data.network.models.request.UpdateActivityReques
 import org.softsuave.bustlespot.data.network.models.response.DisplayItem
 import org.softsuave.bustlespot.data.network.models.response.Project
 import org.softsuave.bustlespot.data.network.models.response.TaskData
+import org.softsuave.bustlespot.locationmodule.LocationViewModel
 import org.softsuave.bustlespot.network.NetworkMonitor
 import org.softsuave.bustlespot.timer.TrackerModule
 import org.softsuave.bustlespot.tracker.data.TrackerRepository
@@ -161,6 +164,10 @@ class HomeViewModel(
 
 
     fun stopIdleTimer() = trackerModule.stopIdleTimer()
+
+    val locationViewModel = LocationViewModel()
+
+    val locationInfo = locationViewModel.locationInfo
 
 
     //    private val _taskList = kotlinx.coroutines.flow.MutableStateFlow<List<TaskData>>(emptyList())
@@ -597,9 +604,12 @@ class HomeViewModel(
             TimerEvents.StartTimer -> {
                 if (trackerTime.value != 0 && isTrackerRunning.value) {
                     resumeTrackerTimer()
+                    locationViewModel.resume()
                 } else {
                     if (checkTaskAndProject()) {
                         startTrackerTimer()
+                        locationViewModel.getCurrentLocation()
+                        locationViewModel.startTracking()
                     }
                 }
             }
@@ -607,12 +617,14 @@ class HomeViewModel(
             TimerEvents.StopTimer -> {
                 stopTrackerTimer()
                 stopIdleTimer()
+                locationViewModel.startTracking()
             }
 
             TimerEvents.UpdateTime -> TODO()
 
             TimerEvents.ResumeTimer -> {
                 resumeTrackerTimer()
+                locationViewModel.resume()
             }
         }
     }
