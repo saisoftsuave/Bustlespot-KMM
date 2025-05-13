@@ -206,8 +206,8 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         ByteArrayOutputStream().use { byteArrayOutputStream ->
             ImageIO.write(bufferedImage, "png", file)
             ImageIO.write(bufferedImage, "png", byteArrayOutputStream)
-//            currentImageUri.value =
-//                Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray())
+            currentImageUri.value =
+                Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray())
         }
         sendLocalNotification(
             "Bustle-spot Reminder",
@@ -293,7 +293,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             totalActivity = (((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toFloat()) * 100).toInt(),
             billable = "",
             notes = "",
-            uri =base64Converter()
+            uri = currentImageUri.value
         )
         startTime = endTime
         globalEventListener.resetClickCount()
@@ -316,7 +316,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             totalActivity = (((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toFloat()) * 100).toInt(),
             billable = "",
             notes = "",
-            uri = base64Converter()
+            uri = currentImageUri.value
         )
         storeStartTime = endTime
         return activity
@@ -348,15 +348,18 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         return activity
     }
 
-    private fun base64Converter():String {
+    private fun base64Converter() {
+
 //        screenShot.value?.toString()?.let { Log.d("this is great $it") }
-        return screenShot.value?.let {
+        viewModelScope.launch {
+            currentImageUri.value = screenShot.value?.let {
                 val byteArrayOutputStream = ByteArrayOutputStream()
                 ImageIO.write(it.toAwtImage(), "png", byteArrayOutputStream)
                 val bytes = byteArrayOutputStream.toByteArray()
                 Log.d("$bytes y")
                 Base64.getEncoder().encodeToString(bytes)
             }.toString()
+        }
     }
 
 
