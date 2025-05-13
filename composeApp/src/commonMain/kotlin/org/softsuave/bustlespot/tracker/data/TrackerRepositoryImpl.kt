@@ -114,7 +114,7 @@ class TrackerRepositoryImpl(
                         saveFailedPostUserActivity(postActivityRequest)
                         db.activitiesDatabaseQueries.deleteAllActivities()
                     }
-                    Log.d("---- activities are deleted on post failure ----")
+                    Log.d("---- activities are deleted on post failure ---- ${response.status} -- ${response.toString()} ")
                     emit(Result.Error(message = "Failed post activity: ${response.status}"))
                 }
             } catch (e: Exception) {
@@ -123,7 +123,8 @@ class TrackerRepositoryImpl(
                     saveFailedPostUserActivity(postActivityRequest)
                     db.activitiesDatabaseQueries.deleteAllActivities()
                 }
-                Log.d("---- activities are deleted on post failure ----")
+                Log.d("---- activities are deleted on post failure ---- ${e.message}")
+                e.printStackTrace()
                 emit(Result.Error(e.message ?: "Unknown error"))
             }
         }
