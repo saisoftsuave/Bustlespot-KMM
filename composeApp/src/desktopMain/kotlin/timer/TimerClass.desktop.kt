@@ -321,7 +321,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         val percentage =
             (mouseKeyEvents.value + keyboradKeyEvents.value + dragEvents) / intervalInSeconds.toFloat()
 
-        return (if (percentage > 100) 100 else percentage) as Int
+        return (if (percentage > 100) 100 else percentage).toInt()
     }
 
     actual fun getStoreActivityData(): ActivityData {
@@ -336,7 +336,7 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
             endTime = endTime.toString(),
             mouseActivity = mouseKeyEvents.value,
             keyboardActivity = keyboradKeyEvents.value,
-            totalActivity = (((mouseKeyEvents.value + keyboradKeyEvents.value) / intervalInSeconds.toFloat()) * 100).toInt(),
+            totalActivity = getActivityPercentage(),
             billable = "",
             notes = "",
             uri = base64Converter()
