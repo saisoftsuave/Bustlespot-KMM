@@ -319,9 +319,10 @@ actual class TrackerModule actual constructor(private val viewModelScope: Corout
         }
 
         val percentage =
-            (mouseKeyEvents.value + keyboradKeyEvents.value + dragEvents) / intervalInSeconds.toFloat()
+            (((mouseKeyEvents.value + keyboradKeyEvents.value + dragEvents) / intervalInSeconds.toFloat()) * 100).toInt()
 
-        return (if (percentage > 100) 100 else percentage).toInt()
+
+        return if (percentage > 100) 100 else percentage
     }
 
     actual fun getStoreActivityData(): ActivityData {
